@@ -246,7 +246,8 @@
 			}
 		}
 
-		map.setView([latitude, longitude], latitude === 0 && longitude === 0 ? 2 : 13);
+		const currentZoom = map.getZoom();
+		map.setView([latitude, longitude], currentZoom);
 	}
 
 	$: if (isMapReady && (latitude !== undefined || longitude !== undefined)) {
