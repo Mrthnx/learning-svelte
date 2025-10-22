@@ -18,6 +18,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { AnimatedBackground } from '$lib/components/me/animated-background';
+	import { Logo } from '$lib/components/me/logo';
 
 	import * as api from '$lib/services/api';
 	import { authStore, loadingStore, unauthorizedAlert } from '$lib/store';
@@ -125,55 +126,17 @@
 
 	<div class="relative z-10 grid w-full max-w-6xl grid-cols-1 md:grid-cols-2">
 		<div class="hidden flex-col justify-center p-10 text-white md:flex">
-			<svg
-				class="mb-4 h-16 w-16"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3"
-				/>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M12 16a4 4 0 100-8 4 4 0 000 8z"
-				/>
-			</svg>
+			<Logo size="lg" class="mb-4" />
 			<h1 class="text-4xl font-bold">PDM Director</h1>
 			<p class="mt-2 text-lg">Precision in every vibration.</p>
 		</div>
 
 		<div
-			class="flex w-full flex-col items-center justify-center rounded-2xl bg-gray-400/10 p-8 md:p-10"
+			class="flex w-full flex-col items-center justify-center rounded-2xl bg-card/50 p-8 md:p-10"
 		>
 			<div class="w-full max-w-sm">
 				<div class="mb-6 flex flex-col items-center text-center md:hidden">
-					<svg
-						class="mb-4 h-12 w-12"
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3"
-						/>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 16a4 4 0 100-8 4 4 0 000 8z"
-						/>
-					</svg>
+					<Logo size="md" class="mb-4" />
 					<h1 class="text-2xl font-bold">PDM Director</h1>
 				</div>
 				<p class="mb-8 text-center text-base">Advanced vibration analysis platform</p>
@@ -212,7 +175,7 @@
 					<Form.Button class="w-full" disabled={$loadingStore}>Sign In</Form.Button>
 				</form>
 
-				<div class="mt-6 text-center text-xs text-gray-500">Version 1.0.0</div>
+				<div class="mt-6 text-center text-xs text-muted-foreground">Version 1.0.0</div>
 			</div>
 		</div>
 	</div>
