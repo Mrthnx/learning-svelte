@@ -13,3 +13,4 @@ export { default as NavbarMobileMenu } from './navbar-mobile-menu.svelte';
 export { default as SidebarDesktop } from './sidebar-desktop.svelte';
 export { default as SidebarMobile } from './sidebar-mobile.svelte';
 export { default as Sidebar } from './sidebar.svelte';
+export { default as Table } from './table.svelte';
