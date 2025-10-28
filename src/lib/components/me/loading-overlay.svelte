@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { loadingStore } from '$lib/store';
-	import { Logo } from '$lib/components/me/svg';
+	import { Logo } from '$lib/components/me';
 </script>
 
 {#if $loadingStore}

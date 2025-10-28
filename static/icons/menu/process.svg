@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+  <!-- Process boxes -->
+  <rect x="3" y="8" width="5" height="3" rx="1" fill="none"/>
+  <rect x="16" y="8" width="5" height="3" rx="1" fill="none"/>
+  <rect x="9" y="13" width="5" height="3" rx="1" fill="none"/>
+  
+  <!-- Flow arrows -->
+  <path d="M8 9.5 L16 9.5" marker-end="url(#arrowhead)"/>
+  <path d="M12 11 L12 13" marker-end="url(#arrowhead)"/>
+  
+  <!-- Central node -->
+  <circle cx="12" cy="9.5" r="1" fill="currentColor"/>
+</svg>

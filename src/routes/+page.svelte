@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/store';
-	import { AnimatedBackground } from '$lib/components/me/animated-background';
+	import { AnimatedBackground } from '$lib/components/me';
 
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((auth) => {

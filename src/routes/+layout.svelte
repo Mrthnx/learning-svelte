@@ -1,8 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { LoadingOverlay } from '$lib/components/me/loading-overlay';
-	import { UnauthorizedAlert } from '$lib/components/me/unauthorized-alert';
+	import { LoadingOverlay, UnauthorizedAlert } from '$lib/components/me';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { get } from '$lib/services/api';

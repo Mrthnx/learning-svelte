@@ -2,8 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/store';
-	import { Navbar } from '$lib/components/me';
-	// import DynamicBreadcrumb from '$lib/components/ui/dynamic-breadcrumb/DynamicBreadcrumb.svelte';
+	import { Navbar, Sidebar } from '$lib/components/me';
 
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((auth) => {
@@ -16,8 +15,12 @@
 	});
 </script>
 
-<div class="min-h-screen">
+<div class="dashboard-background min-h-screen">
 	<Navbar />
+
+	<!-- Sidebar Wrapper (Desktop + Mobile) -->
+	<Sidebar />
+
 	<main class="md:ml-20">
 		<div class="p-4 sm:p-6 md:p-8">
 			<!-- <DynamicBreadcrumb /> -->

@@ -1,0 +1,184 @@
+/* Base class for all menu icons using CSS mask */
+.icon-mask {
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  background-color: currentColor;
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Menu Icons */
+.icon-city-hall {
+  -webkit-mask-image: url('/icons/menu/city-hall.svg');
+  mask-image: url('/icons/menu/city-hall.svg');
+}
+
+.icon-engineer {
+  -webkit-mask-image: url('/icons/menu/engineer.svg');
+  mask-image: url('/icons/menu/engineer.svg');
+}
+
+.icon-factory {
+  -webkit-mask-image: url('/icons/menu/factory.svg');
+  mask-image: url('/icons/menu/factory.svg');
+}
+
+.icon-area {
+  -webkit-mask-image: url('/icons/menu/area.svg');
+  mask-image: url('/icons/menu/area.svg');
+}
+
+.icon-process {
+  -webkit-mask-image: url('/icons/menu/process.svg');
+  mask-image: url('/icons/menu/process.svg');
+}
+
+.icon-motor-electric {
+  -webkit-mask-image: url('/icons/menu/motor_electric.svg');
+  mask-image: url('/icons/menu/motor_electric.svg');
+}
+
+.icon-typical-points {
+  -webkit-mask-image: url('/icons/menu/typical-points.svg');
+  mask-image: url('/icons/menu/typical-points.svg');
+}
+
+.icon-typical-bands {
+  -webkit-mask-image: url('/icons/menu/typical-bands.svg');
+  mask-image: url('/icons/menu/typical-bands.svg');
+}
+
+.icon-conveyor-belt {
+  -webkit-mask-image: url('/icons/menu/conveyor-belt.svg');
+  mask-image: url('/icons/menu/conveyor-belt.svg');
+}
+
+.icon-plant-lubricants {
+  -webkit-mask-image: url('/icons/menu/plant-lubricants.svg');
+  mask-image: url('/icons/menu/plant-lubricants.svg');
+}
+
+.icon-plant-failures {
+  -webkit-mask-image: url('/icons/menu/plant_failures.svg');
+  mask-image: url('/icons/menu/plant_failures.svg');
+}
+
+.icon-rocket {
+  -webkit-mask-image: url('/icons/menu/rocket.svg');
+  mask-image: url('/icons/menu/rocket.svg');
+}
+
+.icon-pictures {
+  -webkit-mask-image: url('/icons/menu/pictures.svg');
+  mask-image: url('/icons/menu/pictures.svg');
+}
+
+.icon-hierarchy {
+  -webkit-mask-image: url('/icons/menu/hierarchy.svg');
+  mask-image: url('/icons/menu/hierarchy.svg');
+}
+
+.icon-data-analysis {
+  -webkit-mask-image: url('/icons/menu/data-analysis.svg');
+  mask-image: url('/icons/menu/data-analysis.svg');
+}
+
+.icon-report {
+  -webkit-mask-image: url('/icons/menu/report.svg');
+  mask-image: url('/icons/menu/report.svg');
+}
+
+.icon-reliability {
+  -webkit-mask-image: url('/icons/menu/reliability.svg');
+  mask-image: url('/icons/menu/reliability.svg');
+}
+
+.icon-charts {
+  -webkit-mask-image: url('/icons/menu/charts.svg');
+  mask-image: url('/icons/menu/charts.svg');
+}
+
+.icon-routes {
+  -webkit-mask-image: url('/icons/menu/routes.svg');
+  mask-image: url('/icons/menu/routes.svg');
+}
+
+/* Size variations */
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-md {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-lg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-xl {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* Color variations (examples) */
+.icon-primary {
+  color: #22d3ee;
+}
+
+.icon-secondary {
+  color: #64748b;
+}
+
+.icon-success {
+  color: #10b981;
+}
+
+.icon-warning {
+  color: #f59e0b;
+}
+
+.icon-danger {
+  color: #ef4444;
+}
+
+.icon-white {
+  color: #ffffff;
+}
+
+.icon-black {
+  color: #000000;
+}
+
+/* Hover effects */
+.icon-hover:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Menu specific styles */
+.menu-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.sidebar-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.75rem;
+}
+
+.navbar-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}

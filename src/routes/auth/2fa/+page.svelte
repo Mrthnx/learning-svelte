@@ -2,7 +2,7 @@
 	import { defaults, superForm } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import * as Form from '$lib/components/ui/form/index.js';
-	import { AnimatedBackground } from '$lib/components/me/animated-background';
+	import { AnimatedBackground } from '$lib/components/me';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import * as InputOTP from '$lib/components/ui/input-otp/index.js';

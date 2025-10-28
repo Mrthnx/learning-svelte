@@ -17,8 +17,7 @@
 
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { AnimatedBackground } from '$lib/components/me/animated-background';
-	import { Logo } from '$lib/components/me/logo';
+	import { AnimatedBackground, Logo } from '$lib/components/me';
 
 	import * as api from '$lib/services/api';
 	import { authStore, loadingStore, unauthorizedAlert } from '$lib/store';
