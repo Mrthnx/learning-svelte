@@ -33,6 +33,15 @@
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
+	// Auto-reset to page 1 when filters change
+	$effect(() => {
+		if (filterCode || filterDescription) {
+			if (currentPage !== 1) {
+				currentPage = 1;
+			}
+		}
+	});
+
 	onMount(() => {
 		loadAccounts();
 	});
@@ -103,9 +112,9 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedAccounts.map((account) => {
-					if (account.id) return accountService.delete(account.id);
-				})
+				selectedAccounts
+					.filter((account) => account.id !== null)
+					.map((account) => accountService.delete(account.id!))
 			);
 
 			toast.success(`${selectedAccounts.length} account(s) deleted successfully`);

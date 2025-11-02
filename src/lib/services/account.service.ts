@@ -46,6 +46,17 @@ export interface PaginateResponse<T> {
 	total: number;
 }
 
+/**
+ * Normalize account coordinates
+ */
+function normalizeAccount(account: Account): Account {
+	return {
+		...account,
+		latitude: normalizeCoordinate(account.latitude),
+		longitude: normalizeCoordinate(account.longitude)
+	};
+}
+
 export const accountService = {
 	/**
 	 * Get all accounts with pagination
@@ -57,15 +68,8 @@ export const accountService = {
 
 		const response: ApiResponse<PaginateData<Account>> = await api.getLoader(url);
 
-		// Transform API response to our expected format, normalizing coordinates as numbers
-		const normalizedRecords = (response.data.records || []).map((record) => ({
-			...record,
-			latitude: normalizeCoordinate(record.latitude),
-			longitude: normalizeCoordinate(record.longitude)
-		}));
-
 		return {
-			rows: normalizedRecords,
+			rows: (response.data.records || []).map(normalizeAccount),
 			page,
 			size: pageSize,
 			total: response.data.total || 0
@@ -77,14 +81,7 @@ export const accountService = {
 	 */
 	async getById(id: number): Promise<Account> {
 		const response: ApiResponse<Account> = await api.get(`accounts/${id}`);
-		const account = response.data;
-
-		// Normalize coordinates
-		return {
-			...account,
-			latitude: normalizeCoordinate(account.latitude),
-			longitude: normalizeCoordinate(account.longitude)
-		};
+		return normalizeAccount(response.data);
 	},
 
 	/**
@@ -96,7 +93,6 @@ export const accountService = {
 			...account
 		};
 		await api.post('accounts', data);
-		// Update/Create endpoints don't return data, just 201/204 status
 		return { success: true };
 	},
 
@@ -105,7 +101,6 @@ export const accountService = {
 	 */
 	async update(id: number, account: Account): Promise<{ success: boolean }> {
 		await api.put(`accounts/${id}`, account);
-		// Update endpoints return 204 No Content
 		return { success: true };
 	},
 
@@ -114,7 +109,6 @@ export const accountService = {
 	 */
 	async delete(id: number): Promise<{ success: boolean }> {
 		await api.del(`accounts/${id}`);
-		// Delete endpoints return 204 No Content
 		return { success: true };
 	}
 };

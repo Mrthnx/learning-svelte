@@ -66,12 +66,7 @@
 
 			<div class="flex items-center gap-1">
 				{#if showFirstPage}
-					<Button
-						variant="outline"
-						size="sm"
-						onclick={() => onPageChange(1)}
-						disabled={isLoading}
-					>
+					<Button variant="outline" size="sm" onclick={() => onPageChange(1)} disabled={isLoading}>
 						1
 					</Button>
 					{#if visiblePages[0] > 2}

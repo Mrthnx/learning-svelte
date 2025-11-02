@@ -5,6 +5,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { cn } from '$lib/utils';
 	import { SvelteSet } from 'svelte/reactivity';
+	import type { ComponentType } from 'svelte';
 
 	interface Column<T> {
 		key: string;
@@ -16,7 +17,7 @@
 
 	interface Action<T> {
 		label: string;
-		icon?: any;
+		icon?: ComponentType;
 		onClick: (item: T) => void;
 		variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
 		class?: string;
@@ -83,7 +84,7 @@
 						<Checkbox checked={selectAll} onCheckedChange={toggleSelectAll} />
 					</Table.Head>
 				{/if}
-				{#each columns as column, i (i)}
+				{#each columns as column (column.key)}
 					<Table.Head class={column.class}>
 						{column.label}
 					</Table.Head>
@@ -120,7 +121,7 @@
 					</Table.Cell>
 				</Table.Row>
 			{:else}
-				{#each data as item, i (i)}
+				{#each data as item, index ((item as any).id ?? index)}
 					<Table.Row>
 						{#if selectable}
 							<Table.Cell>
@@ -130,16 +131,16 @@
 								/>
 							</Table.Cell>
 						{/if}
-						{#each columns as column, i (i)}
+						{#each columns as column (column.key)}
 							<Table.Cell class={column.class}>
 								{getCellValue(item, column)}
 							</Table.Cell>
 						{/each}
 						{#if actions && actions.length > 0}
 							<Table.Cell class="text-right">
-								<div class="flex justify-end gap-2">
-									{#each actions as action, i (i)}
-										<Tooltip.Provider>
+								<Tooltip.Provider>
+									<div class="flex justify-end gap-2">
+										{#each actions as action (action.label)}
 											<Tooltip.Root>
 												<Tooltip.Trigger>
 													<Button
@@ -157,9 +158,9 @@
 													<p>{action.label}</p>
 												</Tooltip.Content>
 											</Tooltip.Root>
-										</Tooltip.Provider>
-									{/each}
-								</div>
+										{/each}
+									</div>
+								</Tooltip.Provider>
 							</Table.Cell>
 						{/if}
 					</Table.Row>
