@@ -6,8 +6,9 @@
 	import { AccountTable } from '$lib/components/modules/accounts';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
-	import { Plus, Trash2, Search, RefreshCw } from 'lucide-svelte';
+	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { useDebounce } from '$lib/composables';
 	import {
 		accountService,
 		type Account,
@@ -20,6 +21,7 @@
 	let filterDescription = $state('');
 	let isLoading = $state(false);
 	let isDeleting = $state(false);
+	let isDebouncing = $state(false);
 
 	// Pagination
 	let currentPage = $state(1);
@@ -33,13 +35,20 @@
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
-	// Auto-reset to page 1 when filters change
+	// Debounced search - auto-search when user stops typing
 	$effect(() => {
-		if (filterCode || filterDescription) {
-			if (currentPage !== 1) {
+		isDebouncing = true;
+		const cleanup = useDebounce(
+			{ filterCode, filterDescription },
+			() => {
 				currentPage = 1;
-			}
-		}
+				loadAccounts();
+				isDebouncing = false;
+			},
+			500
+		);
+
+		return cleanup;
 	});
 
 	onMount(() => {
@@ -129,11 +138,6 @@
 		}
 	}
 
-	function handleSearch() {
-		currentPage = 1;
-		loadAccounts();
-	}
-
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
@@ -173,9 +177,6 @@
 					type="text"
 					placeholder="Enter code..."
 					bind:value={filterCode}
-					onkeydown={(e) => {
-						if (e.key === 'Enter') handleSearch();
-					}}
 					disabled={isLoading}
 				/>
 			</div>
@@ -186,9 +187,6 @@
 					type="text"
 					placeholder="Enter description..."
 					bind:value={filterDescription}
-					onkeydown={(e) => {
-						if (e.key === 'Enter') handleSearch();
-					}}
 					disabled={isLoading}
 				/>
 			</div>
@@ -196,15 +194,14 @@
 
 		<!-- Action Buttons -->
 		<div class="flex items-center justify-between">
-			<div class="flex gap-2">
-				<Button variant="outline" onclick={handleSearch} disabled={isLoading} class="gap-2">
-					<Search class="h-4 w-4" />
-					Search
-				</Button>
+			<div class="flex items-center gap-2">
 				<Button variant="outline" onclick={handleRefresh} disabled={isLoading} class="gap-2">
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					Reload
 				</Button>
+				{#if isDebouncing && (filterCode || filterDescription)}
+					<span class="text-sm text-muted-foreground">Searching...</span>
+				{/if}
 			</div>
 
 			{#if selectedAccounts.length > 0}
