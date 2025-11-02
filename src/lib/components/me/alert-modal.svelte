@@ -122,7 +122,7 @@
 		</Dialog.Header>
 
 		<Dialog.Footer class="flex-col gap-2 sm:flex-row sm:justify-end">
-			{#each displayButtons as button}
+			{#each displayButtons as button (button.action)}
 				{@const btn = button as ActionButton}
 				<Button
 					variant={btn.variant || 'default'}

@@ -28,25 +28,19 @@
 		isLoading?: boolean;
 	}
 
-	let {
-		account = {
-			id: null,
-			code: '',
-			description: '',
-			nameContactor: '',
-			telephoneContactor: '',
-			mailContactor: '',
-			latitude: undefined,
-			longitude: undefined,
-			image: ''
-		},
-		onSubmit,
-		onCancel,
-		isEdit = false,
-		isLoading = false
-	}: Props = $props();
+	let { account, onSubmit, onCancel, isEdit = false, isLoading = false }: Props = $props();
 
-	let formData = $state<Account>({ ...account });
+	let formData = $state<Account>({
+		id: account?.id ?? null,
+		code: account?.code ?? '',
+		description: account?.description ?? '',
+		nameContactor: account?.nameContactor ?? '',
+		telephoneContactor: account?.telephoneContactor ?? '',
+		mailContactor: account?.mailContactor ?? '',
+		latitude: account?.latitude,
+		longitude: account?.longitude,
+		image: account?.image ?? ''
+	});
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
@@ -72,7 +66,7 @@
 
 		// Validación de teléfono
 		if (formData.telephoneContactor && formData.telephoneContactor.trim()) {
-			const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+			const phoneRegex = /^[\d\s\-+()]+$/;
 			if (!phoneRegex.test(formData.telephoneContactor)) {
 				errors.telephoneContactor = 'Invalid phone format';
 			}

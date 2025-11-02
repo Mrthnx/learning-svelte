@@ -235,7 +235,7 @@
 					Previous
 				</Button>
 				<div class="flex items-center gap-1">
-					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
+					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page (page)}
 						{#if page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)}
 							<Button
 								variant={page === currentPage ? 'default' : 'outline'}

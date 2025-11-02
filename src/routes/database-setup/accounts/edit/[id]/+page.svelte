@@ -123,7 +123,7 @@
 		}
 
 		if (formData.telephoneContactor && formData.telephoneContactor.trim()) {
-			const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+			const phoneRegex = /^[\d\s\-+()]+$/;
 			if (!phoneRegex.test(formData.telephoneContactor)) {
 				errors.telephoneContactor = 'Invalid phone format';
 			}

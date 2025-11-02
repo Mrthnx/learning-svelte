@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { cn } from '$lib/utils';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Column<T> {
 		key: string;
@@ -41,14 +42,14 @@
 		class: className
 	}: Props<T> = $props();
 
-	let selectedItems = $state<Set<T>>(new Set());
+	let selectedItems = new SvelteSet<T>();
 	let selectAll = $state(false);
 
 	function toggleSelectAll() {
 		if (selectAll) {
-			selectedItems = new Set();
+			selectedItems = new SvelteSet();
 		} else {
-			selectedItems = new Set(data);
+			selectedItems = new SvelteSet(data);
 		}
 		selectAll = !selectAll;
 		onSelectionChange?.(Array.from(selectedItems));
@@ -60,7 +61,7 @@
 		} else {
 			selectedItems.add(item);
 		}
-		selectedItems = new Set(selectedItems);
+		selectedItems = new SvelteSet(selectedItems);
 		selectAll = selectedItems.size === data.length;
 		onSelectionChange?.(Array.from(selectedItems));
 	}
@@ -131,7 +132,7 @@
 						{/if}
 						{#each columns as column, i (i)}
 							<Table.Cell class={column.class}>
-								{@html getCellValue(item, column)}
+								{getCellValue(item, column)}
 							</Table.Cell>
 						{/each}
 						{#if actions && actions.length > 0}
@@ -177,7 +178,7 @@
 			variant="outline"
 			size="sm"
 			onclick={() => {
-				selectedItems = new Set();
+				selectedItems = new SvelteSet();
 				selectAll = false;
 				onSelectionChange?.([]);
 			}}
