@@ -45,3 +45,6 @@ export function normalizeCoordinate(value: number | string | null | undefined): 
 	}
 	return typeof value === 'string' ? parseFloat(value) : value;
 }
+
+// Re-export validators
+export * from './validators';

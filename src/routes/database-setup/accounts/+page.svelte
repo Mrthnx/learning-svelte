@@ -5,7 +5,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { AccountTable } from '$lib/components/modules/accounts';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
-	import { Plus, Trash2, Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Pagination } from '$lib/components/me';
+	import { Plus, Trash2, Search, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		accountService,
@@ -216,52 +217,14 @@
 	/>
 
 	<!-- Pagination -->
-	{#if totalPages > 1}
-		<div class="flex items-center justify-between">
-			<p class="text-sm text-muted-foreground">
-				Showing {(currentPage - 1) * pageSize + 1} to {Math.min(
-					currentPage * pageSize,
-					totalRecords
-				)} of {totalRecords} results
-			</p>
-			<div class="flex items-center gap-2">
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={() => handlePageChange(currentPage - 1)}
-					disabled={currentPage === 1 || isLoading}
-				>
-					<ChevronLeft class="h-4 w-4" />
-					Previous
-				</Button>
-				<div class="flex items-center gap-1">
-					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page (page)}
-						{#if page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)}
-							<Button
-								variant={page === currentPage ? 'default' : 'outline'}
-								size="sm"
-								onclick={() => handlePageChange(page)}
-								disabled={isLoading}
-							>
-								{page}
-							</Button>
-						{:else if page === currentPage - 2 || page === currentPage + 2}
-							<span class="px-2">...</span>
-						{/if}
-					{/each}
-				</div>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={() => handlePageChange(currentPage + 1)}
-					disabled={currentPage === totalPages || isLoading}
-				>
-					Next
-					<ChevronRight class="h-4 w-4" />
-				</Button>
-			</div>
-		</div>
-	{/if}
+	<Pagination
+		{currentPage}
+		{totalPages}
+		{totalRecords}
+		{pageSize}
+		onPageChange={handlePageChange}
+		{isLoading}
+	/>
 </div>
 
 <!-- Delete Single Account Modal -->
