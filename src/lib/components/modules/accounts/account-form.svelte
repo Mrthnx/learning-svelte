@@ -7,6 +7,15 @@
 	import LocationMap from '$lib/components/me/location-map.svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
+	import { useUnsavedChanges } from '$lib/composables';
+	import {
+		isRequired,
+		isValidEmail,
+		isValidPhone,
+		isValidLatitude,
+		isValidLongitude,
+		validationMessages
+	} from '$lib/shared';
 
 	interface Account {
 		id?: number | null;
@@ -26,9 +35,17 @@
 		onCancel: () => void;
 		isEdit?: boolean;
 		isLoading?: boolean;
+		enableUnsavedWarning?: boolean;
 	}
 
-	let { account, onSubmit, onCancel, isEdit = false, isLoading = false }: Props = $props();
+	let {
+		account,
+		onSubmit,
+		onCancel,
+		isEdit = false,
+		isLoading = false,
+		enableUnsavedWarning = true
+	}: Props = $props();
 
 	let formData = $state<Account>({
 		id: account?.id ?? null,
@@ -41,47 +58,54 @@
 		longitude: account?.longitude,
 		image: account?.image ?? ''
 	});
+
+	let originalData = $state<Account>({ ...formData });
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
 
+	const isDirty = $derived(
+		formData.code !== originalData.code ||
+			formData.description !== originalData.description ||
+			formData.nameContactor !== originalData.nameContactor ||
+			formData.telephoneContactor !== originalData.telephoneContactor ||
+			formData.mailContactor !== originalData.mailContactor ||
+			formData.latitude !== originalData.latitude ||
+			formData.longitude !== originalData.longitude ||
+			formData.image !== originalData.image ||
+			imageFile !== null
+	);
+
+	// Warn about unsaved changes
+	if (enableUnsavedWarning) {
+		useUnsavedChanges(() => isDirty);
+	}
+
 	function validateForm(): boolean {
 		errors = {};
 
-		if (!formData.code?.trim()) {
-			errors.code = 'Code is required';
+		if (!isRequired(formData.code)) {
+			errors.code = validationMessages.required('Code');
 		}
 
-		if (!formData.description?.trim()) {
-			errors.description = 'Description is required';
+		if (!isRequired(formData.description)) {
+			errors.description = validationMessages.required('Description');
 		}
 
-		// Validación de email
-		if (formData.mailContactor && formData.mailContactor.trim()) {
-			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-			if (!emailRegex.test(formData.mailContactor)) {
-				errors.mailContactor = 'Invalid email format';
-			}
+		if (formData.mailContactor && !isValidEmail(formData.mailContactor)) {
+			errors.mailContactor = validationMessages.invalidEmail;
 		}
 
-		// Validación de teléfono
-		if (formData.telephoneContactor && formData.telephoneContactor.trim()) {
-			const phoneRegex = /^[\d\s\-+()]+$/;
-			if (!phoneRegex.test(formData.telephoneContactor)) {
-				errors.telephoneContactor = 'Invalid phone format';
-			}
+		if (formData.telephoneContactor && !isValidPhone(formData.telephoneContactor)) {
+			errors.telephoneContactor = validationMessages.invalidPhone;
 		}
 
-		// Validación de coordenadas
-		if (formData.latitude !== undefined && (formData.latitude < -90 || formData.latitude > 90)) {
-			errors.latitude = 'Latitude must be between -90 and 90';
+		if (!isValidLatitude(formData.latitude)) {
+			errors.latitude = validationMessages.invalidLatitude;
 		}
 
-		if (
-			formData.longitude !== undefined &&
-			(formData.longitude < -180 || formData.longitude > 180)
-		) {
-			errors.longitude = 'Longitude must be between -180 and 180';
+		if (!isValidLongitude(formData.longitude)) {
+			errors.longitude = validationMessages.invalidLongitude;
 		}
 
 		return Object.keys(errors).length === 0;
@@ -97,6 +121,8 @@
 		isSubmitting = true;
 		try {
 			await onSubmit(formData);
+			// Update original data after successful submit
+			originalData = { ...formData };
 		} catch (error) {
 			console.error('Error submitting form:', error);
 		} finally {
