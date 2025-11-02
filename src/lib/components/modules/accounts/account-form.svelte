@@ -135,10 +135,17 @@
 		formData.longitude = event.detail.longitude;
 	}
 
-	function handleFileChange(event: CustomEvent<{ file: File | null; preview: string | null }>) {
+	function handleFileChange(
+		event: CustomEvent<{ file: File | null; preview: string | null; url: string | null }>
+	) {
 		imageFile = event.detail.file;
-		if (event.detail.preview) {
+		// Use the uploaded URL if available, otherwise use preview for display
+		if (event.detail.url) {
+			formData.image = event.detail.url;
+		} else if (event.detail.preview) {
 			formData.image = event.detail.preview;
+		} else {
+			formData.image = '';
 		}
 	}
 
@@ -261,7 +268,7 @@
 						fileType="image"
 						label="Account Image"
 						maxSize={5}
-						existingFileUrl={account.image}
+						existingFileUrl={account?.image}
 						disabled={isSubmitting || isLoading}
 						on:fileChange={handleFileChange}
 						on:error={handleFileError}

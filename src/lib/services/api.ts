@@ -120,6 +120,53 @@ export async function putLoader(path: string, data: any) {
 	}
 }
 
+async function sendFormData(method: string, path: string, formData: FormData, _token?: string) {
+	const token = _token ?? _get(authStore).token;
+
+	const opts: RequestInit = {
+		method,
+		headers: {
+			Authorization: `Bearer ${token}`
+		},
+		body: formData
+	};
+
+	const res = await fetch(`${base}/${path}`, opts);
+
+	if (res.status === 401) {
+		if (browser) {
+			if (!isUnauthorizedAlertShowing) {
+				isUnauthorizedAlertShowing = true;
+				unauthorizedAlert.show(
+					'Tu sesión ha expirado o no estás autorizado. Por favor, inicia sesión de nuevo.'
+				);
+			}
+		}
+		throw new ApiError('Unauthorized', 401);
+	}
+
+	if (!res.ok) {
+		let message = `Request failed with status ${res.status}`;
+		try {
+			const json = await res.json();
+			message = json.response?.description || json.message || message;
+		} catch (e: any) {
+			console.log(e);
+		}
+		throw new ApiError(message, res.status);
+	}
+
+	if (res.status === 204 || res.status === 201) {
+		return { success: true };
+	}
+
+	return await res.json();
+}
+
+export function postFormData(path: string, formData: FormData) {
+	return sendFormData('POST', path, formData);
+}
+
 export function patch(path: string, data: any) {
 	return send('PATCH', path, data);
 }
@@ -140,6 +187,7 @@ export const api = {
 	getLoader,
 	post,
 	postLoader,
+	postFormData,
 	put,
 	putLoader,
 	patch,

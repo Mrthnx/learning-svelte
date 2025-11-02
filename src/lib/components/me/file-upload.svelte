@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Image as ImageIcon, FileText, X, Upload } from 'lucide-svelte';
+	import { Image as ImageIcon, FileText, X, Upload, Loader2 } from 'lucide-svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { api } from '$lib/services/api';
 
 	type FileType = 'image' | 'pdf' | 'any';
 
@@ -29,14 +30,18 @@
 	}: Props = $props();
 
 	const dispatch = createEventDispatcher<{
-		fileChange: { file: File | null; preview: string | null };
+		fileChange: { file: File | null; preview: string | null; url: string | null };
 		error: { message: string };
+		uploadStart: void;
+		uploadSuccess: { url: string };
 	}>();
 
 	let selectedFile: FileList | undefined = $state(undefined);
 	let preview: string | null = $state(existingFileUrl || null);
 	let fileName: string = $state('');
 	let isDragging = $state(false);
+	let isUploading = $state(false);
+	let uploadedUrl: string | null = $state(existingFileUrl || null);
 
 	// Configuración según tipo de archivo
 	const fileConfig = $derived.by(() => {
@@ -99,15 +104,40 @@
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				preview = e.target?.result as string;
-				dispatch('fileChange', { file, preview: preview });
+				uploadFile(file);
 			};
 			reader.readAsDataURL(file);
 		} else if (fileType === 'pdf') {
 			preview = 'pdf';
-			dispatch('fileChange', { file, preview: null });
+			uploadFile(file);
 		} else {
 			preview = 'file';
-			dispatch('fileChange', { file, preview: null });
+			uploadFile(file);
+		}
+	}
+
+	async function uploadFile(file: File) {
+		isUploading = true;
+		dispatch('uploadStart');
+
+		try {
+			const formData = new FormData();
+			formData.append('image', file);
+
+			const response = await api.postFormData('upload', formData);
+			uploadedUrl = response.data;
+
+			dispatch('uploadSuccess', { url: uploadedUrl });
+			dispatch('fileChange', { file, preview, url: uploadedUrl });
+		} catch (error: any) {
+			console.error('Error uploading file:', error);
+			dispatch('error', { message: error.message || 'Failed to upload file' });
+			// Revert preview on error
+			preview = null;
+			fileName = '';
+			selectedFile = undefined;
+		} finally {
+			isUploading = false;
 		}
 	}
 
@@ -167,13 +197,15 @@
 		selectedFile = undefined;
 		preview = null;
 		fileName = '';
-		dispatch('fileChange', { file: null, preview: null });
+		uploadedUrl = null;
+		dispatch('fileChange', { file: null, preview: null, url: null });
 	}
 
 	// Cargar preview existente al montar
 	$effect(() => {
 		if (existingFileUrl && !preview) {
 			preview = existingFileUrl;
+			uploadedUrl = existingFileUrl;
 		}
 	});
 </script>
@@ -196,9 +228,16 @@
 				<div
 					class="flex h-[300px] items-center justify-center overflow-hidden rounded-lg border bg-muted"
 				>
-					<img src={preview} alt="Preview" class="h-full w-auto max-w-full object-contain" />
+					{#if isUploading}
+						<div class="flex flex-col items-center gap-3">
+							<Loader2 class="h-12 w-12 animate-spin text-primary" />
+							<p class="text-sm text-muted-foreground">Uploading...</p>
+						</div>
+					{:else}
+						<img src={preview} alt="Preview" class="h-full w-auto max-w-full object-contain" />
+					{/if}
 				</div>
-				{#if !disabled}
+				{#if !disabled && !isUploading}
 					<Button
 						type="button"
 						variant="destructive"
