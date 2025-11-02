@@ -2,6 +2,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { LoadingOverlay, UnauthorizedAlert } from '$lib/components/me';
+	import { Toaster } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { get } from '$lib/services/api';
@@ -35,5 +36,6 @@
 
 {@render children()}
 
+<Toaster richColors position="top-right" />
 <LoadingOverlay />
 <UnauthorizedAlert />

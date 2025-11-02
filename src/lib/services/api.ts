@@ -47,7 +47,7 @@ async function send(method: string, path: string, data?: any, _token?: string) {
 		let message = `Request failed with status ${res.status}`;
 		try {
 			const json = await res.json();
-			message = json.response?.description || message;
+			message = json.response?.description || json.message || message;
 		} catch (e: any) {
 			// The response body was not JSON. Use the default message.
 			console.log(e);
@@ -56,7 +56,12 @@ async function send(method: string, path: string, data?: any, _token?: string) {
 	}
 
 	// If we get here, res.ok is true
-	return res.json();
+	// 204 No Content and 201 Created don't have response body
+	if (res.status === 204 || res.status === 201) {
+		return { success: true };
+	}
+
+	return await res.json();
 }
 
 export function get(path: string) {

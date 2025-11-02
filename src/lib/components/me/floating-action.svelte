@@ -118,10 +118,7 @@
 										>
 											<span class="text-xs">
 												<div
-													class="icon-mask icon-{processLabelToIcon(
-														submenu.icon,
-														submenu.label
-													)}"
+													class="icon-mask icon-{processLabelToIcon(submenu.icon, submenu.label)}"
 												></div>
 											</span>
 										</div>
@@ -150,9 +147,7 @@
 						</div>
 					{:else}
 						<div class="flex flex-col items-center justify-center py-12 text-center">
-							<div
-								class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted"
-							>
+							<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
 								<svg
 									class="h-8 w-8 text-muted-foreground"
 									xmlns="http://www.w3.org/2000/svg"
@@ -169,9 +164,7 @@
 								</svg>
 							</div>
 							<h3 class="mb-2 text-lg font-medium">Sin elementos</h3>
-							<p class="text-sm text-muted-foreground">
-								No hay menús disponibles en esta sección.
-							</p>
+							<p class="text-sm text-muted-foreground">No hay menús disponibles en esta sección.</p>
 						</div>
 					{/if}
 				</div>

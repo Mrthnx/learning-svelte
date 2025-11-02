@@ -1,5 +1,6 @@
 <script lang="ts" generics="T">
 	import * as Table from '$lib/components/ui/table';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { cn } from '$lib/utils';
@@ -72,16 +73,16 @@
 	}
 </script>
 
-<div class={cn('w-full overflow-auto rounded-md border', className)}>
+<div class={cn('w-full overflow-auto rounded-lg border shadow-sm', className)}>
 	<Table.Root>
 		<Table.Header>
-			<Table.Row>
+			<Table.Row class="border-b">
 				{#if selectable}
 					<Table.Head class="w-12">
 						<Checkbox checked={selectAll} onCheckedChange={toggleSelectAll} />
 					</Table.Head>
 				{/if}
-				{#each columns as column}
+				{#each columns as column, i (i)}
 					<Table.Head class={column.class}>
 						{column.label}
 					</Table.Head>
@@ -94,7 +95,10 @@
 		<Table.Body>
 			{#if data.length === 0}
 				<Table.Row>
-					<Table.Cell colspan={columns.length + (selectable ? 1 : 0) + (actions?.length ? 1 : 0)} class="h-24 text-center">
+					<Table.Cell
+						colspan={columns.length + (selectable ? 1 : 0) + (actions?.length ? 1 : 0)}
+						class="h-24 text-center"
+					>
 						<div class="flex flex-col items-center gap-2">
 							<svg
 								class="h-12 w-12 text-muted-foreground"
@@ -125,7 +129,7 @@
 								/>
 							</Table.Cell>
 						{/if}
-						{#each columns as column}
+						{#each columns as column, i (i)}
 							<Table.Cell class={column.class}>
 								{@html getCellValue(item, column)}
 							</Table.Cell>
@@ -133,18 +137,26 @@
 						{#if actions && actions.length > 0}
 							<Table.Cell class="text-right">
 								<div class="flex justify-end gap-2">
-									{#each actions as action}
-										<Button
-											variant={action.variant || 'ghost'}
-											size="sm"
-											onclick={() => action.onClick(item)}
-											class={cn('gap-2', action.class)}
-										>
-											{#if action.icon}
-												<svelte:component this={action.icon} class="h-4 w-4" />
-											{/if}
-											{action.label}
-										</Button>
+									{#each actions as action, i (i)}
+										<Tooltip.Provider>
+											<Tooltip.Root>
+												<Tooltip.Trigger>
+													<Button
+														variant={action.variant || 'ghost'}
+														size="icon"
+														onclick={() => action.onClick(item)}
+														class={cn('h-8 w-8', action.class)}
+													>
+														{#if action.icon}
+															<svelte:component this={action.icon} class="h-4 w-4" />
+														{/if}
+													</Button>
+												</Tooltip.Trigger>
+												<Tooltip.Content>
+													<p>{action.label}</p>
+												</Tooltip.Content>
+											</Tooltip.Root>
+										</Tooltip.Provider>
 									{/each}
 								</div>
 							</Table.Cell>
@@ -161,7 +173,15 @@
 		<p class="text-sm text-muted-foreground">
 			{selectedItems.size} of {data.length} row(s) selected
 		</p>
-		<Button variant="outline" size="sm" onclick={() => { selectedItems = new Set(); selectAll = false; onSelectionChange?.([]); }}>
+		<Button
+			variant="outline"
+			size="sm"
+			onclick={() => {
+				selectedItems = new Set();
+				selectAll = false;
+				onSelectionChange?.([]);
+			}}
+		>
 			Clear Selection
 		</Button>
 	</div>

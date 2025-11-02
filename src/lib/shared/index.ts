@@ -38,3 +38,10 @@ export function createApiUrl(
 
 	return `${basePath}?${params.toString()}`;
 }
+
+export function normalizeCoordinate(value: number | string | null | undefined): number | undefined {
+	if (value === null || value === undefined) {
+		return undefined;
+	}
+	return typeof value === 'string' ? parseFloat(value) : value;
+}

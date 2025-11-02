@@ -1,12 +1,17 @@
 <script lang="ts">
 	import Table from '$lib/components/me/table.svelte';
-	import { Pencil, Trash2 } from 'lucide-svelte';
+	import { Pencil, Trash2, MapPin, Phone, Mail } from 'lucide-svelte';
 
 	interface Account {
-		id: number;
-		name: string;
-		description: string;
-		createdAt: string;
+		id: number | null;
+		code?: string;
+		description?: string;
+		nameContactor?: string;
+		telephoneContactor?: string;
+		mailContactor?: string;
+		latitude?: number | string;
+		longitude?: number | string;
+		image?: string;
 	}
 
 	interface Props {
@@ -23,23 +28,61 @@
 		{
 			key: 'id',
 			label: 'ID',
-			class: 'w-20'
+			class: 'w-16'
 		},
 		{
-			key: 'name',
-			label: 'Name',
-			class: 'font-medium'
+			key: 'code',
+			label: 'Code',
+			class: 'font-medium',
+			render: (account: Account) => account.code || '-'
 		},
 		{
 			key: 'description',
 			label: 'Description',
-			class: 'text-muted-foreground'
+			class: 'min-w-[200px]',
+			render: (account: Account) => account.description || '-'
 		},
 		{
-			key: 'createdAt',
-			label: 'Created At',
-			render: (account: Account) => new Date(account.createdAt).toLocaleDateString(),
-			class: 'text-muted-foreground'
+			key: 'nameContactor',
+			label: 'Contact Person',
+			render: (account: Account) => account.nameContactor || '-'
+		},
+		{
+			key: 'telephoneContactor',
+			label: 'Phone',
+			render: (account: Account) => account.telephoneContactor || '-'
+		},
+		{
+			key: 'mailContactor',
+			label: 'Email',
+			render: (account: Account) => account.mailContactor || '-',
+			class: 'text-sm'
+		},
+		{
+			key: 'location',
+			label: 'Location',
+			render: (account: Account) => {
+				// Safely parse coordinates
+				const lat =
+					account.latitude !== null && account.latitude !== undefined
+						? typeof account.latitude === 'string'
+							? parseFloat(account.latitude)
+							: account.latitude
+						: null;
+				const lng =
+					account.longitude !== null && account.longitude !== undefined
+						? typeof account.longitude === 'string'
+							? parseFloat(account.longitude)
+							: account.longitude
+						: null;
+
+				// Check if both are valid numbers
+				if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+					return `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}`;
+				}
+				return '-';
+			},
+			class: 'text-xs text-muted-foreground'
 		}
 	];
 
