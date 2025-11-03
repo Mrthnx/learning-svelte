@@ -3,20 +3,16 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { AccountTable } from '$lib/components/modules/accounts';
+	import { PlantTable } from '$lib/components/modules/plants';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { useDebounce } from '$lib/composables';
-	import {
-		accountService,
-		type Account,
-		type PaginateResponse
-	} from '$lib/services/account.service';
+	import { plantService, type Plant, type PaginateResponse } from '$lib/services/plant.service';
 
-	let accounts: Account[] = $state([]);
-	let selectedAccounts: Account[] = $state([]);
+	let plants: Plant[] = $state([]);
+	let selectedPlants: Plant[] = $state([]);
 	let filterCode = $state('');
 	let filterDescription = $state('');
 	let isLoading = $state(false);
@@ -31,16 +27,16 @@
 	// Modals
 	let deleteDialogOpen = $state(false);
 	let bulkDeleteDialogOpen = $state(false);
-	let accountToDelete: Account | null = $state(null);
+	let plantToDelete: Plant | null = $state(null);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// Initial load flag
 	let isInitialLoad = $state(true);
 
-	// Load accounts on mount
+	// Load plants on mount
 	onMount(() => {
-		loadAccounts();
+		loadPlants();
 	});
 	// Debounced search - auto-search when user stops typing
 	$effect(() => {
@@ -52,7 +48,7 @@
 			{ filterCode, filterDescription },
 			() => {
 				currentPage = 1;
-				loadAccounts();
+				loadPlants();
 				isDebouncing = false;
 			},
 			500
@@ -61,63 +57,63 @@
 		return cleanup;
 	});
 
-	async function loadAccounts() {
+	async function loadPlants() {
 		isLoading = true;
 		try {
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
-			const response: PaginateResponse<Account> = await accountService.getAll({
+			const response: PaginateResponse<Plant> = await plantService.getAll({
 				page: currentPage,
 				pageSize,
 				filters
 			});
 
-			accounts = response.rows;
+			plants = response.rows;
 			totalRecords = response.total;
 		} catch (error: any) {
-			console.error('Error loading accounts:', error);
-			toast.error(error.message || 'Failed to load accounts');
+			console.error('Error loading plants:', error);
+			toast.error(error.message || 'Failed to load plants');
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	function handleCreate() {
-		goto('/database-setup/accounts/create');
+		goto('/database-setup/plants/create');
 	}
 
-	function handleEdit(account: Account) {
-		goto(`/database-setup/accounts/edit/${account.id}`);
+	function handleEdit(plant: Plant) {
+		goto(`/database-setup/plants/edit/${plant.id}`);
 	}
 
-	function handleDelete(account: Account) {
-		accountToDelete = account;
+	function handleDelete(plant: Plant) {
+		plantToDelete = plant;
 		deleteDialogOpen = true;
 	}
 
 	async function confirmDelete() {
-		if (!accountToDelete?.id) return;
+		if (!plantToDelete?.id) return;
 
 		isDeleting = true;
 		try {
-			await accountService.delete(accountToDelete.id);
-			toast.success(`Account "${accountToDelete.code}" deleted successfully`);
+			await plantService.delete(plantToDelete.id);
+			toast.success(`Plant "${plantToDelete.code}" deleted successfully`);
 			deleteDialogOpen = false;
-			accountToDelete = null;
-			loadAccounts();
+			plantToDelete = null;
+			loadPlants();
 		} catch (error: any) {
-			console.error('Error deleting account:', error);
-			toast.error(error.message || 'Failed to delete account');
+			console.error('Error deleting plant:', error);
+			toast.error(error.message || 'Failed to delete plant');
 		} finally {
 			isDeleting = false;
 		}
 	}
 
 	function handleBulkDelete() {
-		if (selectedAccounts.length === 0) {
-			toast.error('Please select at least one account to delete');
+		if (selectedPlants.length === 0) {
+			toast.error('Please select at least one plant to delete');
 			return;
 		}
 		bulkDeleteDialogOpen = true;
@@ -127,18 +123,18 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedAccounts
-					.filter((account) => account.id !== null)
-					.map((account) => accountService.delete(account.id!))
+				selectedPlants
+					.filter((plant) => plant.id !== null)
+					.map((plant) => plantService.delete(plant.id!))
 			);
 
-			toast.success(`${selectedAccounts.length} account(s) deleted successfully`);
+			toast.success(`${selectedPlants.length} plant(s) deleted successfully`);
 			bulkDeleteDialogOpen = false;
-			selectedAccounts = [];
-			loadAccounts();
+			selectedPlants = [];
+			loadPlants();
 		} catch (error: any) {
-			console.error('Error deleting accounts:', error);
-			toast.error(error.message || 'Failed to delete accounts');
+			console.error('Error deleting plants:', error);
+			toast.error(error.message || 'Failed to delete plants');
 		} finally {
 			isDeleting = false;
 		}
@@ -147,15 +143,15 @@
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
-		loadAccounts();
+		loadPlants();
 	}
 
 	function handleRefresh() {
-		loadAccounts();
+		loadPlants();
 	}
 
-	function handleSelectionChange(selected: Account[]) {
-		selectedAccounts = selected;
+	function handleSelectionChange(selected: Plant[]) {
+		selectedPlants = selected;
 	}
 </script>
 
@@ -163,12 +159,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
-			<p class="text-muted-foreground">Manage your organization accounts</p>
+			<h1 class="text-3xl font-bold tracking-tight">Plants</h1>
+			<p class="text-muted-foreground">Manage your organization plants</p>
 		</div>
 		<Button onclick={handleCreate} class="gap-2">
 			<Plus class="h-4 w-4" />
-			New Account
+			New Plant
 		</Button>
 	</div>
 
@@ -210,18 +206,18 @@
 				{/if}
 			</div>
 
-			{#if selectedAccounts.length > 0}
+			{#if selectedPlants.length > 0}
 				<Button variant="destructive" onclick={handleBulkDelete} class="gap-2">
 					<Trash2 class="h-4 w-4" />
-					Delete ({selectedAccounts.length})
+					Delete ({selectedPlants.length})
 				</Button>
 			{/if}
 		</div>
 	</div>
 
 	<!-- Table -->
-	<AccountTable
-		{accounts}
+	<PlantTable
+		{plants}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
 		onSelectionChange={handleSelectionChange}
@@ -239,13 +235,13 @@
 	/>
 </div>
 
-<!-- Delete Single Account Modal -->
+<!-- Delete Single Plant Modal -->
 <AlertModal
 	bind:open={deleteDialogOpen}
 	type="confirm"
-	title="Delete Account"
-	description={accountToDelete
-		? `Are you sure you want to delete "${accountToDelete.code}"? This action cannot be undone.`
+	title="Delete Plant"
+	description={plantToDelete
+		? `Are you sure you want to delete "${plantToDelete.code}"? This action cannot be undone.`
 		: ''}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
@@ -262,8 +258,8 @@
 <AlertModal
 	bind:open={bulkDeleteDialogOpen}
 	type="confirm"
-	title="Delete Multiple Accounts"
-	description={`Are you sure you want to delete ${selectedAccounts.length} account(s)? This action cannot be undone.`}
+	title="Delete Multiple Plants"
+	description={`Are you sure you want to delete ${selectedPlants.length} plant(s)? This action cannot be undone.`}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
 		{ label: isDeleting ? 'Deleting...' : 'Delete All', action: 'confirm', variant: 'destructive' }
@@ -274,3 +270,4 @@
 		}
 	}}
 />
+

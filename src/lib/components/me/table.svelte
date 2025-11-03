@@ -12,6 +12,7 @@
 		label: string;
 		sortable?: boolean;
 		render?: (item: T) => any;
+		renderSnippet?: (item: T) => any;
 		class?: string;
 	}
 
@@ -22,6 +23,7 @@
 		variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
 		class?: string;
 	}
+
 
 	interface Props<T> {
 		data: T[];
@@ -133,36 +135,40 @@
 						{/if}
 						{#each columns as column (column.key)}
 							<Table.Cell class={column.class}>
-								{getCellValue(item, column)}
+								{#if column.renderSnippet}
+									{@render column.renderSnippet(item)}
+								{:else}
+									{getCellValue(item, column)}
+								{/if}
 							</Table.Cell>
 						{/each}
-						{#if actions && actions.length > 0}
-							<Table.Cell class="text-right">
-								<Tooltip.Provider>
-									<div class="flex justify-end gap-2">
-										{#each actions as action (action.label)}
-											<Tooltip.Root>
-												<Tooltip.Trigger>
-													<Button
-														variant={action.variant || 'ghost'}
-														size="icon"
-														onclick={() => action.onClick(item)}
-														class={cn('h-8 w-8', action.class)}
-													>
-														{#if action.icon}
-															<svelte:component this={action.icon} class="h-4 w-4" />
-														{/if}
-													</Button>
-												</Tooltip.Trigger>
-												<Tooltip.Content>
-													<p>{action.label}</p>
-												</Tooltip.Content>
-											</Tooltip.Root>
-										{/each}
-									</div>
-								</Tooltip.Provider>
-							</Table.Cell>
-						{/if}
+					{#if actions && actions.length > 0}
+						<Table.Cell class="text-right">
+							<Tooltip.Provider>
+								<div class="flex justify-end gap-2">
+									{#each actions as action (action.label)}
+										<Tooltip.Root>
+											<Tooltip.Trigger>
+												<Button
+													variant={action.variant || 'ghost'}
+													size="icon"
+													onclick={() => action.onClick(item)}
+													class={cn('h-8 w-8', action.class)}
+												>
+													{#if action.icon}
+														<svelte:component this={action.icon} class="h-4 w-4" />
+													{/if}
+												</Button>
+											</Tooltip.Trigger>
+											<Tooltip.Content>
+												<p>{action.label}</p>
+											</Tooltip.Content>
+										</Tooltip.Root>
+								{/each}
+							</div>
+						</Tooltip.Provider>
+					</Table.Cell>
+				{/if}
 					</Table.Row>
 				{/each}
 			{/if}

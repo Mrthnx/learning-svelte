@@ -3,20 +3,20 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { AccountTable } from '$lib/components/modules/accounts';
+	import { ComponentTable } from '$lib/components/modules/components';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { useDebounce } from '$lib/composables';
 	import {
-		accountService,
-		type Account,
+		componentService,
+		type Component,
 		type PaginateResponse
-	} from '$lib/services/account.service';
+	} from '$lib/services/component.service';
 
-	let accounts: Account[] = $state([]);
-	let selectedAccounts: Account[] = $state([]);
+	let components: Component[] = $state([]);
+	let selectedComponents: Component[] = $state([]);
 	let filterCode = $state('');
 	let filterDescription = $state('');
 	let isLoading = $state(false);
@@ -31,17 +31,13 @@
 	// Modals
 	let deleteDialogOpen = $state(false);
 	let bulkDeleteDialogOpen = $state(false);
-	let accountToDelete: Account | null = $state(null);
+	let componentToDelete: Component | null = $state(null);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// Initial load flag
 	let isInitialLoad = $state(true);
 
-	// Load accounts on mount
-	onMount(() => {
-		loadAccounts();
-	});
 	// Debounced search - auto-search when user stops typing
 	$effect(() => {
 		// Skip initial effect execution
@@ -52,7 +48,7 @@
 			{ filterCode, filterDescription },
 			() => {
 				currentPage = 1;
-				loadAccounts();
+				loadComponents();
 				isDebouncing = false;
 			},
 			500
@@ -61,63 +57,67 @@
 		return cleanup;
 	});
 
-	async function loadAccounts() {
+	onMount(() => {
+		loadComponents();
+	});
+
+	async function loadComponents() {
 		isLoading = true;
 		try {
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
-			const response: PaginateResponse<Account> = await accountService.getAll({
+			const response: PaginateResponse<Component> = await componentService.getAll({
 				page: currentPage,
 				pageSize,
 				filters
 			});
 
-			accounts = response.rows;
+			components = response.rows;
 			totalRecords = response.total;
 		} catch (error: any) {
-			console.error('Error loading accounts:', error);
-			toast.error(error.message || 'Failed to load accounts');
+			console.error('Error loading components:', error);
+			toast.error(error.message || 'Failed to load components');
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	function handleCreate() {
-		goto('/database-setup/accounts/create');
+		goto('/database-setup/components/create');
 	}
 
-	function handleEdit(account: Account) {
-		goto(`/database-setup/accounts/edit/${account.id}`);
+	function handleEdit(component: Component) {
+		goto(`/database-setup/components/edit/${component.id}`);
 	}
 
-	function handleDelete(account: Account) {
-		accountToDelete = account;
+	function handleDelete(component: Component) {
+		componentToDelete = component;
 		deleteDialogOpen = true;
 	}
 
 	async function confirmDelete() {
-		if (!accountToDelete?.id) return;
+		if (!componentToDelete?.id) return;
 
 		isDeleting = true;
 		try {
-			await accountService.delete(accountToDelete.id);
-			toast.success(`Account "${accountToDelete.code}" deleted successfully`);
+			await componentService.delete(componentToDelete.id);
+			toast.success(`Component "${componentToDelete.code}" deleted successfully`);
 			deleteDialogOpen = false;
-			accountToDelete = null;
-			loadAccounts();
+			componentToDelete = null;
+			loadComponents();
 		} catch (error: any) {
-			console.error('Error deleting account:', error);
-			toast.error(error.message || 'Failed to delete account');
+			console.error('Error deleting component:', error);
+			toast.error(error.message || 'Failed to delete component');
 		} finally {
 			isDeleting = false;
 		}
 	}
 
 	function handleBulkDelete() {
-		if (selectedAccounts.length === 0) {
-			toast.error('Please select at least one account to delete');
+		if (selectedComponents.length === 0) {
+			toast.error('Please select at least one component to delete');
 			return;
 		}
 		bulkDeleteDialogOpen = true;
@@ -127,18 +127,18 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedAccounts
-					.filter((account) => account.id !== null)
-					.map((account) => accountService.delete(account.id!))
+				selectedComponents
+					.filter((component) => component.id !== null)
+					.map((component) => componentService.delete(component.id!))
 			);
 
-			toast.success(`${selectedAccounts.length} account(s) deleted successfully`);
+			toast.success(`${selectedComponents.length} component(s) deleted successfully`);
 			bulkDeleteDialogOpen = false;
-			selectedAccounts = [];
-			loadAccounts();
+			selectedComponents = [];
+			loadComponents();
 		} catch (error: any) {
-			console.error('Error deleting accounts:', error);
-			toast.error(error.message || 'Failed to delete accounts');
+			console.error('Error deleting components:', error);
+			toast.error(error.message || 'Failed to delete components');
 		} finally {
 			isDeleting = false;
 		}
@@ -147,15 +147,15 @@
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
-		loadAccounts();
+		loadComponents();
 	}
 
 	function handleRefresh() {
-		loadAccounts();
+		loadComponents();
 	}
 
-	function handleSelectionChange(selected: Account[]) {
-		selectedAccounts = selected;
+	function handleSelectionChange(selected: Component[]) {
+		selectedComponents = selected;
 	}
 </script>
 
@@ -163,12 +163,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
-			<p class="text-muted-foreground">Manage your organization accounts</p>
+			<h1 class="text-3xl font-bold tracking-tight">Components</h1>
+			<p class="text-muted-foreground">Manage your organization components</p>
 		</div>
 		<Button onclick={handleCreate} class="gap-2">
 			<Plus class="h-4 w-4" />
-			New Account
+			New Component
 		</Button>
 	</div>
 
@@ -210,18 +210,18 @@
 				{/if}
 			</div>
 
-			{#if selectedAccounts.length > 0}
+			{#if selectedComponents.length > 0}
 				<Button variant="destructive" onclick={handleBulkDelete} class="gap-2">
 					<Trash2 class="h-4 w-4" />
-					Delete ({selectedAccounts.length})
+					Delete ({selectedComponents.length})
 				</Button>
 			{/if}
 		</div>
 	</div>
 
 	<!-- Table -->
-	<AccountTable
-		{accounts}
+	<ComponentTable
+		{components}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
 		onSelectionChange={handleSelectionChange}
@@ -239,13 +239,13 @@
 	/>
 </div>
 
-<!-- Delete Single Account Modal -->
+<!-- Delete Single Component Modal -->
 <AlertModal
 	bind:open={deleteDialogOpen}
 	type="confirm"
-	title="Delete Account"
-	description={accountToDelete
-		? `Are you sure you want to delete "${accountToDelete.code}"? This action cannot be undone.`
+	title="Delete Component"
+	description={componentToDelete
+		? `Are you sure you want to delete "${componentToDelete.code}"? This action cannot be undone.`
 		: ''}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
@@ -262,8 +262,8 @@
 <AlertModal
 	bind:open={bulkDeleteDialogOpen}
 	type="confirm"
-	title="Delete Multiple Accounts"
-	description={`Are you sure you want to delete ${selectedAccounts.length} account(s)? This action cannot be undone.`}
+	title="Delete Multiple Components"
+	description={`Are you sure you want to delete ${selectedComponents.length} component(s)? This action cannot be undone.`}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
 		{ label: isDeleting ? 'Deleting...' : 'Delete All', action: 'confirm', variant: 'destructive' }

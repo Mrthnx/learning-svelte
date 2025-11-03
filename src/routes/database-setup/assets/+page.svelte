@@ -3,20 +3,20 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { AccountTable } from '$lib/components/modules/accounts';
+	import { AssetTable } from '$lib/components/modules/assets';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { useDebounce } from '$lib/composables';
 	import {
-		accountService,
-		type Account,
+		assetService,
+		type Asset,
 		type PaginateResponse
-	} from '$lib/services/account.service';
+	} from '$lib/services/asset.service';
 
-	let accounts: Account[] = $state([]);
-	let selectedAccounts: Account[] = $state([]);
+	let assets: Asset[] = $state([]);
+	let selectedAssets: Asset[] = $state([]);
 	let filterCode = $state('');
 	let filterDescription = $state('');
 	let isLoading = $state(false);
@@ -31,17 +31,13 @@
 	// Modals
 	let deleteDialogOpen = $state(false);
 	let bulkDeleteDialogOpen = $state(false);
-	let accountToDelete: Account | null = $state(null);
+	let assetToDelete: Asset | null = $state(null);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// Initial load flag
 	let isInitialLoad = $state(true);
 
-	// Load accounts on mount
-	onMount(() => {
-		loadAccounts();
-	});
 	// Debounced search - auto-search when user stops typing
 	$effect(() => {
 		// Skip initial effect execution
@@ -52,7 +48,7 @@
 			{ filterCode, filterDescription },
 			() => {
 				currentPage = 1;
-				loadAccounts();
+				loadAssets();
 				isDebouncing = false;
 			},
 			500
@@ -61,63 +57,67 @@
 		return cleanup;
 	});
 
-	async function loadAccounts() {
+	onMount(() => {
+		loadAssets();
+	});
+
+	async function loadAssets() {
 		isLoading = true;
 		try {
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
-			const response: PaginateResponse<Account> = await accountService.getAll({
+			const response: PaginateResponse<Asset> = await assetService.getAll({
 				page: currentPage,
 				pageSize,
 				filters
 			});
 
-			accounts = response.rows;
+			assets = response.rows;
 			totalRecords = response.total;
 		} catch (error: any) {
-			console.error('Error loading accounts:', error);
-			toast.error(error.message || 'Failed to load accounts');
+			console.error('Error loading assets:', error);
+			toast.error(error.message || 'Failed to load assets');
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	function handleCreate() {
-		goto('/database-setup/accounts/create');
+		goto('/database-setup/assets/create');
 	}
 
-	function handleEdit(account: Account) {
-		goto(`/database-setup/accounts/edit/${account.id}`);
+	function handleEdit(asset: Asset) {
+		goto(`/database-setup/assets/edit/${asset.id}`);
 	}
 
-	function handleDelete(account: Account) {
-		accountToDelete = account;
+	function handleDelete(asset: Asset) {
+		assetToDelete = asset;
 		deleteDialogOpen = true;
 	}
 
 	async function confirmDelete() {
-		if (!accountToDelete?.id) return;
+		if (!assetToDelete?.id) return;
 
 		isDeleting = true;
 		try {
-			await accountService.delete(accountToDelete.id);
-			toast.success(`Account "${accountToDelete.code}" deleted successfully`);
+			await assetService.delete(assetToDelete.id);
+			toast.success(`Asset "${assetToDelete.code}" deleted successfully`);
 			deleteDialogOpen = false;
-			accountToDelete = null;
-			loadAccounts();
+			assetToDelete = null;
+			loadAssets();
 		} catch (error: any) {
-			console.error('Error deleting account:', error);
-			toast.error(error.message || 'Failed to delete account');
+			console.error('Error deleting asset:', error);
+			toast.error(error.message || 'Failed to delete asset');
 		} finally {
 			isDeleting = false;
 		}
 	}
 
 	function handleBulkDelete() {
-		if (selectedAccounts.length === 0) {
-			toast.error('Please select at least one account to delete');
+		if (selectedAssets.length === 0) {
+			toast.error('Please select at least one asset to delete');
 			return;
 		}
 		bulkDeleteDialogOpen = true;
@@ -127,18 +127,18 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedAccounts
-					.filter((account) => account.id !== null)
-					.map((account) => accountService.delete(account.id!))
+				selectedAssets
+					.filter((asset) => asset.id !== null)
+					.map((asset) => assetService.delete(asset.id!))
 			);
 
-			toast.success(`${selectedAccounts.length} account(s) deleted successfully`);
+			toast.success(`${selectedAssets.length} asset(s) deleted successfully`);
 			bulkDeleteDialogOpen = false;
-			selectedAccounts = [];
-			loadAccounts();
+			selectedAssets = [];
+			loadAssets();
 		} catch (error: any) {
-			console.error('Error deleting accounts:', error);
-			toast.error(error.message || 'Failed to delete accounts');
+			console.error('Error deleting assets:', error);
+			toast.error(error.message || 'Failed to delete assets');
 		} finally {
 			isDeleting = false;
 		}
@@ -147,15 +147,15 @@
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
-		loadAccounts();
+		loadAssets();
 	}
 
 	function handleRefresh() {
-		loadAccounts();
+		loadAssets();
 	}
 
-	function handleSelectionChange(selected: Account[]) {
-		selectedAccounts = selected;
+	function handleSelectionChange(selected: Asset[]) {
+		selectedAssets = selected;
 	}
 </script>
 
@@ -163,12 +163,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
-			<p class="text-muted-foreground">Manage your organization accounts</p>
+			<h1 class="text-3xl font-bold tracking-tight">Assets</h1>
+			<p class="text-muted-foreground">Manage your organization assets</p>
 		</div>
 		<Button onclick={handleCreate} class="gap-2">
 			<Plus class="h-4 w-4" />
-			New Account
+			New Asset
 		</Button>
 	</div>
 
@@ -210,18 +210,18 @@
 				{/if}
 			</div>
 
-			{#if selectedAccounts.length > 0}
+			{#if selectedAssets.length > 0}
 				<Button variant="destructive" onclick={handleBulkDelete} class="gap-2">
 					<Trash2 class="h-4 w-4" />
-					Delete ({selectedAccounts.length})
+					Delete ({selectedAssets.length})
 				</Button>
 			{/if}
 		</div>
 	</div>
 
 	<!-- Table -->
-	<AccountTable
-		{accounts}
+	<AssetTable
+		{assets}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
 		onSelectionChange={handleSelectionChange}
@@ -239,13 +239,13 @@
 	/>
 </div>
 
-<!-- Delete Single Account Modal -->
+<!-- Delete Single Asset Modal -->
 <AlertModal
 	bind:open={deleteDialogOpen}
 	type="confirm"
-	title="Delete Account"
-	description={accountToDelete
-		? `Are you sure you want to delete "${accountToDelete.code}"? This action cannot be undone.`
+	title="Delete Asset"
+	description={assetToDelete
+		? `Are you sure you want to delete "${assetToDelete.code}"? This action cannot be undone.`
 		: ''}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
@@ -262,8 +262,8 @@
 <AlertModal
 	bind:open={bulkDeleteDialogOpen}
 	type="confirm"
-	title="Delete Multiple Accounts"
-	description={`Are you sure you want to delete ${selectedAccounts.length} account(s)? This action cannot be undone.`}
+	title="Delete Multiple Assets"
+	description={`Are you sure you want to delete ${selectedAssets.length} asset(s)? This action cannot be undone.`}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
 		{ label: isDeleting ? 'Deleting...' : 'Delete All', action: 'confirm', variant: 'destructive' }

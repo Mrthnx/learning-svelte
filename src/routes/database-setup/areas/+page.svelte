@@ -3,20 +3,16 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { AccountTable } from '$lib/components/modules/accounts';
+	import { AreaTable } from '$lib/components/modules/areas';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { useDebounce } from '$lib/composables';
-	import {
-		accountService,
-		type Account,
-		type PaginateResponse
-	} from '$lib/services/account.service';
+	import { areaService, type Area, type PaginateResponse } from '$lib/services/area.service';
 
-	let accounts: Account[] = $state([]);
-	let selectedAccounts: Account[] = $state([]);
+	let areas: Area[] = $state([]);
+	let selectedAreas: Area[] = $state([]);
 	let filterCode = $state('');
 	let filterDescription = $state('');
 	let isLoading = $state(false);
@@ -31,17 +27,13 @@
 	// Modals
 	let deleteDialogOpen = $state(false);
 	let bulkDeleteDialogOpen = $state(false);
-	let accountToDelete: Account | null = $state(null);
+	let areaToDelete: Area | null = $state(null);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// Initial load flag
 	let isInitialLoad = $state(true);
 
-	// Load accounts on mount
-	onMount(() => {
-		loadAccounts();
-	});
 	// Debounced search - auto-search when user stops typing
 	$effect(() => {
 		// Skip initial effect execution
@@ -52,7 +44,7 @@
 			{ filterCode, filterDescription },
 			() => {
 				currentPage = 1;
-				loadAccounts();
+				loadAreas();
 				isDebouncing = false;
 			},
 			500
@@ -61,63 +53,66 @@
 		return cleanup;
 	});
 
-	async function loadAccounts() {
+	onMount(() => {
+		loadAreas();
+	});
+	async function loadAreas() {
 		isLoading = true;
 		try {
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
-			const response: PaginateResponse<Account> = await accountService.getAll({
+			const response: PaginateResponse<Area> = await areaService.getAll({
 				page: currentPage,
 				pageSize,
 				filters
 			});
 
-			accounts = response.rows;
+			areas = response.rows;
 			totalRecords = response.total;
 		} catch (error: any) {
-			console.error('Error loading accounts:', error);
-			toast.error(error.message || 'Failed to load accounts');
+			console.error('Error loading areas:', error);
+			toast.error(error.message || 'Failed to load areas');
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	function handleCreate() {
-		goto('/database-setup/accounts/create');
+		goto('/database-setup/areas/create');
 	}
 
-	function handleEdit(account: Account) {
-		goto(`/database-setup/accounts/edit/${account.id}`);
+	function handleEdit(area: Area) {
+		goto(`/database-setup/areas/edit/${area.id}`);
 	}
 
-	function handleDelete(account: Account) {
-		accountToDelete = account;
+	function handleDelete(area: Area) {
+		areaToDelete = area;
 		deleteDialogOpen = true;
 	}
 
 	async function confirmDelete() {
-		if (!accountToDelete?.id) return;
+		if (!areaToDelete?.id) return;
 
 		isDeleting = true;
 		try {
-			await accountService.delete(accountToDelete.id);
-			toast.success(`Account "${accountToDelete.code}" deleted successfully`);
+			await areaService.delete(areaToDelete.id);
+			toast.success(`Area "${areaToDelete.code}" deleted successfully`);
 			deleteDialogOpen = false;
-			accountToDelete = null;
-			loadAccounts();
+			areaToDelete = null;
+			loadAreas();
 		} catch (error: any) {
-			console.error('Error deleting account:', error);
-			toast.error(error.message || 'Failed to delete account');
+			console.error('Error deleting area:', error);
+			toast.error(error.message || 'Failed to delete area');
 		} finally {
 			isDeleting = false;
 		}
 	}
 
 	function handleBulkDelete() {
-		if (selectedAccounts.length === 0) {
-			toast.error('Please select at least one account to delete');
+		if (selectedAreas.length === 0) {
+			toast.error('Please select at least one area to delete');
 			return;
 		}
 		bulkDeleteDialogOpen = true;
@@ -127,18 +122,16 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedAccounts
-					.filter((account) => account.id !== null)
-					.map((account) => accountService.delete(account.id!))
+				selectedAreas.filter((area) => area.id !== null).map((area) => areaService.delete(area.id!))
 			);
 
-			toast.success(`${selectedAccounts.length} account(s) deleted successfully`);
+			toast.success(`${selectedAreas.length} area(s) deleted successfully`);
 			bulkDeleteDialogOpen = false;
-			selectedAccounts = [];
-			loadAccounts();
+			selectedAreas = [];
+			loadAreas();
 		} catch (error: any) {
-			console.error('Error deleting accounts:', error);
-			toast.error(error.message || 'Failed to delete accounts');
+			console.error('Error deleting areas:', error);
+			toast.error(error.message || 'Failed to delete areas');
 		} finally {
 			isDeleting = false;
 		}
@@ -147,15 +140,15 @@
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
-		loadAccounts();
+		loadAreas();
 	}
 
 	function handleRefresh() {
-		loadAccounts();
+		loadAreas();
 	}
 
-	function handleSelectionChange(selected: Account[]) {
-		selectedAccounts = selected;
+	function handleSelectionChange(selected: Area[]) {
+		selectedAreas = selected;
 	}
 </script>
 
@@ -163,12 +156,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
-			<p class="text-muted-foreground">Manage your organization accounts</p>
+			<h1 class="text-3xl font-bold tracking-tight">Areas</h1>
+			<p class="text-muted-foreground">Manage your organization areas</p>
 		</div>
 		<Button onclick={handleCreate} class="gap-2">
 			<Plus class="h-4 w-4" />
-			New Account
+			New Area
 		</Button>
 	</div>
 
@@ -210,18 +203,18 @@
 				{/if}
 			</div>
 
-			{#if selectedAccounts.length > 0}
+			{#if selectedAreas.length > 0}
 				<Button variant="destructive" onclick={handleBulkDelete} class="gap-2">
 					<Trash2 class="h-4 w-4" />
-					Delete ({selectedAccounts.length})
+					Delete ({selectedAreas.length})
 				</Button>
 			{/if}
 		</div>
 	</div>
 
 	<!-- Table -->
-	<AccountTable
-		{accounts}
+	<AreaTable
+		{areas}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
 		onSelectionChange={handleSelectionChange}
@@ -239,13 +232,13 @@
 	/>
 </div>
 
-<!-- Delete Single Account Modal -->
+<!-- Delete Single Area Modal -->
 <AlertModal
 	bind:open={deleteDialogOpen}
 	type="confirm"
-	title="Delete Account"
-	description={accountToDelete
-		? `Are you sure you want to delete "${accountToDelete.code}"? This action cannot be undone.`
+	title="Delete Area"
+	description={areaToDelete
+		? `Are you sure you want to delete "${areaToDelete.code}"? This action cannot be undone.`
 		: ''}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
@@ -262,8 +255,8 @@
 <AlertModal
 	bind:open={bulkDeleteDialogOpen}
 	type="confirm"
-	title="Delete Multiple Accounts"
-	description={`Are you sure you want to delete ${selectedAccounts.length} account(s)? This action cannot be undone.`}
+	title="Delete Multiple Areas"
+	description={`Are you sure you want to delete ${selectedAreas.length} area(s)? This action cannot be undone.`}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
 		{ label: isDeleting ? 'Deleting...' : 'Delete All', action: 'confirm', variant: 'destructive' }
@@ -274,3 +267,4 @@
 		}
 	}}
 />
+

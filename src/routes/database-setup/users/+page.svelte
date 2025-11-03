@@ -3,20 +3,21 @@
 	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { AccountTable } from '$lib/components/modules/accounts';
+	import { UserTable } from '$lib/components/modules/users';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { useDebounce } from '$lib/composables';
+	import { api } from '$lib/services/api';
 	import {
-		accountService,
-		type Account,
+		userService,
+		type User,
 		type PaginateResponse
-	} from '$lib/services/account.service';
+	} from '$lib/services/user.service';
 
-	let accounts: Account[] = $state([]);
-	let selectedAccounts: Account[] = $state([]);
+	let users: User[] = $state([]);
+	let selectedUsers: User[] = $state([]);
 	let filterCode = $state('');
 	let filterDescription = $state('');
 	let isLoading = $state(false);
@@ -31,17 +32,13 @@
 	// Modals
 	let deleteDialogOpen = $state(false);
 	let bulkDeleteDialogOpen = $state(false);
-	let accountToDelete: Account | null = $state(null);
+	let userToDelete: User | null = $state(null);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// Initial load flag
 	let isInitialLoad = $state(true);
 
-	// Load accounts on mount
-	onMount(() => {
-		loadAccounts();
-	});
 	// Debounced search - auto-search when user stops typing
 	$effect(() => {
 		// Skip initial effect execution
@@ -52,7 +49,7 @@
 			{ filterCode, filterDescription },
 			() => {
 				currentPage = 1;
-				loadAccounts();
+				loadUsers();
 				isDebouncing = false;
 			},
 			500
@@ -61,63 +58,68 @@
 		return cleanup;
 	});
 
-	async function loadAccounts() {
+	onMount(() => {
+		loadUsers();
+	});
+
+	async function loadUsers() {
 		isLoading = true;
 		try {
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
-			const response: PaginateResponse<Account> = await accountService.getAll({
+			const response: PaginateResponse<User> = await userService.getAll({
 				page: currentPage,
 				pageSize,
 				filters
 			});
 
-			accounts = response.rows;
-			totalRecords = response.total;
+		users = response.rows;
+		totalRecords = response.total;
+		console.log('Users loaded:', users.length, users);
 		} catch (error: any) {
-			console.error('Error loading accounts:', error);
-			toast.error(error.message || 'Failed to load accounts');
+			console.error('Error loading users:', error);
+			toast.error(error.message || 'Failed to load users');
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	function handleCreate() {
-		goto('/database-setup/accounts/create');
+		goto('/database-setup/users/create');
 	}
 
-	function handleEdit(account: Account) {
-		goto(`/database-setup/accounts/edit/${account.id}`);
+	function handleEdit(user: User) {
+		goto(`/database-setup/users/edit/${user.id}`);
 	}
 
-	function handleDelete(account: Account) {
-		accountToDelete = account;
+	function handleDelete(user: User) {
+		userToDelete = user;
 		deleteDialogOpen = true;
 	}
 
 	async function confirmDelete() {
-		if (!accountToDelete?.id) return;
+		if (!userToDelete?.id) return;
 
 		isDeleting = true;
 		try {
-			await accountService.delete(accountToDelete.id);
-			toast.success(`Account "${accountToDelete.code}" deleted successfully`);
+			await userService.delete(userToDelete.id);
+			toast.success(`User "${userToDelete.code}" deleted successfully`);
 			deleteDialogOpen = false;
-			accountToDelete = null;
-			loadAccounts();
+			userToDelete = null;
+			loadUsers();
 		} catch (error: any) {
-			console.error('Error deleting account:', error);
-			toast.error(error.message || 'Failed to delete account');
+			console.error('Error deleting user:', error);
+			toast.error(error.message || 'Failed to delete user');
 		} finally {
 			isDeleting = false;
 		}
 	}
 
 	function handleBulkDelete() {
-		if (selectedAccounts.length === 0) {
-			toast.error('Please select at least one account to delete');
+		if (selectedUsers.length === 0) {
+			toast.error('Please select at least one user to delete');
 			return;
 		}
 		bulkDeleteDialogOpen = true;
@@ -127,18 +129,18 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedAccounts
-					.filter((account) => account.id !== null)
-					.map((account) => accountService.delete(account.id!))
+				selectedUsers
+					.filter((user) => user.id !== null)
+					.map((user) => userService.delete(user.id!))
 			);
 
-			toast.success(`${selectedAccounts.length} account(s) deleted successfully`);
+			toast.success(`${selectedUsers.length} user(s) deleted successfully`);
 			bulkDeleteDialogOpen = false;
-			selectedAccounts = [];
-			loadAccounts();
+			selectedUsers = [];
+			loadUsers();
 		} catch (error: any) {
-			console.error('Error deleting accounts:', error);
-			toast.error(error.message || 'Failed to delete accounts');
+			console.error('Error deleting users:', error);
+			toast.error(error.message || 'Failed to delete users');
 		} finally {
 			isDeleting = false;
 		}
@@ -147,15 +149,31 @@
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
-		loadAccounts();
+		loadUsers();
 	}
 
 	function handleRefresh() {
-		loadAccounts();
+		loadUsers();
 	}
 
-	function handleSelectionChange(selected: Account[]) {
-		selectedAccounts = selected;
+	function handleSelectionChange(selected: User[]) {
+		selectedUsers = selected;
+	}
+
+	async function handleResetPassword(user: User) {
+		if (!user.id) return;
+		
+		if (!confirm(`Are you sure you want to reset the password for "${user.name} ${user.lastName}"?`)) {
+			return;
+		}
+
+		try {
+			await api.patch(`users/set-password/${user.id}`, {});
+			toast.success('Password reset successfully!');
+		} catch (error: any) {
+			console.error('Error resetting password:', error);
+			toast.error(error.message || 'Failed to reset password');
+		}
 	}
 </script>
 
@@ -163,12 +181,12 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
-			<p class="text-muted-foreground">Manage your organization accounts</p>
+			<h1 class="text-3xl font-bold tracking-tight">Users</h1>
+			<p class="text-muted-foreground">Manage your organization users</p>
 		</div>
 		<Button onclick={handleCreate} class="gap-2">
 			<Plus class="h-4 w-4" />
-			New Account
+			New User
 		</Button>
 	</div>
 
@@ -210,20 +228,21 @@
 				{/if}
 			</div>
 
-			{#if selectedAccounts.length > 0}
+			{#if selectedUsers.length > 0}
 				<Button variant="destructive" onclick={handleBulkDelete} class="gap-2">
 					<Trash2 class="h-4 w-4" />
-					Delete ({selectedAccounts.length})
+					Delete ({selectedUsers.length})
 				</Button>
 			{/if}
 		</div>
 	</div>
 
 	<!-- Table -->
-	<AccountTable
-		{accounts}
+	<UserTable
+		{users}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
+		onResetPassword={handleResetPassword}
 		onSelectionChange={handleSelectionChange}
 		selectable={true}
 	/>
@@ -239,13 +258,13 @@
 	/>
 </div>
 
-<!-- Delete Single Account Modal -->
+<!-- Delete Single User Modal -->
 <AlertModal
 	bind:open={deleteDialogOpen}
 	type="confirm"
-	title="Delete Account"
-	description={accountToDelete
-		? `Are you sure you want to delete "${accountToDelete.code}"? This action cannot be undone.`
+	title="Delete User"
+	description={userToDelete
+		? `Are you sure you want to delete "${userToDelete.code}"? This action cannot be undone.`
 		: ''}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
@@ -262,8 +281,8 @@
 <AlertModal
 	bind:open={bulkDeleteDialogOpen}
 	type="confirm"
-	title="Delete Multiple Accounts"
-	description={`Are you sure you want to delete ${selectedAccounts.length} account(s)? This action cannot be undone.`}
+	title="Delete Multiple Users"
+	description={`Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`}
 	buttons={[
 		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
 		{ label: isDeleting ? 'Deleting...' : 'Delete All', action: 'confirm', variant: 'destructive' }
