@@ -1,10 +1,12 @@
 <script lang="ts" generics="T">
 	import * as Table from '$lib/components/ui/table';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { cn } from '$lib/utils';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { MoreHorizontal } from 'lucide-svelte';
 	import type { ComponentType } from 'svelte';
 
 	interface Column<T> {
@@ -24,11 +26,16 @@
 		class?: string;
 	}
 
+	interface DropdownAction<T> {
+		label: string;
+		onClick: (item: T) => void;
+	}
 
 	interface Props<T> {
 		data: T[];
 		columns: Column<T>[];
 		actions?: Action<T>[];
+		dropdownActions?: DropdownAction<T>[];
 		selectable?: boolean;
 		onSelectionChange?: (selected: T[]) => void;
 		emptyMessage?: string;
@@ -39,6 +46,7 @@
 		data = [],
 		columns = [],
 		actions = [],
+		dropdownActions = [],
 		selectable = false,
 		onSelectionChange,
 		emptyMessage = 'No data available',
@@ -91,7 +99,7 @@
 						{column.label}
 					</Table.Head>
 				{/each}
-				{#if actions && actions.length > 0}
+				{#if (actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0)}
 					<Table.Head class="text-right">Actions</Table.Head>
 				{/if}
 			</Table.Row>
@@ -142,33 +150,51 @@
 								{/if}
 							</Table.Cell>
 						{/each}
-					{#if actions && actions.length > 0}
-						<Table.Cell class="text-right">
-							<Tooltip.Provider>
-								<div class="flex justify-end gap-2">
-									{#each actions as action (action.label)}
-										<Tooltip.Root>
-											<Tooltip.Trigger>
-												<Button
-													variant={action.variant || 'ghost'}
-													size="icon"
-													onclick={() => action.onClick(item)}
-													class={cn('h-8 w-8', action.class)}
-												>
-													{#if action.icon}
-														<svelte:component this={action.icon} class="h-4 w-4" />
-													{/if}
-												</Button>
-											</Tooltip.Trigger>
-											<Tooltip.Content>
-												<p>{action.label}</p>
-											</Tooltip.Content>
-										</Tooltip.Root>
-								{/each}
-							</div>
-						</Tooltip.Provider>
-					</Table.Cell>
-				{/if}
+						{#if (actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0)}
+							<Table.Cell class="text-right">
+								<Tooltip.Provider>
+									<div class="flex justify-end gap-2">
+										{#if actions && actions.length > 0}
+											{#each actions as action (action.label)}
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Button
+															variant={action.variant || 'ghost'}
+															size="icon"
+															onclick={() => action.onClick(item)}
+															class={cn('h-8 w-8', action.class)}
+														>
+															{#if action.icon}
+																<svelte:component this={action.icon} class="h-4 w-4" />
+															{/if}
+														</Button>
+													</Tooltip.Trigger>
+													<Tooltip.Content>
+														<p>{action.label}</p>
+													</Tooltip.Content>
+												</Tooltip.Root>
+											{/each}
+										{/if}
+										{#if dropdownActions && dropdownActions.length > 0}
+											<DropdownMenu.Root>
+												<DropdownMenu.Trigger>
+													<Button variant="ghost" size="icon" class="h-8 w-8">
+														<MoreHorizontal class="h-4 w-4" />
+													</Button>
+												</DropdownMenu.Trigger>
+												<DropdownMenu.Content align="end">
+													{#each dropdownActions as dropdownAction (dropdownAction.label)}
+														<DropdownMenu.Item onclick={() => dropdownAction.onClick(item)}>
+															{dropdownAction.label}
+														</DropdownMenu.Item>
+													{/each}
+												</DropdownMenu.Content>
+											</DropdownMenu.Root>
+										{/if}
+									</div>
+								</Tooltip.Provider>
+							</Table.Cell>
+						{/if}
 					</Table.Row>
 				{/each}
 			{/if}

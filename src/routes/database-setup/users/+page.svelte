@@ -10,11 +10,7 @@
 	import { toast } from 'svelte-sonner';
 	import { useDebounce } from '$lib/composables';
 	import { api } from '$lib/services/api';
-	import {
-		userService,
-		type User,
-		type PaginateResponse
-	} from '$lib/services/user.service';
+	import { userService, type User, type PaginateResponse } from '$lib/services/user.service';
 
 	let users: User[] = $state([]);
 	let selectedUsers: User[] = $state([]);
@@ -32,7 +28,10 @@
 	// Modals
 	let deleteDialogOpen = $state(false);
 	let bulkDeleteDialogOpen = $state(false);
+	let resetPasswordDialogOpen = $state(false);
 	let userToDelete: User | null = $state(null);
+	let userToResetPassword: User | null = $state(null);
+	let isResettingPassword = $state(false);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
@@ -75,9 +74,9 @@
 				filters
 			});
 
-		users = response.rows;
-		totalRecords = response.total;
-		console.log('Users loaded:', users.length, users);
+			users = response.rows;
+			totalRecords = response.total;
+			console.log('Users loaded:', users.length, users);
 		} catch (error: any) {
 			console.error('Error loading users:', error);
 			toast.error(error.message || 'Failed to load users');
@@ -129,9 +128,7 @@
 		isDeleting = true;
 		try {
 			await Promise.all(
-				selectedUsers
-					.filter((user) => user.id !== null)
-					.map((user) => userService.delete(user.id!))
+				selectedUsers.filter((user) => user.id !== null).map((user) => userService.delete(user.id!))
 			);
 
 			toast.success(`${selectedUsers.length} user(s) deleted successfully`);
@@ -160,19 +157,25 @@
 		selectedUsers = selected;
 	}
 
-	async function handleResetPassword(user: User) {
-		if (!user.id) return;
-		
-		if (!confirm(`Are you sure you want to reset the password for "${user.name} ${user.lastName}"?`)) {
-			return;
-		}
+	function handleResetPassword(user: User) {
+		userToResetPassword = user;
+		resetPasswordDialogOpen = true;
+	}
 
+	async function confirmResetPassword() {
+		if (!userToResetPassword?.id) return;
+
+		isResettingPassword = true;
 		try {
-			await api.patch(`users/set-password/${user.id}`, {});
+			await api.patch(`users/set-password/${userToResetPassword.id}`, {});
 			toast.success('Password reset successfully!');
+			resetPasswordDialogOpen = false;
+			userToResetPassword = null;
 		} catch (error: any) {
 			console.error('Error resetting password:', error);
 			toast.error(error.message || 'Failed to reset password');
+		} finally {
+			isResettingPassword = false;
 		}
 	}
 </script>
@@ -290,6 +293,29 @@
 	onAction={(action) => {
 		if (action === 'confirm') {
 			confirmBulkDelete();
+		}
+	}}
+/>
+
+<!-- Reset Password Modal -->
+<AlertModal
+	bind:open={resetPasswordDialogOpen}
+	type="warning"
+	title="Reset Password"
+	description={userToResetPassword
+		? `Are you sure you want to reset the password for "${userToResetPassword.name} email: ${userToResetPassword.email}"? A new password will be generated and sent to the user.`
+		: ''}
+	buttons={[
+		{ label: 'Cancel', action: 'cancel', variant: 'outline' },
+		{
+			label: isResettingPassword ? 'Resetting...' : 'Reset Password',
+			action: 'confirm',
+			variant: 'default'
+		}
+	]}
+	onAction={(action) => {
+		if (action === 'confirm') {
+			confirmResetPassword();
 		}
 	}}
 />

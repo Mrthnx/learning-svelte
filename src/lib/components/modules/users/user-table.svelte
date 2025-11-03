@@ -13,14 +13,21 @@
 		selectable?: boolean;
 	}
 
-	let { users, onEdit, onDelete, onResetPassword, onSelectionChange, selectable = false }: Props = $props();
+	let {
+		users,
+		onEdit,
+		onDelete,
+		onResetPassword,
+		onSelectionChange,
+		selectable = false
+	}: Props = $props();
 
 	// Role colors based on role code
 	function getRoleColor(roleCode?: string): string {
 		if (!roleCode) return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
-		
+
 		const code = roleCode.toLowerCase();
-		
+
 		// Super Admin
 		if (code.includes('super')) {
 			return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
@@ -53,7 +60,7 @@
 			}
 			return 'bg-orange-50 text-orange-700 hover:bg-orange-50';
 		}
-		
+
 		return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
 	}
 
@@ -96,23 +103,24 @@
 			label: 'Phone',
 			render: (user: User) => user.phone || '-'
 		},
-	{
-		key: 'hierarchy',
-		label: 'Hierarchy',
-		render: (user: User) => {
-			const parts = [];
-			if (user.account?.code) parts.push(user.account.code);
-			if (user.plant?.code) parts.push(user.plant.code);
-			if (user.area?.code) parts.push(user.area.code);
-			if (user.system?.code) parts.push(user.system.code);
-			return parts.length > 0 ? parts.join(' > ') : '-';
+		{
+			key: 'hierarchy',
+			label: 'Hierarchy',
+			render: (user: User) => {
+				const parts = [];
+				if (user.account?.code) parts.push(user.account.code);
+				if (user.plant?.code) parts.push(user.plant.code);
+				if (user.area?.code) parts.push(user.area.code);
+				if (user.system?.code) parts.push(user.system.code);
+				return parts.length > 0 ? parts.join(' > ') : '-';
+			}
+		},
+		{
+			key: 'role',
+			label: 'Role',
+			render: (user: User) => user.role?.name || user.role?.code || '-',
+			class: 'text-primary'
 		}
-	},
-	{
-		key: 'role',
-		label: 'Role',
-		render: (user: User) => user.role?.description || user.role?.code || '-'
-	}
 	];
 
 	const actions = [
@@ -130,12 +138,21 @@
 		}
 	];
 
+	const dropdownActions = onResetPassword
+		? [
+				{
+					label: 'Reset Password',
+					onClick: onResetPassword
+				}
+			]
+		: [];
 </script>
 
 <Table
 	data={users}
 	{columns}
 	{actions}
+	{dropdownActions}
 	{selectable}
 	{onSelectionChange}
 	emptyMessage="No users found. Create your first user to get started."
