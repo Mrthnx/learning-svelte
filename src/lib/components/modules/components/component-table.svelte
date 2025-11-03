@@ -15,11 +15,6 @@
 
 	const columns = [
 		{
-			key: 'id',
-			label: 'ID',
-			class: 'w-16'
-		},
-		{
 			key: 'mawoi',
 			label: 'Asset',
 			render: (component: Component) => component.mawoi?.code || '-',

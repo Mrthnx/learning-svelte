@@ -15,11 +15,6 @@
 
 	const columns = [
 		{
-			key: 'id',
-			label: 'ID',
-			class: 'w-16'
-		},
-		{
 			key: 'system',
 			label: 'System',
 			render: (asset: Asset) => asset.system?.code || '-',

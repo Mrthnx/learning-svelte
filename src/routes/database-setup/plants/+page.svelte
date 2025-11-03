@@ -8,7 +8,6 @@
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { useDebounce } from '$lib/composables';
 	import { plantService, type Plant, type PaginateResponse } from '$lib/services/plant.service';
 
 	let plants: Plant[] = $state([]);
@@ -17,7 +16,6 @@
 	let filterDescription = $state('');
 	let isLoading = $state(false);
 	let isDeleting = $state(false);
-	let isDebouncing = $state(false);
 
 	// Pagination
 	let currentPage = $state(1);
@@ -31,30 +29,9 @@
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
-	// Initial load flag
-	let isInitialLoad = $state(true);
-
 	// Load plants on mount
 	onMount(() => {
 		loadPlants();
-	});
-	// Debounced search - auto-search when user stops typing
-	$effect(() => {
-		// Skip initial effect execution
-		if (isInitialLoad) return;
-
-		isDebouncing = true;
-		const cleanup = useDebounce(
-			{ filterCode, filterDescription },
-			() => {
-				currentPage = 1;
-				loadPlants();
-				isDebouncing = false;
-			},
-			500
-		);
-
-		return cleanup;
 	});
 
 	async function loadPlants() {
@@ -70,13 +47,24 @@
 				filters
 			});
 
-			plants = response.rows;
-			totalRecords = response.total;
-		} catch (error: any) {
-			console.error('Error loading plants:', error);
-			toast.error(error.message || 'Failed to load plants');
-		} finally {
+		plants = response.rows;
+		totalRecords = response.total;
+	} catch (error: any) {
+		console.error('Error loading plants:', error);
+		toast.error(error.message || 'Failed to load plants');
+	} finally {
 			isLoading = false;
+		}
+	}
+
+	function handleSearch() {
+		currentPage = 1;
+		loadPlants();
+	}
+
+	function handleKeyPress(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			handleSearch();
 		}
 	}
 
@@ -177,8 +165,9 @@
 				<Input
 					id="filter-code"
 					type="text"
-					placeholder="Enter code..."
+					placeholder="Enter code and press Enter..."
 					bind:value={filterCode}
+					onkeypress={handleKeyPress}
 					disabled={isLoading}
 				/>
 			</div>
@@ -187,8 +176,9 @@
 				<Input
 					id="filter-description"
 					type="text"
-					placeholder="Enter description..."
+					placeholder="Enter description and press Enter..."
 					bind:value={filterDescription}
+					onkeypress={handleKeyPress}
 					disabled={isLoading}
 				/>
 			</div>
@@ -201,9 +191,9 @@
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					Reload
 				</Button>
-				{#if isDebouncing && (filterCode || filterDescription)}
-					<span class="text-sm text-muted-foreground">Searching...</span>
-				{/if}
+				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">
+					Search
+				</Button>
 			</div>
 
 			{#if selectedPlants.length > 0}

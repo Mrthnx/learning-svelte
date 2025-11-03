@@ -82,11 +82,6 @@
 
 	const columns = [
 		{
-			key: 'id',
-			label: 'ID',
-			class: 'w-16'
-		},
-		{
 			key: 'name',
 			label: 'Name',
 			class: 'font-medium',

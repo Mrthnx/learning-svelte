@@ -32,11 +32,6 @@
 
 	const columns = [
 		{
-			key: 'id',
-			label: 'ID',
-			class: 'w-16'
-		},
-		{
 			key: 'account',
 			label: 'Account',
 			render: (plant: Plant) => plant.account?.code || '-',

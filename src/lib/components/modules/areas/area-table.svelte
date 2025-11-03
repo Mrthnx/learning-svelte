@@ -15,11 +15,6 @@
 
 	const columns = [
 		{
-			key: 'id',
-			label: 'ID',
-			class: 'w-16'
-		},
-		{
 			key: 'plant',
 			label: 'Plant',
 			render: (area: Area) => area.plant?.code || '-',
