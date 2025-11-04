@@ -1,6 +1,11 @@
 import { api } from './api';
 import { createApiUrl } from '../shared';
-import type { PaginateResponse, PaginateRequest, ApiResponse, PaginateData } from './account.service';
+import type {
+	PaginateResponse,
+	PaginateRequest,
+	ApiResponse,
+	PaginateData
+} from './account.service';
 
 export interface RolePermission {
 	id: number;
@@ -13,11 +18,8 @@ export interface Role {
 	id?: number | null;
 	code?: string;
 	description?: string;
-	permissions?: number[];
-}
-
-export interface RoleWithPermissions extends Role {
-	permissions?: RolePermission[];
+	name?: string;
+	level?: number;
 }
 
 export const roleService = {

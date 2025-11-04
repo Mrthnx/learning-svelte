@@ -20,9 +20,19 @@
 		onDelete: (account: Account) => void;
 		onSelectionChange?: (selected: Account[]) => void;
 		selectable?: boolean;
+		hideActions?: boolean;
+		onRowDoubleClick?: (account: Account) => void;
 	}
 
-	let { accounts, onEdit, onDelete, onSelectionChange, selectable = false }: Props = $props();
+	let {
+		accounts,
+		onEdit,
+		onDelete,
+		onSelectionChange,
+		selectable = false,
+		hideActions = false,
+		onRowDoubleClick
+	}: Props = $props();
 
 	const columns = [
 		{
@@ -103,5 +113,7 @@
 	{actions}
 	{selectable}
 	{onSelectionChange}
+	{hideActions}
+	{onRowDoubleClick}
 	emptyMessage="No accounts found. Create your first account to get started."
 />

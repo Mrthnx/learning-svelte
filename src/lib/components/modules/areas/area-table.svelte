@@ -9,9 +9,19 @@
 		onDelete: (area: Area) => void;
 		onSelectionChange?: (selected: Area[]) => void;
 		selectable?: boolean;
+		hideActions?: boolean;
+		onRowDoubleClick?: (area: Area) => void;
 	}
 
-	let { areas, onEdit, onDelete, onSelectionChange, selectable = false }: Props = $props();
+	let {
+		areas,
+		onEdit,
+		onDelete,
+		onSelectionChange,
+		selectable = false,
+		hideActions = false,
+		onRowDoubleClick
+	}: Props = $props();
 
 	const columns = [
 		{
@@ -96,5 +106,7 @@
 	{actions}
 	{selectable}
 	{onSelectionChange}
+	{hideActions}
+	{onRowDoubleClick}
 	emptyMessage="No areas found. Create your first area to get started."
 />

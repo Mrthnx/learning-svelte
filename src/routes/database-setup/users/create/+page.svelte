@@ -6,6 +6,13 @@
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { UserForm } from '$lib/components/modules/users';
 	import { userService, type User } from '$lib/services/user.service';
+	import type { PageData } from './$types';
+
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let showSuccessDialog = $state(false);
 	let createdUserCode = $state('');
@@ -43,7 +50,7 @@
 		<p class="text-muted-foreground">Add a new user to the system</p>
 	</div>
 
-	<UserForm onSubmit={handleSubmit} onCancel={handleCancel} />
+	<UserForm onSubmit={handleSubmit} onCancel={handleCancel} availableRoles={data.roles} />
 </div>
 
 <!-- Success Dialog -->

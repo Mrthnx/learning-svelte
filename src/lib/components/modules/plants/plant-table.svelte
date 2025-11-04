@@ -26,9 +26,19 @@
 		onDelete: (plant: Plant) => void;
 		onSelectionChange?: (selected: Plant[]) => void;
 		selectable?: boolean;
+		hideActions?: boolean;
+		onRowDoubleClick?: (plant: Plant) => void;
 	}
 
-	let { plants, onEdit, onDelete, onSelectionChange, selectable = false }: Props = $props();
+	let {
+		plants,
+		onEdit,
+		onDelete,
+		onSelectionChange,
+		selectable = false,
+		hideActions = false,
+		onRowDoubleClick
+	}: Props = $props();
 
 	const columns = [
 		{
@@ -121,5 +131,7 @@
 	{actions}
 	{selectable}
 	{onSelectionChange}
+	{hideActions}
+	{onRowDoubleClick}
 	emptyMessage="No plants found. Create your first plant to get started."
 />

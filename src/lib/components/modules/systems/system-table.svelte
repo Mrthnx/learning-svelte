@@ -9,9 +9,19 @@
 		onDelete: (system: System) => void;
 		onSelectionChange?: (selected: System[]) => void;
 		selectable?: boolean;
+		hideActions?: boolean;
+		onRowDoubleClick?: (system: System) => void;
 	}
 
-	let { systems, onEdit, onDelete, onSelectionChange, selectable = false }: Props = $props();
+	let {
+		systems,
+		onEdit,
+		onDelete,
+		onSelectionChange,
+		selectable = false,
+		hideActions = false,
+		onRowDoubleClick
+	}: Props = $props();
 
 	const columns = [
 		{
@@ -96,5 +106,7 @@
 	{actions}
 	{selectable}
 	{onSelectionChange}
+	{hideActions}
+	{onRowDoubleClick}
 	emptyMessage="No systems found. Create your first system to get started."
 />

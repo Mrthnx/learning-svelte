@@ -8,6 +8,13 @@
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { UserForm } from '$lib/components/modules/users';
 	import { userService, type User } from '$lib/services/user.service';
+	import type { PageData } from './$types';
+
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	let user: User | null = $state(null);
 	let isLoading = $state(true);
@@ -66,7 +73,13 @@
 			<div class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
 		</div>
 	{:else if user}
-		<UserForm user={user} onSubmit={handleSubmit} onCancel={handleCancel} isEdit={true} />
+		<UserForm
+			user={user}
+			onSubmit={handleSubmit}
+			onCancel={handleCancel}
+			isEdit={true}
+			availableRoles={data.roles}
+		/>
 	{/if}
 </div>
 

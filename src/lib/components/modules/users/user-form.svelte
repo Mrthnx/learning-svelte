@@ -6,16 +6,19 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Save, X } from 'lucide-svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AccountModalTable from '../accounts/account-modal-table.svelte';
+	import PlantModalTable from '../plants/plant-modal-table.svelte';
+	import AreaModalTable from '../areas/area-modal-table.svelte';
+	import SystemModalTable from '../systems/system-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { accountService, type Account } from '$lib/services/account.service';
-	import { roleService, type Role } from '$lib/services/role.service';
-	import {
-		isRequired,
-		isValidEmail,
-		isValidPhone,
-		validationMessages
-	} from '$lib/shared';
+	import { type Account } from '$lib/services/account.service';
+	import { type Plant } from '$lib/services/plant.service';
+	import { type Area } from '$lib/services/area.service';
+	import { type System } from '$lib/services/system.service';
+	import { type Role } from '$lib/services/role.service';
+	import { isRequired, isValidEmail, isValidPhone, validationMessages } from '$lib/shared';
 
 	interface User {
 		id?: number | null;
@@ -34,6 +37,21 @@
 			code?: string;
 			description?: string;
 		};
+		plant?: {
+			id?: number;
+			code?: string;
+			description?: string;
+		};
+		area?: {
+			id?: number;
+			code?: string;
+			description?: string;
+		};
+		system?: {
+			id?: number;
+			code?: string;
+			description?: string;
+		};
 		role?: {
 			id?: number;
 			code?: string;
@@ -48,6 +66,7 @@
 		isEdit?: boolean;
 		isLoading?: boolean;
 		enableUnsavedWarning?: boolean;
+		availableRoles?: Role[];
 	}
 
 	let {
@@ -56,7 +75,8 @@
 		onCancel,
 		isEdit = false,
 		isLoading = false,
-		enableUnsavedWarning = true
+		enableUnsavedWarning = true,
+		availableRoles = []
 	}: Props = $props();
 
 	let formData = $state<User>({
@@ -72,6 +92,9 @@
 		notifyEmail: user?.notifyEmail ?? false,
 		language: user?.language ?? 'en',
 		account: user?.account,
+		plant: user?.plant,
+		area: user?.area,
+		system: user?.system,
 		role: user?.role
 	});
 
@@ -79,13 +102,35 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let accounts: Account[] = $state([]);
-	let roles: Role[] = $state([]);
-	let selectedAccount = $state<{ value: string; label: string } | undefined>(
-		user?.account ? { value: user.account.id!.toString(), label: user.account.code || '' } : undefined
-	);
-	let selectedRole = $state<{ value: string; label: string } | undefined>(
-		user?.role ? { value: user.role.id!.toString(), label: user.role.code || '' } : undefined
+	let roles = $state<Role[]>(availableRoles);
+
+	// SearchInput values
+	let accountSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: user?.account?.id ?? null,
+		description: user?.account?.description || '',
+		readonly: false
+	});
+	let plantSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: user?.plant?.id ?? null,
+		description: user?.plant?.description || '',
+		readonly: false
+	});
+	let areaSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: user?.area?.id ?? null,
+		description: user?.area?.description || '',
+		readonly: false
+	});
+	let systemSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: user?.system?.id ?? null,
+		description: user?.system?.description || '',
+		readonly: false
+	});
+
+	// Role selection
+	let selectedRoleValue = $state(user?.role?.id?.toString() || '');
+
+	const selectedRoleTriggerContent = $derived(
+		roles.find((r) => r.id?.toString() === selectedRoleValue)?.name || 'Select a role'
 	);
 
 	const isDirty = $derived(
@@ -100,7 +145,10 @@
 			formData.language !== originalData.language ||
 			formData.image !== originalData.image ||
 			formData.account?.id !== originalData.account?.id ||
-			formData.role?.id !== originalData.role?.id ||
+			formData.plant?.id !== originalData.plant?.id ||
+			formData.area?.id !== originalData.area?.id ||
+			formData.system?.id !== originalData.system?.id ||
+			selectedRoleValue !== (originalData.role?.id?.toString() || '') ||
 			imageFile !== null
 	);
 
@@ -108,30 +156,10 @@
 		useUnsavedChanges(() => isDirty);
 	}
 
+	// Update roles when availableRoles prop changes
 	$effect(() => {
-		loadAccounts();
-		loadRoles();
+		roles = availableRoles;
 	});
-
-	async function loadAccounts() {
-		try {
-			const response = await accountService.getAll({ pageSize: 100 });
-			accounts = response.rows;
-		} catch (error) {
-			console.error('Error loading accounts:', error);
-			toast.error('Failed to load accounts');
-		}
-	}
-
-	async function loadRoles() {
-		try {
-			const response = await roleService.getAll({ pageSize: 100 });
-			roles = response.rows;
-		} catch (error) {
-			console.error('Error loading roles:', error);
-			toast.error('Failed to load roles');
-		}
-	}
 
 	function validateForm(): boolean {
 		errors = {};
@@ -150,7 +178,7 @@
 			errors.email = validationMessages.invalidEmail;
 		}
 
-		if (!selectedAccount?.value) {
+		if (!accountSearchValue.id) {
 			errors.account = validationMessages.required('Account');
 		}
 
@@ -168,22 +196,44 @@
 			return;
 		}
 
-		const selectedAccountData = accounts.find(acc => acc.id?.toString() === selectedAccount?.value);
-		if (selectedAccountData) {
+		if (accountSearchValue.id) {
 			formData.account = {
-				id: selectedAccountData.id!,
-				code: selectedAccountData.code,
-				description: selectedAccountData.description
+				id: accountSearchValue.id,
+				description: accountSearchValue.description
 			};
 		}
 
-		const selectedRoleData = roles.find(r => r.id?.toString() === selectedRole?.value);
-		if (selectedRoleData) {
-			formData.role = {
-				id: selectedRoleData.id!,
-				code: selectedRoleData.code,
-				description: selectedRoleData.description
+		if (plantSearchValue.id) {
+			formData.plant = {
+				id: plantSearchValue.id,
+				description: plantSearchValue.description
 			};
+		}
+
+		if (areaSearchValue.id) {
+			formData.area = {
+				id: areaSearchValue.id,
+				description: areaSearchValue.description
+			};
+		}
+
+		if (systemSearchValue.id) {
+			formData.system = {
+				id: systemSearchValue.id,
+				description: systemSearchValue.description
+			};
+		}
+
+		// Set role if selected
+		if (selectedRoleValue) {
+			const selectedRoleData = roles.find((r) => r.id?.toString() === selectedRoleValue);
+			if (selectedRoleData) {
+				formData.role = {
+					id: selectedRoleData.id!,
+					code: selectedRoleData.code,
+					description: selectedRoleData.description
+				};
+			}
 		}
 
 		isSubmitting = true;
@@ -214,12 +264,39 @@
 		toast.error(event.detail.message);
 	}
 
-	function handleAccountSelect(value: { value: string; label: string } | undefined) {
-		selectedAccount = value;
+	function handleAccountSelect(account: Account) {
+		accountSearchValue = {
+			id: account.id ?? null,
+			description: account.description || '',
+			readonly: false
+		};
+		if (errors.account) {
+			delete errors.account;
+		}
 	}
 
-	function handleRoleSelect(value: { value: string; label: string } | undefined) {
-		selectedRole = value;
+	function handlePlantSelect(plant: Plant) {
+		plantSearchValue = {
+			id: plant.id ?? null,
+			description: plant.description || '',
+			readonly: false
+		};
+	}
+
+	function handleAreaSelect(area: Area) {
+		areaSearchValue = {
+			id: area.id ?? null,
+			description: area.description || '',
+			readonly: false
+		};
+	}
+
+	function handleSystemSelect(system: System) {
+		systemSearchValue = {
+			id: system.id ?? null,
+			description: system.description || '',
+			readonly: false
+		};
 	}
 </script>
 
@@ -234,43 +311,85 @@
 		<form onsubmit={handleSubmit} class="space-y-6">
 			<div class="grid gap-6 lg:grid-cols-2">
 				<div class="space-y-6">
-					<!-- Account Selection -->
+					<!-- Role Selection -->
 					<div class="space-y-2">
-						<label for="account" class="text-sm font-medium">
-							Account <span class="text-destructive">*</span>
-						</label>
-						<Select.Root onSelectedChange={handleAccountSelect} selected={selectedAccount}>
-							<Select.Trigger class={errors.account ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select an account" />
+						<label for="role" class="text-sm font-medium">Role</label>
+						<Select.Root type="single" name="role" bind:value={selectedRoleValue}>
+							<Select.Trigger class="w-full" disabled={isSubmitting || isLoading}>
+								{selectedRoleTriggerContent}
 							</Select.Trigger>
 							<Select.Content>
-								{#each accounts as account}
-									<Select.Item value={account.id?.toString() || ''}>
-										{account.code} - {account.description}
-									</Select.Item>
-								{/each}
+								<Select.Group>
+									<Select.Label>Roles</Select.Label>
+									{#each roles as role (role.id)}
+										<Select.Item value={role.id?.toString() || ''} label={role.description || ''}>
+											{role.name}
+										</Select.Item>
+									{/each}
+								</Select.Group>
 							</Select.Content>
 						</Select.Root>
+					</div>
+
+					<!-- Account Selection -->
+					<div class="space-y-2">
+						<label class="text-sm font-medium">
+							Account <span class="text-destructive">*</span>
+						</label>
+						<SearchInput
+							bind:value={accountSearchValue}
+							placeholder="Select account..."
+							width="w-full"
+							modalTitle="Search Account"
+							modalDescription="Search and select an account. Double-click to select."
+							modalContent={AccountModalTable}
+							modalContentProps={{ onselect: handleAccountSelect }}
+						/>
 						{#if errors.account}
 							<p class="text-sm text-destructive">{errors.account}</p>
 						{/if}
 					</div>
 
-					<!-- Role Selection -->
+					<!-- Plant Selection -->
 					<div class="space-y-2">
-						<label for="role" class="text-sm font-medium">Role</label>
-						<Select.Root onSelectedChange={handleRoleSelect} selected={selectedRole}>
-							<Select.Trigger>
-								<Select.Value placeholder="Select a role" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each roles as role}
-									<Select.Item value={role.id?.toString() || ''}>
-										{role.code} - {role.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
+						<label class="text-sm font-medium">Plant</label>
+						<SearchInput
+							bind:value={plantSearchValue}
+							placeholder="Select plant..."
+							width="w-full"
+							modalTitle="Search Plant"
+							modalDescription="Search and select a plant. Double-click to select."
+							modalContent={PlantModalTable}
+							modalContentProps={{ onselect: handlePlantSelect }}
+						/>
+					</div>
+
+					<!-- Area Selection -->
+					<div class="space-y-2">
+						<label class="text-sm font-medium">Area</label>
+						<SearchInput
+							bind:value={areaSearchValue}
+							placeholder="Select area..."
+							width="w-full"
+							modalTitle="Search Area"
+							modalDescription="Search and select an area. Double-click to select."
+							modalContent={AreaModalTable}
+							modalContentProps={{ onselect: handleAreaSelect }}
+						/>
+					</div>
+
+					<!-- System Selection -->
+					<div class="space-y-2">
+						<label class="text-sm font-medium">System</label>
+						<SearchInput
+							bind:value={systemSearchValue}
+							placeholder="Select system..."
+							width="w-full"
+							modalTitle="Search System"
+							modalDescription="Search and select a system. Double-click to select."
+							modalContent={SystemModalTable}
+							modalContentProps={{ onselect: handleSystemSelect }}
+						/>
 					</div>
 
 					<!-- Name -->
@@ -379,7 +498,7 @@
 						/>
 						<label
 							for="active"
-							class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 						>
 							Active User
 						</label>
@@ -411,7 +530,7 @@
 								/>
 								<label
 									for="notifyWhatsapp"
-									class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 								>
 									Notify via WhatsApp
 								</label>
@@ -428,7 +547,7 @@
 								/>
 								<label
 									for="notifyEmail"
-									class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 								>
 									Notify via Email
 								</label>

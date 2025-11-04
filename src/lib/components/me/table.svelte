@@ -40,6 +40,8 @@
 		onSelectionChange?: (selected: T[]) => void;
 		emptyMessage?: string;
 		class?: string;
+		hideActions?: boolean;
+		onRowDoubleClick?: (item: T) => void;
 	}
 
 	let {
@@ -50,7 +52,9 @@
 		selectable = false,
 		onSelectionChange,
 		emptyMessage = 'No data available',
-		class: className
+		class: className,
+		hideActions = false,
+		onRowDoubleClick
 	}: Props<T> = $props();
 
 	let selectedItems = new SvelteSet<T>();
@@ -99,7 +103,7 @@
 						{column.label}
 					</Table.Head>
 				{/each}
-				{#if (actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0)}
+				{#if !hideActions && ((actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0))}
 					<Table.Head class="text-right">Actions</Table.Head>
 				{/if}
 			</Table.Row>
@@ -132,7 +136,10 @@
 				</Table.Row>
 			{:else}
 				{#each data as item, index ((item as any).id ?? index)}
-					<Table.Row>
+					<Table.Row
+						class={onRowDoubleClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+						ondblclick={() => onRowDoubleClick?.(item)}
+					>
 						{#if selectable}
 							<Table.Cell>
 								<Checkbox
@@ -150,7 +157,7 @@
 								{/if}
 							</Table.Cell>
 						{/each}
-						{#if (actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0)}
+						{#if !hideActions && ((actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0))}
 							<Table.Cell class="text-right">
 								<Tooltip.Provider>
 									<div class="flex justify-end gap-2">
