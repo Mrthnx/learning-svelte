@@ -216,28 +216,6 @@
 			<div class="grid gap-6 lg:grid-cols-2">
 				<!-- Left Column -->
 				<div class="space-y-6">
-					<!-- Account Selection -->
-					<div class="space-y-2">
-						<label for="account" class="text-sm font-medium">
-							Account <span class="text-destructive">*</span>
-						</label>
-						<Select.Root onSelectedChange={handleAccountSelect} selected={selectedAccount}>
-							<Select.Trigger class={errors.account ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select an account" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each accounts as account}
-									<Select.Item value={account.id?.toString() || ''}>
-										{account.code} - {account.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-						{#if errors.account}
-							<p class="text-sm text-destructive">{errors.account}</p>
-						{/if}
-					</div>
-
 					<!-- Code -->
 					<div class="space-y-2">
 						<label for="code" class="text-sm font-medium">
@@ -263,11 +241,10 @@
 						<label for="description" class="text-sm font-medium">
 							Description <span class="text-destructive">*</span>
 						</label>
-						<Textarea
+						<Input
 							id="description"
 							bind:value={formData.description}
 							placeholder="Enter plant description"
-							rows={4}
 							disabled={isSubmitting || isLoading}
 							class={errors.description ? 'border-destructive' : ''}
 							oninput={() => {
@@ -276,6 +253,28 @@
 						/>
 						{#if errors.description}
 							<p class="text-sm text-destructive">{errors.description}</p>
+						{/if}
+					</div>
+
+					<!-- Account Selection -->
+					<div class="space-y-2">
+						<label for="account" class="text-sm font-medium">
+							Account <span class="text-destructive">*</span>
+						</label>
+						<Select.Root onSelectedChange={handleAccountSelect} selected={selectedAccount}>
+							<Select.Trigger class={errors.account ? 'border-destructive' : ''}>
+								<Select.Value placeholder="Select an account" />
+							</Select.Trigger>
+							<Select.Content>
+								{#each accounts as account}
+									<Select.Item value={account.id?.toString() || ''}>
+										{account.code} - {account.description}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						{#if errors.account}
+							<p class="text-sm text-destructive">{errors.account}</p>
 						{/if}
 					</div>
 

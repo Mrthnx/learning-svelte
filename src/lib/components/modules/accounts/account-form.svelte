@@ -192,11 +192,10 @@
 						<label for="description" class="text-sm font-medium">
 							Description <span class="text-destructive">*</span>
 						</label>
-						<Textarea
+						<Input
 							id="description"
 							bind:value={formData.description}
 							placeholder="Enter account description"
-							rows={4}
 							disabled={isSubmitting || isLoading}
 							class={errors.description ? 'border-destructive' : ''}
 							oninput={() => {

@@ -209,28 +209,6 @@
 		<form onsubmit={handleSubmit} class="space-y-6">
 			<div class="grid gap-6 lg:grid-cols-2">
 				<div class="space-y-6">
-					<!-- Plant Selection -->
-					<div class="space-y-2">
-						<label for="plant" class="text-sm font-medium">
-							Plant <span class="text-destructive">*</span>
-						</label>
-						<Select.Root onSelectedChange={handlePlantSelect} selected={selectedPlant}>
-							<Select.Trigger class={errors.plant ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select a plant" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each plants as plant}
-									<Select.Item value={plant.id?.toString() || ''}>
-										{plant.code} - {plant.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-						{#if errors.plant}
-							<p class="text-sm text-destructive">{errors.plant}</p>
-						{/if}
-					</div>
-
 					<!-- Code -->
 					<div class="space-y-2">
 						<label for="code" class="text-sm font-medium">
@@ -256,11 +234,10 @@
 						<label for="description" class="text-sm font-medium">
 							Description <span class="text-destructive">*</span>
 						</label>
-						<Textarea
+						<Input
 							id="description"
 							bind:value={formData.description}
 							placeholder="Enter area description"
-							rows={4}
 							disabled={isSubmitting || isLoading}
 							class={errors.description ? 'border-destructive' : ''}
 							oninput={() => {
@@ -269,6 +246,28 @@
 						/>
 						{#if errors.description}
 							<p class="text-sm text-destructive">{errors.description}</p>
+						{/if}
+					</div>
+
+					<!-- Plant Selection -->
+					<div class="space-y-2">
+						<label for="plant" class="text-sm font-medium">
+							Plant <span class="text-destructive">*</span>
+						</label>
+						<Select.Root onSelectedChange={handlePlantSelect} selected={selectedPlant}>
+							<Select.Trigger class={errors.plant ? 'border-destructive' : ''}>
+								<Select.Value placeholder="Select a plant" />
+							</Select.Trigger>
+							<Select.Content>
+								{#each plants as plant}
+									<Select.Item value={plant.id?.toString() || ''}>
+										{plant.code} - {plant.description}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						{#if errors.plant}
+							<p class="text-sm text-destructive">{errors.plant}</p>
 						{/if}
 					</div>
 

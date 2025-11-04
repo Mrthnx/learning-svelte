@@ -394,9 +394,13 @@
 		<form onsubmit={handleSubmit} class="space-y-4 sm:space-y-6">
 			<div class="grid gap-4 sm:gap-6 lg:grid-cols-2">
 				<div class="space-y-4 sm:space-y-6">
-					<!-- Role Selection -->
-					<div class="space-y-2">
-						<label for="role" class="text-sm font-medium">Role</label>
+					<!-- Role & Hierarchy Section -->
+					<div class="rounded-lg border p-4 space-y-4">
+						<h3 class="text-sm font-semibold">Role & Organization</h3>
+						
+						<!-- Role Selection -->
+						<div class="space-y-2">
+							<label for="role" class="text-sm font-medium">Role</label>
 						<Select.Root type="single" name="role" bind:value={selectedRoleValue}>
 							<Select.Trigger class="w-full" disabled={isSubmitting || isLoading}>
 								{selectedRoleTriggerContent}
@@ -411,238 +415,257 @@
 									{/each}
 								</Select.Group>
 							</Select.Content>
-						</Select.Root>
-					</div>
-
-					<!-- Account Selection -->
-					{#if showAccount}
-						<div class="space-y-2">
-							<label class="text-sm font-medium">
-								Account <span class="text-destructive">*</span>
-							</label>
-							<SearchInput
-								bind:value={accountSearchValue}
-								placeholder="Select account..."
-								width="w-full"
-								modalTitle="Search Account"
-								modalDescription="Search and select an account."
-								modalContent={AccountModalTable}
-								modalContentProps={{ onselect: handleAccountSelect }}
-							/>
-							{#if errors.account}
-								<p class="text-sm text-destructive">{errors.account}</p>
-							{/if}
+							</Select.Root>
 						</div>
-					{/if}
 
-					<!-- Plant Selection -->
-					{#if showPlant}
-						<div class="space-y-2">
-							<label class="text-sm font-medium">
-								Plant <span class="text-destructive">*</span>
-							</label>
-							<SearchInput
-								bind:value={plantSearchValue}
-								placeholder="Select plant..."
-								width="w-full"
-								modalTitle="Search Plant"
-								modalDescription="Search and select a plant."
-								modalContent={PlantModalTable}
-								modalContentProps={{ onselect: handlePlantSelect }}
-							/>
-							{#if errors.plant}
-								<p class="text-sm text-destructive">{errors.plant}</p>
-							{/if}
-						</div>
-					{/if}
+						<!-- Account Selection -->
+						{#if showAccount}
+							<div class="space-y-2">
+								<label class="text-sm font-medium">
+									Account <span class="text-destructive">*</span>
+								</label>
+								<SearchInput
+									bind:value={accountSearchValue}
+									placeholder="Select account..."
+									width="w-full"
+									modalTitle="Search Account"
+									modalDescription="Search and select an account."
+									modalContent={AccountModalTable}
+									modalContentProps={{ onselect: handleAccountSelect }}
+								/>
+								{#if errors.account}
+									<p class="text-sm text-destructive">{errors.account}</p>
+								{/if}
+							</div>
+						{/if}
 
-					<!-- Area Selection -->
-					{#if showArea}
-						<div class="space-y-2">
-							<label class="text-sm font-medium">
-								Area <span class="text-destructive">*</span>
-							</label>
-							<SearchInput
-								bind:value={areaSearchValue}
-								placeholder="Select area..."
-								width="w-full"
-								modalTitle="Search Area"
-								modalDescription="Search and select an area."
-								modalContent={AreaModalTable}
-								modalContentProps={{ onselect: handleAreaSelect }}
-							/>
-							{#if errors.area}
-								<p class="text-sm text-destructive">{errors.area}</p>
-							{/if}
-						</div>
-					{/if}
+						<!-- Plant Selection -->
+						{#if showPlant}
+							<div class="space-y-2">
+								<label class="text-sm font-medium">
+									Plant <span class="text-destructive">*</span>
+								</label>
+								<SearchInput
+									bind:value={plantSearchValue}
+									placeholder="Select plant..."
+									width="w-full"
+									modalTitle="Search Plant"
+									modalDescription="Search and select a plant."
+									modalContent={PlantModalTable}
+									modalContentProps={{ onselect: handlePlantSelect }}
+								/>
+								{#if errors.plant}
+									<p class="text-sm text-destructive">{errors.plant}</p>
+								{/if}
+							</div>
+						{/if}
 
-					<!-- System Selection -->
-					{#if showSystem}
-						<div class="space-y-2">
-							<label class="text-sm font-medium">
-								System <span class="text-destructive">*</span>
-							</label>
-							<SearchInput
-								bind:value={systemSearchValue}
-								placeholder="Select system..."
-								width="w-full"
-								modalTitle="Search System"
-								modalDescription="Search and select a system."
-								modalContent={SystemModalTable}
-								modalContentProps={{ onselect: handleSystemSelect }}
-							/>
-							{#if errors.system}
-								<p class="text-sm text-destructive">{errors.system}</p>
-							{/if}
-						</div>
-					{/if}
+						<!-- Area Selection -->
+						{#if showArea}
+							<div class="space-y-2">
+								<label class="text-sm font-medium">
+									Area <span class="text-destructive">*</span>
+								</label>
+								<SearchInput
+									bind:value={areaSearchValue}
+									placeholder="Select area..."
+									width="w-full"
+									modalTitle="Search Area"
+									modalDescription="Search and select an area."
+									modalContent={AreaModalTable}
+									modalContentProps={{ onselect: handleAreaSelect }}
+								/>
+								{#if errors.area}
+									<p class="text-sm text-destructive">{errors.area}</p>
+								{/if}
+							</div>
+						{/if}
 
-					<!-- Code -->
-					<div class="space-y-2">
-						<label for="code" class="text-sm font-medium">Code</label>
-						<Input
-							id="code"
-							bind:value={formData.code}
-							placeholder="User code"
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
-					<!-- Name -->
-					<div class="space-y-2">
-						<label for="name" class="text-sm font-medium">
-							Name <span class="text-destructive">*</span>
-						</label>
-						<Input
-							id="name"
-							bind:value={formData.name}
-							placeholder="Enter full name"
-							disabled={isSubmitting || isLoading}
-							class={errors.name ? 'border-destructive' : ''}
-							oninput={() => {
-								if (errors.name) validateForm();
-							}}
-						/>
-						{#if errors.name}
-							<p class="text-sm text-destructive">{errors.name}</p>
+						<!-- System Selection -->
+						{#if showSystem}
+							<div class="space-y-2">
+								<label class="text-sm font-medium">
+									System <span class="text-destructive">*</span>
+								</label>
+								<SearchInput
+									bind:value={systemSearchValue}
+									placeholder="Select system..."
+									width="w-full"
+									modalTitle="Search System"
+									modalDescription="Search and select a system."
+									modalContent={SystemModalTable}
+									modalContentProps={{ onselect: handleSystemSelect }}
+								/>
+								{#if errors.system}
+									<p class="text-sm text-destructive">{errors.system}</p>
+								{/if}
+							</div>
 						{/if}
 					</div>
 
-					<!-- Email -->
-					<div class="space-y-2">
-						<label for="email" class="text-sm font-medium">
-							Email <span class="text-destructive">*</span>
-						</label>
-						<Input
-							id="email"
-							type="email"
-							bind:value={formData.email}
-							placeholder="user@example.com"
-							disabled={isSubmitting || isLoading}
-							class={errors.email ? 'border-destructive' : ''}
-							oninput={() => {
-								if (errors.email) validateForm();
-							}}
-						/>
-						{#if errors.email}
-							<p class="text-sm text-destructive">{errors.email}</p>
-						{/if}
-					</div>
-
-					<!-- Country -->
-					<CountryAutocomplete
-						bind:value={countryValue}
-						label="Country"
-						placeholder="Select country"
-						disabled={isSubmitting || isLoading}
-					/>
-
-					<!-- City -->
-					<div class="space-y-2">
-						<label for="city" class="text-sm font-medium">City</label>
-						<Input
-							id="city"
-							bind:value={formData.city}
-							placeholder="Enter city"
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
-
-					<!-- Province -->
-					<div class="space-y-2">
-						<label for="province" class="text-sm font-medium">Province/State</label>
-						<Input
-							id="province"
-							bind:value={formData.province}
-							placeholder="Enter province or state"
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
-
-					<!-- Address -->
-					<div class="space-y-2">
-						<label for="address" class="text-sm font-medium">Address</label>
-						<Input
-							id="address"
-							bind:value={formData.address}
-							placeholder="Enter address"
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
-
-					<!-- Zip -->
-					<div class="space-y-2">
-						<label for="zip" class="text-sm font-medium">Zip Code</label>
-						<Input
-							id="zip"
-							bind:value={formData.zip}
-							placeholder="Enter zip code"
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
-
-					<!-- Phone Code and Number -->
-					<div class="space-y-2">
-						<label class="text-sm font-medium">Phone</label>
-						<div class="grid grid-cols-[140px_1fr] gap-2">
-								<PhoneCodeAutocomplete
-								bind:value={phoneCode}
-								placeholder="Code"
-								disabled={isSubmitting || isLoading}
-							/>
+					<!-- Basic Information -->
+					<div class="rounded-lg border p-4 space-y-4">
+						<h3 class="text-sm font-semibold">Basic Information</h3>
+						
+						<!-- Code -->
+						<div class="space-y-2">
+							<label for="code" class="text-sm font-medium">Code</label>
 							<Input
-								id="phone"
-								type="tel"
-								bind:value={formData.phone}
-								placeholder="234 567 8900"
+								id="code"
+								bind:value={formData.code}
+								placeholder="User code"
 								disabled={isSubmitting || isLoading}
-								class={errors.phone ? 'border-destructive' : ''}
+							/>
+						</div>
+
+						<!-- Description -->
+						<div class="space-y-2">
+							<label for="description" class="text-sm font-medium">Description</label>
+							<Input
+								id="description"
+								bind:value={formData.description}
+								placeholder="User description"
+								disabled={isSubmitting || isLoading}
+							/>
+						</div>
+
+						<!-- Name -->
+						<div class="space-y-2">
+							<label for="name" class="text-sm font-medium">
+								Name <span class="text-destructive">*</span>
+							</label>
+							<Input
+								id="name"
+								bind:value={formData.name}
+								placeholder="Enter full name"
+								disabled={isSubmitting || isLoading}
+								class={errors.name ? 'border-destructive' : ''}
 								oninput={() => {
-									if (errors.phone) validateForm();
+									if (errors.name) validateForm();
 								}}
 							/>
+							{#if errors.name}
+								<p class="text-sm text-destructive">{errors.name}</p>
+							{/if}
 						</div>
-						{#if errors.phone}
-							<p class="text-sm text-destructive">{errors.phone}</p>
-						{/if}
+
+						<!-- Email -->
+						<div class="space-y-2">
+							<label for="email" class="text-sm font-medium">
+								Email <span class="text-destructive">*</span>
+							</label>
+							<Input
+								id="email"
+								type="email"
+								bind:value={formData.email}
+								placeholder="user@example.com"
+								disabled={isSubmitting || isLoading}
+								class={errors.email ? 'border-destructive' : ''}
+								oninput={() => {
+									if (errors.email) validateForm();
+								}}
+							/>
+							{#if errors.email}
+								<p class="text-sm text-destructive">{errors.email}</p>
+							{/if}
+						</div>
 					</div>
 
-					<!-- Description -->
-					<div class="space-y-2">
-						<label for="description" class="text-sm font-medium">Description</label>
-						<Input
-							id="description"
-							bind:value={formData.description}
-							placeholder="User description"
+					<!-- Contact Information -->
+					<div class="rounded-lg border p-4 space-y-4">
+						<h3 class="text-sm font-semibold">Contact Information</h3>
+						
+						<!-- Phone Code and Number -->
+						<div class="space-y-2">
+							<label class="text-sm font-medium">Phone</label>
+							<div class="grid grid-cols-[140px_1fr] gap-2">
+									<PhoneCodeAutocomplete
+									bind:value={phoneCode}
+									placeholder="Code"
+									disabled={isSubmitting || isLoading}
+								/>
+								<Input
+									id="phone"
+									type="tel"
+									bind:value={formData.phone}
+									placeholder="234 567 8900"
+									disabled={isSubmitting || isLoading}
+									class={errors.phone ? 'border-destructive' : ''}
+									oninput={() => {
+										if (errors.phone) validateForm();
+									}}
+								/>
+							</div>
+							{#if errors.phone}
+								<p class="text-sm text-destructive">{errors.phone}</p>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Address Information -->
+					<div class="rounded-lg border p-4 space-y-4">
+						<h3 class="text-sm font-semibold">Address</h3>
+						
+						<!-- Country -->
+						<CountryAutocomplete
+							bind:value={countryValue}
+							label="Country"
+							placeholder="Select country"
 							disabled={isSubmitting || isLoading}
 						/>
+
+						<!-- City & Province in same row -->
+						<div class="grid gap-4 sm:grid-cols-2">
+							<div class="space-y-2">
+								<label for="city" class="text-sm font-medium">City</label>
+								<Input
+									id="city"
+									bind:value={formData.city}
+									placeholder="Enter city"
+									disabled={isSubmitting || isLoading}
+								/>
+							</div>
+							<div class="space-y-2">
+								<label for="province" class="text-sm font-medium">Province/State</label>
+								<Input
+									id="province"
+									bind:value={formData.province}
+									placeholder="Enter province or state"
+									disabled={isSubmitting || isLoading}
+								/>
+							</div>
+						</div>
+
+						<!-- Address -->
+						<div class="space-y-2">
+							<label for="address" class="text-sm font-medium">Address</label>
+							<Input
+								id="address"
+								bind:value={formData.address}
+								placeholder="Enter address"
+								disabled={isSubmitting || isLoading}
+							/>
+						</div>
+
+						<div class="space-y-2">
+							<label for="zip" class="text-sm font-medium">Zip Code</label>
+							<Input
+								id="zip"
+								bind:value={formData.zip}
+								placeholder="Enter zip code"
+								disabled={isSubmitting || isLoading}
+							/>
+						</div>
 					</div>
 				</div>
 
 				<!-- Right Column -->
 				<div class="space-y-4 sm:space-y-6">
-					<!-- Status Toggles -->
-					<div class="flex items-center space-x-2">
+					<!-- Settings -->
+					<div class="rounded-lg border p-4 space-y-4">
+						<h3 class="text-sm font-semibold">Account Settings</h3>
+						
+						<div class="flex items-center space-x-2">
 						<Checkbox
 							id="isBlocked"
 							checked={formData.isBlocked}
@@ -672,11 +695,16 @@
 							for="twoFactorAuth"
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 						>
-							Two Factor Authentication
-						</label>
+								Two Factor Authentication
+							</label>
+						</div>
 					</div>
 
-					<!-- Language -->
+					<!-- Language & Preferences -->
+					<div class="rounded-lg border p-4 space-y-4">
+						<h3 class="text-sm font-semibold">Preferences</h3>
+						
+						<!-- Language -->
 					<LanguageAutocomplete
 						bind:value={languageCode}
 						label="Language"

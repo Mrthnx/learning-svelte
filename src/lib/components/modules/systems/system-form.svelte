@@ -209,28 +209,6 @@
 		<form onsubmit={handleSubmit} class="space-y-6">
 			<div class="grid gap-6 lg:grid-cols-2">
 				<div class="space-y-6">
-					<!-- Area Selection -->
-					<div class="space-y-2">
-						<label for="area" class="text-sm font-medium">
-							Area <span class="text-destructive">*</span>
-						</label>
-						<Select.Root onSelectedChange={handleAreaSelect} selected={selectedArea}>
-							<Select.Trigger class={errors.area ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select an area" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each areas as area}
-									<Select.Item value={area.id?.toString() || ''}>
-										{area.code} - {area.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-						{#if errors.area}
-							<p class="text-sm text-destructive">{errors.area}</p>
-						{/if}
-					</div>
-
 					<!-- Code -->
 					<div class="space-y-2">
 						<label for="code" class="text-sm font-medium">
@@ -256,11 +234,10 @@
 						<label for="description" class="text-sm font-medium">
 							Description <span class="text-destructive">*</span>
 						</label>
-						<Textarea
+						<Input
 							id="description"
 							bind:value={formData.description}
 							placeholder="Enter system description"
-							rows={4}
 							disabled={isSubmitting || isLoading}
 							class={errors.description ? 'border-destructive' : ''}
 							oninput={() => {
@@ -269,6 +246,28 @@
 						/>
 						{#if errors.description}
 							<p class="text-sm text-destructive">{errors.description}</p>
+						{/if}
+					</div>
+
+					<!-- Area Selection -->
+					<div class="space-y-2">
+						<label for="area" class="text-sm font-medium">
+							Area <span class="text-destructive">*</span>
+						</label>
+						<Select.Root onSelectedChange={handleAreaSelect} selected={selectedArea}>
+							<Select.Trigger class={errors.area ? 'border-destructive' : ''}>
+								<Select.Value placeholder="Select an area" />
+							</Select.Trigger>
+							<Select.Content>
+								{#each areas as area}
+									<Select.Item value={area.id?.toString() || ''}>
+										{area.code} - {area.description}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						{#if errors.area}
+							<p class="text-sm text-destructive">{errors.area}</p>
 						{/if}
 					</div>
 
