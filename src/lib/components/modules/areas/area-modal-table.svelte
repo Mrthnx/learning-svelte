@@ -49,7 +49,7 @@
 		);
 	}
 
-	function handleRowDoubleClick(area: Area) {
+	function handleRowClick(area: Area) {
 		onselect?.(area);
 	}
 
@@ -84,7 +84,7 @@
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}
-				onRowDoubleClick={handleRowDoubleClick}
+				onRowClick={handleRowClick}
 			/>
 		</div>
 	{/if}

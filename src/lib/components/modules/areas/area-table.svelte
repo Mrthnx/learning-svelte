@@ -11,6 +11,7 @@
 		selectable?: boolean;
 		hideActions?: boolean;
 		onRowDoubleClick?: (area: Area) => void;
+		onRowClick?: (area: Area) => void;
 	}
 
 	let {
@@ -20,7 +21,8 @@
 		onSelectionChange,
 		selectable = false,
 		hideActions = false,
-		onRowDoubleClick
+		onRowDoubleClick,
+		onRowClick
 	}: Props = $props();
 
 	const columns = [
@@ -108,5 +110,6 @@
 	{onSelectionChange}
 	{hideActions}
 	{onRowDoubleClick}
+	{onRowClick}
 	emptyMessage="No areas found. Create your first area to get started."
 />

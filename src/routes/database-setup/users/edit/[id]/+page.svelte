@@ -58,14 +58,16 @@
 	}
 </script>
 
-<div class="container mx-auto max-w-6xl p-6">
-	<div class="mb-6">
-		<Button variant="ghost" onclick={handleCancel} class="mb-4 gap-2">
+<div class="container mx-auto max-w-6xl p-4 sm:p-6">
+	<div class="mb-4 space-y-3 sm:mb-6 sm:space-y-4">
+		<Button variant="ghost" onclick={handleCancel} size="sm" class="gap-2">
 			<ArrowLeft class="h-4 w-4" />
-			Back to Users
+			<span class="sm:inline">Back to Users</span>
 		</Button>
-		<h1 class="text-3xl font-bold">Edit User</h1>
-		<p class="text-muted-foreground">Update the user information</p>
+		<div>
+			<h1 class="text-2xl font-bold sm:text-3xl">Edit User</h1>
+			<p class="text-sm text-muted-foreground sm:text-base">Update the user information</p>
+		</div>
 	</div>
 
 	{#if isLoading}

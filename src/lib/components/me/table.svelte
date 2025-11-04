@@ -42,6 +42,7 @@
 		class?: string;
 		hideActions?: boolean;
 		onRowDoubleClick?: (item: T) => void;
+		onRowClick?: (item: T) => void;
 	}
 
 	let {
@@ -54,7 +55,8 @@
 		emptyMessage = 'No data available',
 		class: className,
 		hideActions = false,
-		onRowDoubleClick
+		onRowDoubleClick,
+		onRowClick
 	}: Props<T> = $props();
 
 	let selectedItems = new SvelteSet<T>();
@@ -89,8 +91,31 @@
 	}
 </script>
 
-<div class={cn('w-full overflow-auto rounded-lg border shadow-sm', className)}>
-	<Table.Root>
+<div class="relative">
+	<!-- Scroll hint for mobile -->
+	{#if data.length > 0}
+		<div
+			class="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-8 items-center justify-end bg-gradient-to-l from-background to-transparent opacity-100 transition-opacity md:opacity-0"
+			aria-hidden="true"
+		>
+			<svg
+				class="h-4 w-4 animate-pulse text-muted-foreground"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M9 5l7 7-7 7"
+				/>
+			</svg>
+		</div>
+	{/if}
+	<div class={cn('w-full overflow-auto rounded-lg border shadow-sm', className)}>
+		<Table.Root>
 		<Table.Header>
 			<Table.Row class="border-b">
 				{#if selectable}
@@ -137,8 +162,9 @@
 			{:else}
 				{#each data as item, index ((item as any).id ?? index)}
 					<Table.Row
-						class={onRowDoubleClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+						class={(onRowDoubleClick || onRowClick) ? 'cursor-pointer hover:bg-muted/50' : ''}
 						ondblclick={() => onRowDoubleClick?.(item)}
+						onclick={() => onRowClick?.(item)}
 					>
 						{#if selectable}
 							<Table.Cell>
@@ -207,6 +233,7 @@
 			{/if}
 		</Table.Body>
 	</Table.Root>
+	</div>
 </div>
 
 {#if selectable && selectedItems.size > 0}

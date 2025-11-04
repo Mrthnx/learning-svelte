@@ -22,6 +22,7 @@
 		selectable?: boolean;
 		hideActions?: boolean;
 		onRowDoubleClick?: (account: Account) => void;
+		onRowClick?: (account: Account) => void;
 	}
 
 	let {
@@ -31,7 +32,8 @@
 		onSelectionChange,
 		selectable = false,
 		hideActions = false,
-		onRowDoubleClick
+		onRowDoubleClick,
+		onRowClick
 	}: Props = $props();
 
 	const columns = [
@@ -115,5 +117,6 @@
 	{onSelectionChange}
 	{hideActions}
 	{onRowDoubleClick}
+	{onRowClick}
 	emptyMessage="No accounts found. Create your first account to get started."
 />

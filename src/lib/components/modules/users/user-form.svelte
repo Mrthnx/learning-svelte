@@ -308,9 +308,9 @@
 		</Card.CardDescription>
 	</Card.CardHeader>
 	<Card.CardContent>
-		<form onsubmit={handleSubmit} class="space-y-6">
-			<div class="grid gap-6 lg:grid-cols-2">
-				<div class="space-y-6">
+		<form onsubmit={handleSubmit} class="space-y-4 sm:space-y-6">
+			<div class="grid gap-4 sm:gap-6 lg:grid-cols-2">
+				<div class="space-y-4 sm:space-y-6">
 					<!-- Role Selection -->
 					<div class="space-y-2">
 						<label for="role" class="text-sm font-medium">Role</label>
@@ -485,7 +485,7 @@
 				</div>
 
 				<!-- Right Column -->
-				<div class="space-y-6">
+				<div class="space-y-4 sm:space-y-6">
 					<!-- Active Status -->
 					<div class="flex items-center space-x-2">
 						<Checkbox

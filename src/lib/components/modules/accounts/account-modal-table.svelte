@@ -52,7 +52,7 @@
 		);
 	}
 
-	function handleRowDoubleClick(account: Account) {
+	function handleRowClick(account: Account) {
 		onselect?.(account);
 	}
 
@@ -81,13 +81,13 @@
 			></div>
 		</div>
 	{:else}
-		<div class="rounded-md border">
+		<div class="rounded-md border max-h-[60vh] overflow-auto">
 			<AccountTable
 				accounts={filteredAccounts}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}
-				onRowDoubleClick={handleRowDoubleClick}
+				onRowClick={handleRowClick}
 			/>
 		</div>
 	{/if}

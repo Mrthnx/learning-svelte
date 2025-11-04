@@ -17,3 +17,4 @@ export { default as SidebarMobile } from './sidebar-mobile.svelte';
 export { default as Sidebar } from './sidebar.svelte';
 export { default as Table } from './table.svelte';
 export { default as Pagination } from './pagination.svelte';
+export { default as PageHeader } from './page-header.svelte';

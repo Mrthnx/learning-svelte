@@ -259,8 +259,8 @@
 	});
 </script>
 
-<div class="p-4">
-	<div class="mb-4 flex items-center justify-between">
+<div class="p-2 sm:p-4">
+	<div class="mb-3 flex flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="flex items-center gap-2">
 			<MapPin class="h-5 w-5 text-primary" />
 			<span class="text-sm font-medium">Select Location</span>
@@ -270,17 +270,18 @@
 				<button
 					type="button"
 					onclick={getCurrentLocation}
-					class="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md"
+					class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md sm:flex-none sm:gap-2 sm:text-sm"
 				>
-					<Crosshair class="h-4 w-4" />
-					My Location
+					<Crosshair class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+					<span class="hidden sm:inline">My Location</span>
+					<span class="sm:hidden">Location</span>
 				</button>
 				<button
 					type="button"
 					onclick={resetLocation}
-					class="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:bg-muted/80"
+					class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm transition-all hover:bg-muted/80 sm:flex-none sm:gap-2 sm:text-sm"
 				>
-					<RotateCcw class="h-4 w-4" />
+					<RotateCcw class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 					Reset
 				</button>
 			</div>
@@ -293,7 +294,7 @@
 			class="w-full overflow-hidden rounded-lg border shadow-md {disabled
 				? 'pointer-events-none opacity-75'
 				: ''}"
-			style="height: {height}"
+			style="height: min(calc(100vh - 400px), {height}); min-height: 250px;"
 		></div>
 
 		{#if !isMapReady}
@@ -310,17 +311,17 @@
 		{/if}
 	</div>
 
-	<div class="mt-3 space-y-1 text-sm text-muted-foreground">
+	<div class="mt-2 space-y-1.5 text-xs text-muted-foreground sm:mt-3 sm:space-y-2 sm:text-sm">
 		{#if !disabled}
-			<p class="font-medium">Click on the map or drag the marker to select a location</p>
+			<p class="font-medium text-xs sm:text-sm">Click on the map or drag the marker to select a location</p>
 		{/if}
-		<p class="font-mono text-xs">
+		<p class="font-mono text-[10px] sm:text-xs">
 			Coordinates: <span class="font-semibold text-foreground"
 				>{(+latitude).toFixed(6)}, {(+longitude).toFixed(6)}</span
 			>
 		</p>
 		{#if showAddress}
-			<div class="rounded-lg bg-muted/50 p-3 text-xs">
+			<div class="rounded-lg bg-muted/50 p-2 text-[10px] sm:p-3 sm:text-xs">
 				{#if isLoadingAddress}
 					<div class="flex items-center gap-2">
 						<div
@@ -331,7 +332,7 @@
 				{:else if address}
 					<div>
 						<p class="mb-1 font-medium text-foreground">Address:</p>
-						<p class="text-muted-foreground">{address}</p>
+						<p class="break-words text-muted-foreground">{address}</p>
 					</div>
 				{:else if latitude !== 0 || longitude !== 0}
 					<p class="text-muted-foreground">No address available</p>

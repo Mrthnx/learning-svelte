@@ -105,12 +105,12 @@
 	</div>
 
 	<Dialog.Root bind:open={isModalOpen} onOpenChange={closeModal}>
-		<Dialog.Content class="min-w-[70dvw]">
+		<Dialog.Content class="w-[95vw] max-w-4xl sm:w-[90vw] md:min-w-[70dvw]">
 			<Dialog.Header>
-				<Dialog.Title>{modalTitle}</Dialog.Title>
-				<Dialog.Description>{modalDescription}</Dialog.Description>
+				<Dialog.Title class="text-base sm:text-lg">{modalTitle}</Dialog.Title>
+				<Dialog.Description class="text-sm">{modalDescription}</Dialog.Description>
 			</Dialog.Header>
-			<div class="max-h-[60vh] overflow-x-hidden overflow-y-auto py-6 pr-4">
+			<div class="max-h-[60vh] overflow-x-hidden overflow-y-auto py-4 pr-2 sm:py-6 sm:pr-4">
 				{#if modalContent}
 					<svelte:component this={modalContent} {...wrappedModalContentProps} />
 				{:else}

@@ -22,7 +22,7 @@
 	<Sidebar />
 
 	<main class="md:ml-20">
-		<div class="p-4 sm:p-6 md:p-8">
+		<div class="p-3 sm:p-6 md:p-8">
 			<!-- <DynamicBreadcrumb /> -->
 			<slot />
 		</div>

@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { AccountTable } from '$lib/components/modules/accounts';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
-	import { Pagination } from '$lib/components/me';
+	import { Pagination, PageHeader } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import {
@@ -147,61 +147,73 @@
 	}
 </script>
 
-<div class="container mx-auto space-y-6 p-6">
+<div class="container mx-auto space-y-4 p-4 sm:space-y-6 sm:p-6">
 	<!-- Header -->
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Accounts</h1>
-			<p class="text-muted-foreground">Manage your organization accounts</p>
-		</div>
-		<Button onclick={handleCreate} class="gap-2">
-			<Plus class="h-4 w-4" />
-			New Account
-		</Button>
-	</div>
+	<PageHeader
+		title="Accounts"
+		description="Manage your organization accounts"
+		actionLabel="New Account"
+		actionIcon={Plus}
+		onAction={handleCreate}
+	/>
 
 	<!-- Search and Actions -->
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-3 sm:gap-4">
 		<!-- Filters -->
-		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			<div class="space-y-2">
-				<label for="filter-code" class="text-sm font-medium">Filter by Code</label>
+		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<div class="space-y-1.5">
+				<label for="filter-code" class="text-xs font-medium sm:text-sm">Filter by Code</label>
 				<Input
 					id="filter-code"
 					type="text"
-					placeholder="Enter code and press Enter..."
+					placeholder="Code..."
 					bind:value={filterCode}
 					onkeypress={handleKeyPress}
 					disabled={isLoading}
+					class="h-9 sm:h-10"
 				/>
 			</div>
-			<div class="space-y-2">
-				<label for="filter-description" class="text-sm font-medium">Filter by Description</label>
+			<div class="space-y-1.5">
+				<label for="filter-description" class="text-xs font-medium sm:text-sm"
+					>Filter by Description</label
+				>
 				<Input
 					id="filter-description"
 					type="text"
-					placeholder="Enter description and press Enter..."
+					placeholder="Description..."
 					bind:value={filterDescription}
 					onkeypress={handleKeyPress}
 					disabled={isLoading}
+					class="h-9 sm:h-10"
 				/>
 			</div>
 		</div>
 
 		<!-- Action Buttons -->
-		<div class="flex items-center justify-between">
+		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 			<div class="flex items-center gap-2">
-				<Button variant="outline" onclick={handleRefresh} disabled={isLoading} class="gap-2">
+				<Button
+					variant="outline"
+					onclick={handleRefresh}
+					disabled={isLoading}
+					size="sm"
+					class="gap-1 sm:gap-2"
+				>
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
-					Reload
+					<span class="hidden sm:inline">Reload</span>
 				</Button>
-				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">
+				<Button onclick={handleSearch} disabled={isLoading} size="sm" class="flex-1 gap-1 sm:flex-none sm:gap-2">
 					Search
 				</Button>
 			</div>
 
 			{#if selectedAccounts.length > 0}
-				<Button variant="destructive" onclick={handleBulkDelete} class="gap-2">
+				<Button
+					variant="destructive"
+					onclick={handleBulkDelete}
+					size="sm"
+					class="w-full gap-2 sm:w-auto"
+				>
 					<Trash2 class="h-4 w-4" />
 					Delete ({selectedAccounts.length})
 				</Button>

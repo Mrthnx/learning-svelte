@@ -11,6 +11,7 @@
 		selectable?: boolean;
 		hideActions?: boolean;
 		onRowDoubleClick?: (system: System) => void;
+		onRowClick?: (system: System) => void;
 	}
 
 	let {
@@ -20,7 +21,8 @@
 		onSelectionChange,
 		selectable = false,
 		hideActions = false,
-		onRowDoubleClick
+		onRowDoubleClick,
+		onRowClick
 	}: Props = $props();
 
 	const columns = [
@@ -108,5 +110,6 @@
 	{onSelectionChange}
 	{hideActions}
 	{onRowDoubleClick}
+	{onRowClick}
 	emptyMessage="No systems found. Create your first system to get started."
 />

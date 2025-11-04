@@ -226,12 +226,12 @@
 			<!-- Image Preview with fixed height and aspect ratio -->
 			<div class="relative">
 				<div
-					class="flex h-[300px] items-center justify-center overflow-hidden rounded-lg border bg-muted"
+					class="flex h-[200px] items-center justify-center overflow-hidden rounded-lg border bg-muted sm:h-[300px]"
 				>
 					{#if isUploading}
-						<div class="flex flex-col items-center gap-3">
-							<Loader2 class="h-12 w-12 animate-spin text-primary" />
-							<p class="text-sm text-muted-foreground">Uploading...</p>
+						<div class="flex flex-col items-center gap-2 sm:gap-3">
+							<Loader2 class="h-8 w-8 animate-spin text-primary sm:h-12 sm:w-12" />
+							<p class="text-xs text-muted-foreground sm:text-sm">Uploading...</p>
 						</div>
 					{:else}
 						<img src={preview} alt="Preview" class="h-full w-auto max-w-full object-contain" />
@@ -246,22 +246,22 @@
 						onclick={removeFile}
 					>
 						<X class="h-3 w-3" />
-						Remove
+						<span class="hidden sm:inline">Remove</span>
 					</Button>
 				{/if}
 			</div>
 		{:else if preview === 'pdf'}
 			<!-- PDF Preview -->
 			<div
-				class="flex items-center justify-between rounded-lg border bg-muted p-4"
+				class="flex flex-col items-start justify-between gap-3 rounded-lg border bg-muted p-3 sm:flex-row sm:items-center sm:p-4"
 				class:opacity-50={disabled}
 			>
-				<div class="flex items-center gap-3">
-					<div class="rounded-lg bg-red-100 p-3 dark:bg-red-900/20">
-						<FileText class="h-8 w-8 text-red-600 dark:text-red-400" />
+				<div class="flex items-center gap-2 sm:gap-3">
+					<div class="rounded-lg bg-red-100 p-2 dark:bg-red-900/20 sm:p-3">
+						<FileText class="h-6 w-6 text-red-600 dark:text-red-400 sm:h-8 sm:w-8" />
 					</div>
-					<div>
-						<p class="font-medium">{fileName || 'PDF Document'}</p>
+					<div class="min-w-0 flex-1">
+						<p class="truncate text-sm font-medium sm:text-base">{fileName || 'PDF Document'}</p>
 						{#if selectedFile?.[0]}
 							<p class="text-xs text-muted-foreground">
 								{(selectedFile[0].size / 1024 / 1024).toFixed(2)} MB
@@ -270,24 +270,24 @@
 					</div>
 				</div>
 				{#if !disabled}
-					<Button type="button" variant="ghost" size="sm" class="gap-1" onclick={removeFile}>
+					<Button type="button" variant="ghost" size="sm" class="gap-1 self-end sm:self-auto" onclick={removeFile}>
 						<X class="h-4 w-4" />
-						Remove
+						<span class="hidden sm:inline">Remove</span>
 					</Button>
 				{/if}
 			</div>
 		{:else if preview === 'file'}
 			<!-- Generic File Preview -->
 			<div
-				class="flex items-center justify-between rounded-lg border bg-muted p-4"
+				class="flex flex-col items-start justify-between gap-3 rounded-lg border bg-muted p-3 sm:flex-row sm:items-center sm:p-4"
 				class:opacity-50={disabled}
 			>
-				<div class="flex items-center gap-3">
-					<div class="rounded-lg bg-primary/10 p-3">
-						<Upload class="h-8 w-8 text-primary" />
+				<div class="flex items-center gap-2 sm:gap-3">
+					<div class="rounded-lg bg-primary/10 p-2 sm:p-3">
+						<Upload class="h-6 w-6 text-primary sm:h-8 sm:w-8" />
 					</div>
-					<div>
-						<p class="font-medium">{fileName || 'File'}</p>
+					<div class="min-w-0 flex-1">
+						<p class="truncate text-sm font-medium sm:text-base">{fileName || 'File'}</p>
 						{#if selectedFile?.[0]}
 							<p class="text-xs text-muted-foreground">
 								{(selectedFile[0].size / 1024 / 1024).toFixed(2)} MB
@@ -296,16 +296,16 @@
 					</div>
 				</div>
 				{#if !disabled}
-					<Button type="button" variant="ghost" size="sm" class="gap-1" onclick={removeFile}>
+					<Button type="button" variant="ghost" size="sm" class="gap-1 self-end sm:self-auto" onclick={removeFile}>
 						<X class="h-4 w-4" />
-						Remove
+						<span class="hidden sm:inline">Remove</span>
 					</Button>
 				{/if}
 			</div>
 		{:else}
 			<!-- Drop Zone -->
 			<div
-				class="flex min-h-[200px] w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed transition-colors"
+				class="flex min-h-[160px] w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed transition-colors sm:min-h-[200px]"
 				class:border-primary={isDragging}
 				class:bg-primary={isDragging}
 				class:bg-opacity-5={isDragging}
@@ -327,18 +327,23 @@
 					}
 				}}
 			>
-				<div class="p-6 text-center">
+				<div class="p-4 text-center sm:p-6">
 					{#if fileType === 'image'}
-						<ImageIcon class="mx-auto h-12 w-12 text-muted-foreground" />
+						<ImageIcon class="mx-auto h-10 w-10 text-muted-foreground sm:h-12 sm:w-12" />
 					{:else if fileType === 'pdf'}
-						<FileText class="mx-auto h-12 w-12 text-muted-foreground" />
+						<FileText class="mx-auto h-10 w-10 text-muted-foreground sm:h-12 sm:w-12" />
 					{:else}
-						<Upload class="mx-auto h-12 w-12 text-muted-foreground" />
+						<Upload class="mx-auto h-10 w-10 text-muted-foreground sm:h-12 sm:w-12" />
 					{/if}
-					<p class="mt-3 text-sm font-medium">
-						{isDragging ? 'Drop file here' : 'Click to upload or drag and drop'}
+					<p class="mt-2 text-xs font-medium sm:mt-3 sm:text-sm">
+						{#if isDragging}
+							Drop file here
+						{:else}
+							<span class="hidden sm:inline">Click to upload or drag and drop</span>
+							<span class="sm:hidden">Tap to upload</span>
+						{/if}
 					</p>
-					<p class="mt-1 text-xs text-muted-foreground">{fileConfig.formats}</p>
+					<p class="mt-1 text-[10px] text-muted-foreground sm:text-xs">{fileConfig.formats}</p>
 				</div>
 			</div>
 		{/if}
