@@ -313,7 +313,9 @@
 
 	<div class="mt-2 space-y-1.5 text-xs text-muted-foreground sm:mt-3 sm:space-y-2 sm:text-sm">
 		{#if !disabled}
-			<p class="font-medium text-xs sm:text-sm">Click on the map or drag the marker to select a location</p>
+			<p class="text-xs font-medium sm:text-sm">
+				Click on the map or drag the marker to select a location
+			</p>
 		{/if}
 		<p class="font-mono text-[10px] sm:text-xs">
 			Coordinates: <span class="font-semibold text-foreground"

@@ -8,26 +8,8 @@
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import {
-		isRequired,
-		isValidEmail,
-		isValidPhone,
-		isValidLatitude,
-		isValidLongitude,
-		validationMessages
-	} from '$lib/shared';
-
-	interface Account {
-		id?: number | null;
-		code?: string;
-		description?: string;
-		nameContactor?: string;
-		telephoneContactor?: string;
-		mailContactor?: string;
-		latitude?: number;
-		longitude?: number;
-		image?: string;
-	}
+	import type { Account } from '$lib/types';
+	import { accountSchema } from '$lib/validators';
 
 	interface Props {
 		account?: Account;
@@ -84,31 +66,17 @@
 	function validateForm(): boolean {
 		errors = {};
 
-		if (!isRequired(formData.code)) {
-			errors.code = validationMessages.required('Code');
+		const result = accountSchema.safeParse(formData);
+
+		if (!result.success) {
+			result.error.errors.forEach((error) => {
+				const field = error.path[0] as string;
+				errors[field] = error.message;
+			});
+			return false;
 		}
 
-		if (!isRequired(formData.description)) {
-			errors.description = validationMessages.required('Description');
-		}
-
-		if (formData.mailContactor && !isValidEmail(formData.mailContactor)) {
-			errors.mailContactor = validationMessages.invalidEmail;
-		}
-
-		if (formData.telephoneContactor && !isValidPhone(formData.telephoneContactor)) {
-			errors.telephoneContactor = validationMessages.invalidPhone;
-		}
-
-		if (!isValidLatitude(formData.latitude)) {
-			errors.latitude = validationMessages.invalidLatitude;
-		}
-
-		if (!isValidLongitude(formData.longitude)) {
-			errors.longitude = validationMessages.invalidLongitude;
-		}
-
-		return Object.keys(errors).length === 0;
+		return true;
 	}
 
 	async function handleSubmit(e: Event) {

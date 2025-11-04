@@ -1,107 +1,58 @@
 import { api } from './api';
-import { createApiUrl } from '../shared';
+import { createApiUrl, API_ENDPOINTS, buildEndpoint } from '../shared';
+import type {
+	User,
+	PaginateRequest,
+	PaginateResponse,
+	ApiResponse,
+	PaginateData
+} from '$lib/types';
 
-export interface User {
-	id?: number | null;
-	name?: string;
-	lastName?: string;
-	email?: string;
-	image?: string;
-	active?: boolean;
-	phone?: string;
-	dni?: string;
-	notifyWhatsapp?: boolean;
-	notifyEmail?: boolean;
-	language?: string;
-	account?: {
-		id?: number;
-		code?: string;
-		description?: string;
-	};
-	plant?: {
-		id?: number;
-		code?: string;
-		description?: string;
-	};
-	area?: {
-		id?: number;
-		code?: string;
-		description?: string;
-	};
-	system?: {
-		id?: number;
-		code?: string;
-		description?: string;
-	};
-	role?: {
-		id?: number;
-		code?: string;
-		description?: string;
-		name?: string;
+export async function getAllUsers(params: PaginateRequest = {}): Promise<PaginateResponse<User>> {
+	const { page = 1, pageSize = 10, filters = {} } = params;
+
+	const url = createApiUrl(API_ENDPOINTS.USERS, page, pageSize, filters);
+	const response: ApiResponse<PaginateData<User>> = await api.getLoader(url);
+
+	return {
+		rows: response.data.records || [],
+		page,
+		size: pageSize,
+		total: response.data.total || 0
 	};
 }
 
-export interface PaginateRequest {
-	page?: number;
-	pageSize?: number;
-	filters?: Record<string, any>;
+export async function getUserById(id: number): Promise<User> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.USERS, id);
+	const response: ApiResponse<User> = await api.get(endpoint);
+	return response.data;
 }
 
-export interface ApiResponse<T> {
-	trackingId: string;
-	data: T;
-	response: any;
+export async function createUser(user: Omit<User, 'id'>): Promise<{ success: boolean }> {
+	const data = {
+		id: null,
+		...user
+	};
+	await api.post(API_ENDPOINTS.USERS, data);
+	return { success: true };
 }
 
-export interface PaginateData<T> {
-	ok: boolean;
-	records: T[];
-	total: number;
+export async function updateUser(id: number, user: User): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.USERS, id);
+	await api.put(endpoint, user);
+	return { success: true };
 }
 
-export interface PaginateResponse<T> {
-	rows: T[];
-	page: number;
-	size: number;
-	total: number;
+export async function deleteUser(id: number): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.USERS, id);
+	await api.del(endpoint);
+	return { success: true };
 }
 
 export const userService = {
-	async getAll(params: PaginateRequest = {}): Promise<PaginateResponse<User>> {
-		const { page = 1, pageSize = 10, filters = {} } = params;
-
-		const url = createApiUrl('users', page, pageSize, filters);
-		const response: ApiResponse<PaginateData<User>> = await api.getLoader(url);
-
-		return {
-			rows: response.data.records || [],
-			page,
-			size: pageSize,
-			total: response.data.total || 0
-		};
-	},
-
-	async getById(id: number): Promise<User> {
-		const response: ApiResponse<User> = await api.get(`users/${id}`);
-		return response.data;
-	},
-
-	async create(user: Omit<User, 'id'>): Promise<{ success: boolean }> {
-		const data = {
-			id: null,
-			...user
-		};
-		await api.post('users', data);
-		return { success: true };
-	},
-
-	async update(id: number, user: User): Promise<{ success: boolean }> {
-		await api.put(`users/${id}`, user);
-		return { success: true };
-	},
-
-	async delete(id: number): Promise<{ success: boolean }> {
-		await api.del(`users/${id}`);
-		return { success: true };
-	}
+	getAll: getAllUsers,
+	getById: getUserById,
+	create: createUser,
+	update: updateUser,
+	delete: deleteUser
 };

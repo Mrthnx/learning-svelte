@@ -63,10 +63,12 @@
 
 	{#if isLoading}
 		<div class="flex items-center justify-center p-12">
-			<div class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+			<div
+				class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
+			></div>
 		</div>
 	{:else if asset}
-		<AssetForm asset={asset} onSubmit={handleSubmit} onCancel={handleCancel} isEdit={true} />
+		<AssetForm {asset} onSubmit={handleSubmit} onCancel={handleCancel} isEdit={true} />
 	{/if}
 </div>
 

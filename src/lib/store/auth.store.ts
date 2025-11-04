@@ -1,26 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-
-export interface User {
-	id: number;
-	email: string;
-	name: string;
-	country: number;
-	image: string | null;
-	language: string;
-	nameCompany: string;
-	addressCompany: string;
-	imageCompany: string;
-	footerCompany: string;
-	account?: { id: number; description: string };
-	plant?: { id: number; description: string };
-	area?: { id: number; description: string };
-	system?: { id: number; description: string };
-	role: {
-		level: number;
-		name: string;
-	};
-}
+import type { User, MenuItem, SubMenuItem } from '$lib/types';
+import { transformMenuItems } from '$lib/utils/index';
 
 // Define la estructura de los datos de autenticación
 interface AuthState {
@@ -82,28 +63,18 @@ function createAuthStore() {
 	return {
 		subscribe,
 		// Método para iniciar sesión
-		login: async (user: any, token: string, menu: any[]) => {
-			const menuMap = menu.map((men) => {
-				return {
-					...men,
-					menus: men.menus.map((_men: any) => {
-						return {
-							..._men,
-							uri: `${men.label.toLowerCase().replace(/ /g, '-')}/${_men.uri}`
-						};
-					})
-				};
-			});
+		login: async (user: User, token: string, menu: MenuItem[]) => {
+			const transformedMenu = transformMenuItems(menu);
 			const newState: AuthState = {
 				isAuthenticated: true,
 				user,
 				token,
 				is2fa: false,
-				menu: menuMap
+				menu: transformedMenu
 			};
 			set(newState);
 		},
-		information2FA: async (user: any) => {
+		information2FA: async (user: User) => {
 			const newState: AuthState = {
 				isAuthenticated: false,
 				user,
@@ -113,7 +84,7 @@ function createAuthStore() {
 			};
 			set(newState);
 		},
-		saveSubMenus: (submenus: any[]) => {
+		saveSubMenus: (submenus: SubMenuItem[]) => {
 			update((state) => ({
 				...state,
 				submenus

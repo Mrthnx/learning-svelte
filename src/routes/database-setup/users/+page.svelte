@@ -215,9 +215,7 @@
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					Reload
 				</Button>
-				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">
-					Search
-				</Button>
+				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">Search</Button>
 			</div>
 
 			{#if selectedUsers.length > 0}

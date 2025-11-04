@@ -47,12 +47,12 @@
 				filters
 			});
 
-		plants = response.rows;
-		totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading plants:', error);
-		toast.error(error.message || 'Failed to load plants');
-	} finally {
+			plants = response.rows;
+			totalRecords = response.total;
+		} catch (error: any) {
+			console.error('Error loading plants:', error);
+			toast.error(error.message || 'Failed to load plants');
+		} finally {
 			isLoading = false;
 		}
 	}
@@ -191,9 +191,7 @@
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					Reload
 				</Button>
-				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">
-					Search
-				</Button>
+				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">Search</Button>
 			</div>
 
 			{#if selectedPlants.length > 0}
@@ -260,4 +258,3 @@
 		}
 	}}
 />
-

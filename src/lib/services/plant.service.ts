@@ -1,48 +1,12 @@
 import { api } from './api';
-	import { createApiUrl, normalizeCoordinate } from '../shared';
-
-export interface Plant {
-	id?: number | null;
-	code?: string;
-	description?: string;
-	nameContactor?: string;
-	telephoneContactor?: string;
-	mailContactor?: string;
-	order?: number;
-	latitude?: number;
-	longitude?: number;
-	image?: string;
-	account?: {
-		id?: number;
-		code?: string;
-		description?: string;
-	};
-}
-
-export interface PaginateRequest {
-	page?: number;
-	pageSize?: number;
-	filters?: Record<string, any>;
-}
-
-export interface ApiResponse<T> {
-	trackingId: string;
-	data: T;
-	response: any;
-}
-
-export interface PaginateData<T> {
-	ok: boolean;
-	records: T[];
-	total: number;
-}
-
-export interface PaginateResponse<T> {
-	rows: T[];
-	page: number;
-	size: number;
-	total: number;
-}
+import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint } from '../shared';
+import type {
+	Plant,
+	PaginateRequest,
+	PaginateResponse,
+	ApiResponse,
+	PaginateData
+} from '$lib/types';
 
 function normalizePlant(plant: Plant): Plant {
 	return {
@@ -52,42 +16,51 @@ function normalizePlant(plant: Plant): Plant {
 	};
 }
 
+export async function getAllPlants(params: PaginateRequest = {}): Promise<PaginateResponse<Plant>> {
+	const { page = 1, pageSize = 10, filters = {} } = params;
+
+	const url = createApiUrl(API_ENDPOINTS.PLANTS, page, pageSize, filters);
+	const response: ApiResponse<PaginateData<Plant>> = await api.getLoader(url);
+
+	return {
+		rows: (response.data.records || []).map(normalizePlant),
+		page,
+		size: pageSize,
+		total: response.data.total || 0
+	};
+}
+
+export async function getPlantById(id: number): Promise<Plant> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.PLANTS, id);
+	const response: ApiResponse<Plant> = await api.get(endpoint);
+	return normalizePlant(response.data);
+}
+
+export async function createPlant(plant: Omit<Plant, 'id'>): Promise<{ success: boolean }> {
+	const data = {
+		id: null,
+		...plant
+	};
+	await api.post(API_ENDPOINTS.PLANTS, data);
+	return { success: true };
+}
+
+export async function updatePlant(id: number, plant: Plant): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.PLANTS, id);
+	await api.put(endpoint, plant);
+	return { success: true };
+}
+
+export async function deletePlant(id: number): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.PLANTS, id);
+	await api.del(endpoint);
+	return { success: true };
+}
+
 export const plantService = {
-	async getAll(params: PaginateRequest = {}): Promise<PaginateResponse<Plant>> {
-		const { page = 1, pageSize = 10, filters = {} } = params;
-
-		const url = createApiUrl('plants', page, pageSize, filters);
-		const response: ApiResponse<PaginateData<Plant>> = await api.getLoader(url);
-
-		return {
-			rows: (response.data.records || []).map(normalizePlant),
-			page,
-			size: pageSize,
-			total: response.data.total || 0
-		};
-	},
-
-	async getById(id: number): Promise<Plant> {
-		const response: ApiResponse<Plant> = await api.get(`plants/${id}`);
-		return normalizePlant(response.data);
-	},
-
-	async create(plant: Omit<Plant, 'id'>): Promise<{ success: boolean }> {
-		const data = {
-			id: null,
-			...plant
-		};
-		await api.post('plants', data);
-		return { success: true };
-	},
-
-	async update(id: number, plant: Plant): Promise<{ success: boolean }> {
-		await api.put(`plants/${id}`, plant);
-		return { success: true };
-	},
-
-	async delete(id: number): Promise<{ success: boolean }> {
-		await api.del(`plants/${id}`);
-		return { success: true };
-	}
+	getAll: getAllPlants,
+	getById: getPlantById,
+	create: createPlant,
+	update: updatePlant,
+	delete: deletePlant
 };

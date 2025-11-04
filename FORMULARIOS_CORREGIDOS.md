@@ -5,11 +5,13 @@
 Todos los formularios han sido corregidos para coincidir exactamente con los ViewModels definidos en `VIEWMODELS.md`.
 
 ### 1. **Asset Form** (asset-form.svelte)
+
 **Ubicación**: `src/lib/components/modules/assets/asset-form.svelte`
 
 **ViewModel de referencia**: MawoiViewModel (líneas 364-381)
 
 **Campos corregidos**:
+
 - `id`: number | null
 - `code`: string
 - `description`: string
@@ -25,11 +27,13 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 ---
 
 ### 2. **User Form** (user-form.svelte)
+
 **Ubicación**: `src/lib/components/modules/users/user-form.svelte`
 
 **ViewModel de referencia**: UserViewModel (líneas 52-73)
 
 **Campos corregidos**:
+
 - `id`: number | null
 - `name`: string ← **CORREGIDO** (era firstName)
 - `lastName`: string ← **CORREGIDO** (estructura correcta)
@@ -49,11 +53,13 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 ---
 
 ### 3. **Area Form** (area-form.svelte)
+
 **Ubicación**: `src/lib/components/modules/areas/area-form.svelte`
 
 **ViewModel de referencia**: AreaViewModel (líneas 256-275)
 
 **Campos implementados**:
+
 - `id`: number | null
 - `code`: string (requerido)
 - `description`: string (requerido)
@@ -67,6 +73,7 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 - `plant`: relación con PlantViewModel (requerido)
 
 **Características**:
+
 - Selector de Plant
 - Validación de email para contacto
 - Validación de teléfono para contacto
@@ -76,11 +83,13 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 ---
 
 ### 4. **System Form** (system-form.svelte)
+
 **Ubicación**: `src/lib/components/modules/systems/system-form.svelte`
 
 **ViewModel de referencia**: SystemViewModel (líneas 300-319)
 
 **Campos implementados**:
+
 - `id`: number | null
 - `code`: string (requerido)
 - `description`: string (requerido)
@@ -94,6 +103,7 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 - `area`: relación con AreaViewModel (requerido)
 
 **Características**:
+
 - Selector de Area
 - Validación de email para contacto
 - Validación de teléfono para contacto
@@ -103,11 +113,13 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 ---
 
 ### 5. **Component Form** (component-form.svelte)
+
 **Ubicación**: `src/lib/components/modules/components/component-form.svelte`
 
 **ViewModel de referencia**: ComponentViewModel (líneas 463-479)
 
 **Campos implementados**:
+
 - `id`: number | null
 - `code`: string (requerido)
 - `description`: string (requerido)
@@ -117,6 +129,7 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 - `componentType`: relación con ComponentTypeViewModel
 
 **Características**:
+
 - Selector de Asset (Mawoi)
 - Validaciones básicas (code, description)
 - Carga de imagen
@@ -126,6 +139,7 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 ## 🎯 Estado del Proyecto
 
 ### Módulos Completamente Implementados:
+
 1. ✅ **Accounts** - Completo (formulario, tabla, rutas)
 2. ✅ **Plants** - Completo (formulario, tabla, rutas)
 3. ✅ **Areas** - Formulario corregido ✓
@@ -135,6 +149,7 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 7. ✅ **Users** - Formulario corregido completamente ✓
 
 ### Estructura Base Creada (Pendientes de completar tablas y páginas):
+
 - Todos los módulos tienen:
   - ✅ Servicios generados
   - ✅ Formularios corregidos según ViewModels
@@ -147,6 +162,7 @@ Todos los formularios han sido corregidos para coincidir exactamente con los Vie
 ## 📝 Validaciones Implementadas
 
 Todos los formularios incluyen:
+
 - ✅ Validación de campos requeridos
 - ✅ Validación de email (donde aplica)
 - ✅ Validación de teléfono (donde aplica)
@@ -160,10 +176,12 @@ Todos los formularios incluyen:
 ## 🔄 Parámetros de Paginación
 
 Todos los servicios usan la convención correcta:
+
 - `page`: Número de página (empezando en 1)
 - `pageSize`: Cantidad de registros por página
 
 **Ejemplo**:
+
 ```typescript
 await plantService.getAll({ page: 1, pageSize: 10 });
 ```
@@ -173,15 +191,19 @@ await plantService.getAll({ page: 1, pageSize: 10 });
 ## 📚 Próximos Pasos
 
 ### 1. Completar Tablas
+
 Para cada módulo (Areas, Systems, Assets, Components, Users), crear tablas similares a:
+
 - `plant-table.svelte` como referencia
 
 ### 2. Completar Páginas
+
 - Páginas principales (index): similar a `plants/+page.svelte`
 - Páginas de creación (new): similar a `plants/new/+page.svelte`
 - Páginas de edición ([id]): similar a `plants/[id]/+page.svelte`
 
 ### 3. Ajustes Específicos
+
 - **Components**: Agregar selector de `componentType` cuando se tenga el servicio
 - **Users**: Agregar selector de `role` cuando se tenga el servicio
 - Agregar manejo de relaciones anidadas cuando sea necesario

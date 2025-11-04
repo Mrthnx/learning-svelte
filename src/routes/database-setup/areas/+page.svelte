@@ -46,12 +46,12 @@
 				filters
 			});
 
-		areas = response.rows;
-		totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading areas:', error);
-		toast.error(error.message || 'Failed to load areas');
-	} finally {
+			areas = response.rows;
+			totalRecords = response.total;
+		} catch (error: any) {
+			console.error('Error loading areas:', error);
+			toast.error(error.message || 'Failed to load areas');
+		} finally {
 			isLoading = false;
 		}
 	}
@@ -188,9 +188,7 @@
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					Reload
 				</Button>
-				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">
-					Search
-				</Button>
+				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">Search</Button>
 			</div>
 
 			{#if selectedAreas.length > 0}
@@ -257,4 +255,3 @@
 		}
 	}}
 />
-

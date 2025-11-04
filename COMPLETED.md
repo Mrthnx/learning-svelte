@@ -7,68 +7,87 @@ Se han generado e implementado **TODOS** los módulos CRUD solicitados siguiendo
 ## 📁 Módulos Implementados
 
 ### 1. ✅ Plants (Referencia base - 100%)
+
 **Servicio**: `src/lib/services/plant.service.ts`
+
 - ✅ Paginado corregido (`pageSize` en lugar de `size`)
 - ✅ Formato de respuesta del backend correcto
 - ✅ Normalización de coordenadas
 
 **Componentes**:
+
 - ✅ `plant-form.svelte` - Formulario completo con selector de Account
 - ✅ `plant-table.svelte` - Tabla con todas las columnas
 - ✅ `index.ts` - Exports
 
 **Rutas**:
+
 - ✅ `/database-setup/plants` - Lista con búsqueda y paginación
 - ✅ `/database-setup/plants/create` - Crear nueva planta
 - ✅ `/database-setup/plants/edit/[id]` - Editar planta existente
 
 ### 2. ✅ Areas (100%)
+
 **Servicio**: `src/lib/services/area.service.ts`
+
 - ✅ Depende de Plant
 
 **Componentes y Rutas**: Completos (generados desde Plants)
+
 - ✅ area-form.svelte (con selector de Plant)
 - ✅ area-table.svelte
 - ✅ Todas las rutas (list, create, edit)
 
 ### 3. ✅ Systems (100%)
+
 **Servicio**: `src/lib/services/system.service.ts`
+
 - ✅ Depende de Area
 
 **Componentes y Rutas**: Completos (generados desde Plants)
+
 - ✅ system-form.svelte (con selector de Area)
 - ✅ system-table.svelte
 - ✅ Todas las rutas (list, create, edit)
 
 ### 4. ✅ Assets/Mawois (100%)
+
 **Servicio**: `src/lib/services/asset.service.ts`
+
 - ✅ Depende de System
 - ✅ Endpoint: `mawois` (según backend)
 - ⚠️ Campo especial: `rpm`
 
 **Componentes y Rutas**: Completos (generados desde Plants)
+
 - ✅ asset-form.svelte (con selector de System)
 - ✅ asset-table.svelte
 - ✅ Todas las rutas (list, create, edit)
 - 📝 Nota: Necesita ajuste manual para campo RPM en el formulario
 
 ### 5. ✅ Components (100%)
+
 **Servicio**: `src/lib/services/component.service.ts`
+
 - ✅ Depende de Mawoi (Asset)
 - ⚠️ Campo especial: `componentType`
 
 **Componentes y Rutas**: Completos (generados desde Plants)
+
 - ✅ component-form.svelte (con selector de Mawoi)
 - ✅ component-table.svelte
 - ✅ Todas las rutas (list, create, edit)
 - 📝 Nota: Necesita ajuste manual para selector de ComponentType
 
 ### 6. ✅ Users (100%)
+
 **Servicio**: `src/lib/services/user.service.ts`
+
 - ✅ Depende de Account
 - ⚠️ Estructura diferente (email, role, active, plants array)
 
 **Componentes y Rutas**: Completos (generados desde Plants)
+
 - ✅ user-form.svelte (con selector de Account)
 - ✅ user-table.svelte
 - ✅ Todas las rutas (list, create, edit)
@@ -77,16 +96,19 @@ Se han generado e implementado **TODOS** los módulos CRUD solicitados siguiendo
 ## 🔧 Correcciones Aplicadas
 
 ### Problema del Paginado ✅ RESUELTO
+
 - **Antes**: Usaba `size` en queryParams
 - **Ahora**: Usa `pageSize` correctamente
 - **Aplicado en**: Todos los servicios
 
 ### Problema de Formato de Respuesta ✅ RESUELTO
+
 - **Antes**: Esperaba `response.data` directamente
 - **Ahora**: Usa `response.data.records` y `response.data.total`
 - **Aplicado en**: Todos los servicios
 
 ### Problema de Plants que no muestra datos ✅ RESUELTO
+
 - **Causa**: Formato incorrecto de respuesta y paginado
 - **Solución**: Service actualizado con formato correcto del backend
 
@@ -103,6 +125,7 @@ Se han generado e implementado **TODOS** los módulos CRUD solicitados siguiendo
 ## 🎯 Características Implementadas
 
 ### Cada módulo incluye:
+
 ✅ CRUD completo (Create, Read, Update, Delete)
 ✅ Paginación con controles
 ✅ Búsqueda/filtrado
@@ -121,13 +144,16 @@ Se han generado e implementado **TODOS** los módulos CRUD solicitados siguiendo
 ## 📝 Ajustes Manuales Pendientes (Opcionales)
 
 ### Assets
+
 - Campo `rpm` en el formulario (actualmente heredado de order)
 
 ### Components
+
 - Selector de `ComponentType` adicional al selector de Mawoi
 - Cargar tipos de componentes desde endpoint `/component-types`
 
 ### Users
+
 - Campos especiales:
   - `email` (en lugar de code)
   - `name` y `lastName` (separados)
@@ -172,6 +198,7 @@ frontend/src/
 ## 🚀 Cómo Probar
 
 1. **Navegar a cada módulo**:
+
    ```
    /database-setup/plants
    /database-setup/areas

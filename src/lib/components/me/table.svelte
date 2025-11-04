@@ -95,7 +95,7 @@
 	<!-- Scroll hint for mobile -->
 	{#if data.length > 0}
 		<div
-			class="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-8 items-center justify-end bg-gradient-to-l from-background to-transparent opacity-100 transition-opacity md:opacity-0"
+			class="pointer-events-none absolute top-0 right-0 z-10 flex h-full w-8 items-center justify-end bg-gradient-to-l from-background to-transparent opacity-100 transition-opacity md:opacity-0"
 			aria-hidden="true"
 		>
 			<svg
@@ -105,134 +105,129 @@
 				viewBox="0 0 24 24"
 				stroke="currentColor"
 			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M9 5l7 7-7 7"
-				/>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 			</svg>
 		</div>
 	{/if}
 	<div class={cn('w-full overflow-auto rounded-lg border shadow-sm', className)}>
 		<Table.Root>
-		<Table.Header>
-			<Table.Row class="border-b">
-				{#if selectable}
-					<Table.Head class="w-12">
-						<Checkbox checked={selectAll} onCheckedChange={toggleSelectAll} />
-					</Table.Head>
-				{/if}
-				{#each columns as column (column.key)}
-					<Table.Head class={column.class}>
-						{column.label}
-					</Table.Head>
-				{/each}
-				{#if !hideActions && ((actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0))}
-					<Table.Head class="text-right">Actions</Table.Head>
-				{/if}
-			</Table.Row>
-		</Table.Header>
-		<Table.Body>
-			{#if data.length === 0}
-				<Table.Row>
-					<Table.Cell
-						colspan={columns.length + (selectable ? 1 : 0) + (actions?.length ? 1 : 0)}
-						class="h-24 text-center"
-					>
-						<div class="flex flex-col items-center gap-2">
-							<svg
-								class="h-12 w-12 text-muted-foreground"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-								/>
-							</svg>
-							<p class="text-sm text-muted-foreground">{emptyMessage}</p>
-						</div>
-					</Table.Cell>
+			<Table.Header>
+				<Table.Row class="border-b">
+					{#if selectable}
+						<Table.Head class="w-12">
+							<Checkbox checked={selectAll} onCheckedChange={toggleSelectAll} />
+						</Table.Head>
+					{/if}
+					{#each columns as column (column.key)}
+						<Table.Head class={column.class}>
+							{column.label}
+						</Table.Head>
+					{/each}
+					{#if !hideActions && ((actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0))}
+						<Table.Head class="text-right">Actions</Table.Head>
+					{/if}
 				</Table.Row>
-			{:else}
-				{#each data as item, index ((item as any).id ?? index)}
-					<Table.Row
-						class={(onRowDoubleClick || onRowClick) ? 'cursor-pointer hover:bg-muted/50' : ''}
-						ondblclick={() => onRowDoubleClick?.(item)}
-						onclick={() => onRowClick?.(item)}
-					>
-						{#if selectable}
-							<Table.Cell>
-								<Checkbox
-									checked={selectedItems.has(item)}
-									onCheckedChange={() => toggleSelect(item)}
-								/>
-							</Table.Cell>
-						{/if}
-						{#each columns as column (column.key)}
-							<Table.Cell class={column.class}>
-								{#if column.renderSnippet}
-									{@render column.renderSnippet(item)}
-								{:else}
-									{getCellValue(item, column)}
-								{/if}
-							</Table.Cell>
-						{/each}
-						{#if !hideActions && ((actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0))}
-							<Table.Cell class="text-right">
-								<Tooltip.Provider>
-									<div class="flex justify-end gap-2">
-										{#if actions && actions.length > 0}
-											{#each actions as action (action.label)}
-												<Tooltip.Root>
-													<Tooltip.Trigger>
-														<Button
-															variant={action.variant || 'ghost'}
-															size="icon"
-															onclick={() => action.onClick(item)}
-															class={cn('h-8 w-8', action.class)}
-														>
-															{#if action.icon}
-																<svelte:component this={action.icon} class="h-4 w-4" />
-															{/if}
-														</Button>
-													</Tooltip.Trigger>
-													<Tooltip.Content>
-														<p>{action.label}</p>
-													</Tooltip.Content>
-												</Tooltip.Root>
-											{/each}
-										{/if}
-										{#if dropdownActions && dropdownActions.length > 0}
-											<DropdownMenu.Root>
-												<DropdownMenu.Trigger>
-													<Button variant="ghost" size="icon" class="h-8 w-8">
-														<MoreHorizontal class="h-4 w-4" />
-													</Button>
-												</DropdownMenu.Trigger>
-												<DropdownMenu.Content align="end">
-													{#each dropdownActions as dropdownAction (dropdownAction.label)}
-														<DropdownMenu.Item onclick={() => dropdownAction.onClick(item)}>
-															{dropdownAction.label}
-														</DropdownMenu.Item>
-													{/each}
-												</DropdownMenu.Content>
-											</DropdownMenu.Root>
-										{/if}
-									</div>
-								</Tooltip.Provider>
-							</Table.Cell>
-						{/if}
+			</Table.Header>
+			<Table.Body>
+				{#if data.length === 0}
+					<Table.Row>
+						<Table.Cell
+							colspan={columns.length + (selectable ? 1 : 0) + (actions?.length ? 1 : 0)}
+							class="h-24 text-center"
+						>
+							<div class="flex flex-col items-center gap-2">
+								<svg
+									class="h-12 w-12 text-muted-foreground"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+									/>
+								</svg>
+								<p class="text-sm text-muted-foreground">{emptyMessage}</p>
+							</div>
+						</Table.Cell>
 					</Table.Row>
-				{/each}
-			{/if}
-		</Table.Body>
-	</Table.Root>
+				{:else}
+					{#each data as item, index ((item as any).id ?? index)}
+						<Table.Row
+							class={onRowDoubleClick || onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+							ondblclick={() => onRowDoubleClick?.(item)}
+							onclick={() => onRowClick?.(item)}
+						>
+							{#if selectable}
+								<Table.Cell>
+									<Checkbox
+										checked={selectedItems.has(item)}
+										onCheckedChange={() => toggleSelect(item)}
+									/>
+								</Table.Cell>
+							{/if}
+							{#each columns as column (column.key)}
+								<Table.Cell class={column.class}>
+									{#if column.renderSnippet}
+										{@render column.renderSnippet(item)}
+									{:else}
+										{getCellValue(item, column)}
+									{/if}
+								</Table.Cell>
+							{/each}
+							{#if !hideActions && ((actions && actions.length > 0) || (dropdownActions && dropdownActions.length > 0))}
+								<Table.Cell class="text-right">
+									<Tooltip.Provider>
+										<div class="flex justify-end gap-2">
+											{#if actions && actions.length > 0}
+												{#each actions as action (action.label)}
+													<Tooltip.Root>
+														<Tooltip.Trigger>
+															<Button
+																variant={action.variant || 'ghost'}
+																size="icon"
+																onclick={() => action.onClick(item)}
+																class={cn('h-8 w-8', action.class)}
+															>
+																{#if action.icon}
+																	<svelte:component this={action.icon} class="h-4 w-4" />
+																{/if}
+															</Button>
+														</Tooltip.Trigger>
+														<Tooltip.Content>
+															<p>{action.label}</p>
+														</Tooltip.Content>
+													</Tooltip.Root>
+												{/each}
+											{/if}
+											{#if dropdownActions && dropdownActions.length > 0}
+												<DropdownMenu.Root>
+													<DropdownMenu.Trigger>
+														<Button variant="ghost" size="icon" class="h-8 w-8">
+															<MoreHorizontal class="h-4 w-4" />
+														</Button>
+													</DropdownMenu.Trigger>
+													<DropdownMenu.Content align="end">
+														{#each dropdownActions as dropdownAction (dropdownAction.label)}
+															<DropdownMenu.Item onclick={() => dropdownAction.onClick(item)}>
+																{dropdownAction.label}
+															</DropdownMenu.Item>
+														{/each}
+													</DropdownMenu.Content>
+												</DropdownMenu.Root>
+											{/if}
+										</div>
+									</Tooltip.Provider>
+								</Table.Cell>
+							{/if}
+						</Table.Row>
+					{/each}
+				{/if}
+			</Table.Body>
+		</Table.Root>
 	</div>
 </div>
 

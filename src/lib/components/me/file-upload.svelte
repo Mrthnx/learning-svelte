@@ -257,8 +257,8 @@
 				class:opacity-50={disabled}
 			>
 				<div class="flex items-center gap-2 sm:gap-3">
-					<div class="rounded-lg bg-red-100 p-2 dark:bg-red-900/20 sm:p-3">
-						<FileText class="h-6 w-6 text-red-600 dark:text-red-400 sm:h-8 sm:w-8" />
+					<div class="rounded-lg bg-red-100 p-2 sm:p-3 dark:bg-red-900/20">
+						<FileText class="h-6 w-6 text-red-600 sm:h-8 sm:w-8 dark:text-red-400" />
 					</div>
 					<div class="min-w-0 flex-1">
 						<p class="truncate text-sm font-medium sm:text-base">{fileName || 'PDF Document'}</p>
@@ -270,7 +270,13 @@
 					</div>
 				</div>
 				{#if !disabled}
-					<Button type="button" variant="ghost" size="sm" class="gap-1 self-end sm:self-auto" onclick={removeFile}>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						class="gap-1 self-end sm:self-auto"
+						onclick={removeFile}
+					>
 						<X class="h-4 w-4" />
 						<span class="hidden sm:inline">Remove</span>
 					</Button>
@@ -296,7 +302,13 @@
 					</div>
 				</div>
 				{#if !disabled}
-					<Button type="button" variant="ghost" size="sm" class="gap-1 self-end sm:self-auto" onclick={removeFile}>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						class="gap-1 self-end sm:self-auto"
+						onclick={removeFile}
+					>
 						<X class="h-4 w-4" />
 						<span class="hidden sm:inline">Remove</span>
 					</Button>

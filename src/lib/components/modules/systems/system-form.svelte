@@ -9,7 +9,8 @@
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { areaService, type Area } from '$lib/services/area.service';
+	import type { System, Area } from '$lib/types';
+	import { areaService } from '$lib/services/area.service';
 	import {
 		isRequired,
 		isValidEmail,
@@ -18,24 +19,6 @@
 		isValidLongitude,
 		validationMessages
 	} from '$lib/shared';
-
-	interface System {
-		id?: number | null;
-		code?: string;
-		description?: string;
-		nameContactor?: string;
-		telephoneContactor?: string;
-		mailContactor?: string;
-		order?: number;
-		latitude?: number;
-		longitude?: number;
-		image?: string;
-		area?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-	}
 
 	interface Props {
 		system?: System;
@@ -151,7 +134,7 @@
 			return;
 		}
 
-		const selectedAreaData = areas.find(a => a.id?.toString() === selectedArea?.value);
+		const selectedAreaData = areas.find((a) => a.id?.toString() === selectedArea?.value);
 		if (selectedAreaData) {
 			formData.area = {
 				id: selectedAreaData.id!,

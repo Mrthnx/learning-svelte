@@ -15,7 +15,7 @@
 <!-- FAB - Solo visible en móvil -->
 <button
 	onclick={toggledrawer}
-	class="fixed bottom-4 right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-offset-background transition-all duration-300 hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-ring hover:ring-offset-2 active:scale-95 md:hidden"
+	class="fixed right-4 bottom-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-offset-background transition-all duration-300 hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-ring hover:ring-offset-2 active:scale-95 md:hidden"
 	aria-label={isdraweropen ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
 	type="button"
 >

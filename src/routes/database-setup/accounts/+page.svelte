@@ -202,7 +202,12 @@
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					<span class="hidden sm:inline">Reload</span>
 				</Button>
-				<Button onclick={handleSearch} disabled={isLoading} size="sm" class="flex-1 gap-1 sm:flex-none sm:gap-2">
+				<Button
+					onclick={handleSearch}
+					disabled={isLoading}
+					size="sm"
+					class="flex-1 gap-1 sm:flex-none sm:gap-2"
+				>
 					Search
 				</Button>
 			</div>

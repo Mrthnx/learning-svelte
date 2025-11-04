@@ -8,11 +8,7 @@
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import {
-		assetService,
-		type Asset,
-		type PaginateResponse
-	} from '$lib/services/asset.service';
+	import { assetService, type Asset, type PaginateResponse } from '$lib/services/asset.service';
 
 	let assets: Asset[] = $state([]);
 	let selectedAssets: Asset[] = $state([]);
@@ -51,12 +47,12 @@
 				filters
 			});
 
-		assets = response.rows;
-		totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading assets:', error);
-		toast.error(error.message || 'Failed to load assets');
-	} finally {
+			assets = response.rows;
+			totalRecords = response.total;
+		} catch (error: any) {
+			console.error('Error loading assets:', error);
+			toast.error(error.message || 'Failed to load assets');
+		} finally {
 			isLoading = false;
 		}
 	}
@@ -195,9 +191,7 @@
 					<RefreshCw class={isLoading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
 					Reload
 				</Button>
-				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">
-					Search
-				</Button>
+				<Button onclick={handleSearch} disabled={isLoading} class="gap-2">Search</Button>
 			</div>
 
 			{#if selectedAssets.length > 0}

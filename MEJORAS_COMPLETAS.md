@@ -3,9 +3,11 @@
 ## ✅ Trabajos Completados
 
 ### 1. **Servicio de Roles** ✅
+
 **Archivo**: `src/lib/services/role.service.ts`
 
 Se creó un servicio completo para el manejo de roles con:
+
 - CRUD completo (create, read, update, delete)
 - Paginación con `page` y `pageSize`
 - Búsqueda de roles
@@ -29,10 +31,12 @@ Se creó un servicio completo para el manejo de roles con:
 Todos los formularios fueron actualizados para coincidir con los ViewModels del backend:
 
 #### **Asset Form** (asset-form.svelte)
+
 - ✅ Agregado campo `rpm` (faltaba en versión original)
 - ✅ Todos los campos del MawoiViewModel
 
 #### **User Form** (user-form.svelte)
+
 - ✅ Corregido de `firstName` → `name`
 - ✅ Estructura completa: name, lastName, email, active, phone, dni, etc.
 - ✅ **Selector de Role** implementado ← NUEVO
@@ -40,16 +44,19 @@ Todos los formularios fueron actualizados para coincidir con los ViewModels del 
 - ✅ Notificaciones (WhatsApp y Email)
 
 #### **Area Form** (area-form.svelte)
+
 - ✅ Implementado según AreaViewModel
 - ✅ Campos de contacto completos
 - ✅ Mapa interactivo para ubicación
 
 #### **System Form** (system-form.svelte)
+
 - ✅ Implementado según SystemViewModel
 - ✅ Similar a Area con relación a Area
 - ✅ Campos de contacto y mapa
 
 #### **Component Form** (component-form.svelte)
+
 - ✅ Implementado según ComponentViewModel
 - ✅ Relación con Asset (Mawoi)
 
@@ -60,29 +67,34 @@ Todos los formularios fueron actualizados para coincidir con los ViewModels del 
 Se crearon todas las tablas faltantes siguiendo el patrón de `plant-table.svelte`:
 
 #### **Area Table** (area-table.svelte)
+
 - Columnas: Code, Description, Plant, Contact, Location, Order, Actions
 - Muestra información de contacto (nombre, teléfono)
 - Muestra coordenadas geográficas con icono
 - Botones de Editar y Eliminar
 
 #### **System Table** (system-table.svelte)
+
 - Columnas: Code, Description, Area, Contact, Location, Order, Actions
 - Similar a Area table pero con referencia a Area
 - Información de contacto y ubicación
 
 #### **Asset Table** (asset-table.svelte)
+
 - Columnas: Code, Description, System, **RPM**, Location, Order, Actions
 - Muestra RPM con icono de actividad
 - Coordenadas geográficas
 - Badge para el sistema relacionado
 
 #### **Component Table** (component-table.svelte)
+
 - Columnas: Code, Description, Asset, Type, Order, Actions
 - Badge para Asset (Mawoi)
 - Badge para Component Type
 - Acciones de editar y eliminar
 
 #### **User Table** (user-table.svelte)
+
 - Columnas: User, Email, Account, Role, Contact, Status, Actions
 - Avatar con iniciales
 - Badge de estado (Active/Inactive) con íconos
@@ -95,16 +107,16 @@ Se crearon todas las tablas faltantes siguiendo el patrón de `plant-table.svelt
 
 ### Módulos Completamente Implementados:
 
-| Módulo | Servicio | Formulario | Tabla | Rutas | Estado |
-|--------|----------|------------|-------|-------|--------|
-| **Accounts** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Plants** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Areas** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Systems** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Assets** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Components** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Users** | ✅ | ✅ | ✅ | ✅ | 100% |
-| **Roles** | ✅ | ⚠️ | ⚠️ | ⚠️ | 25% |
+| Módulo         | Servicio | Formulario | Tabla | Rutas | Estado |
+| -------------- | -------- | ---------- | ----- | ----- | ------ |
+| **Accounts**   | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Plants**     | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Areas**      | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Systems**    | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Assets**     | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Components** | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Users**      | ✅       | ✅         | ✅    | ✅    | 100%   |
+| **Roles**      | ✅       | ⚠️         | ⚠️    | ⚠️    | 25%    |
 
 **Nota**: Roles tiene el servicio completo, pero falta crear su módulo completo (formulario, tabla, páginas).
 
@@ -113,6 +125,7 @@ Se crearon todas las tablas faltantes siguiendo el patrón de `plant-table.svelt
 ## 🎯 Características Implementadas
 
 ### Validaciones:
+
 - ✅ Campos requeridos
 - ✅ Validación de email
 - ✅ Validación de teléfono
@@ -122,6 +135,7 @@ Se crearon todas las tablas faltantes siguiendo el patrón de `plant-table.svelt
 - ✅ Manejo de errores con mensajes claros
 
 ### Componentes Reutilizables:
+
 - ✅ `LocationMap` - Mapa interactivo para selección de coordenadas
 - ✅ `FileUpload` - Carga de archivos con preview
 - ✅ `Badge` - Para estados y referencias
@@ -130,6 +144,7 @@ Se crearon todas las tablas faltantes siguiendo el patrón de `plant-table.svelt
 - ✅ `Select` - Selectores con búsqueda
 
 ### Paginación:
+
 - ✅ Todos los servicios usan `page` y `pageSize`
 - ✅ Parámetros de búsqueda opcionales
 - ✅ Respuestas con `PaginatedResponse<T>`
@@ -201,21 +216,25 @@ User (Usuario)
 ## 🛠️ Scripts Disponibles
 
 ### 1. Corregir formularios de Asset y User
+
 ```bash
 ./fix_forms.sh
 ```
 
 ### 2. Corregir formularios de Area, System y Component
+
 ```bash
 ./fix_remaining_forms.sh
 ```
 
 ### 3. Crear todas las tablas
+
 ```bash
 ./create_all_tables.sh
 ```
 
 ### 4. Generar estructura base de módulo
+
 ```bash
 ./create_module_structure.sh
 ```
@@ -262,18 +281,21 @@ User (Usuario)
 ## 💡 Recomendaciones de Desarrollo
 
 ### Patrón a Seguir:
+
 1. Siempre referencia `VIEWMODELS.md` para la estructura de datos
 2. Usa `plant-form.svelte` y `plant-table.svelte` como referencias
 3. Mantén consistencia en nombres de variables y funciones
 4. Usa los tipos de TypeScript para evitar errores
 
 ### Validaciones:
+
 - Siempre valida campos requeridos
 - Usa las funciones de validación de `$lib/shared`
 - Muestra mensajes de error claros
 - Valida en el cliente Y en el servidor
 
 ### Paginación:
+
 - Siempre usa `page` y `pageSize` (no `skip` ni `take`)
 - El primer page es `1` (no `0`)
 - Maneja correctamente las respuestas paginadas

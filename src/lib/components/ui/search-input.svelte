@@ -99,7 +99,7 @@
 				class="h-10 w-10 rounded-l-none border-l-0 hover:border-l-0 focus:border-l-0"
 				title="Advanced search"
 			>
-				<Search class="text-primary h-4 w-4" />
+				<Search class="h-4 w-4 text-primary" />
 			</Button>
 		{/if}
 	</div>

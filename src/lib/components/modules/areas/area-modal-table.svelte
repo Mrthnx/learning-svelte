@@ -78,7 +78,7 @@
 			></div>
 		</div>
 	{:else}
-		<div class="rounded-md border max-h-[60vh] overflow-auto">
+		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<AreaTable
 				areas={filteredAreas}
 				onEdit={handleEdit}

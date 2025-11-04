@@ -16,69 +16,9 @@
 	import SystemModalTable from '../systems/system-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { type Account } from '$lib/services/account.service';
-	import { type Plant } from '$lib/services/plant.service';
-	import { type Area } from '$lib/services/area.service';
-	import { type System } from '$lib/services/system.service';
+	import type { User } from '$lib/types';
 	import { type Role } from '$lib/services/role.service';
 	import { isRequired, isValidEmail, isValidPhone, validationMessages } from '$lib/shared';
-
-	interface User {
-		id?: number | null;
-		code?: string;
-		email?: string;
-		password?: string;
-		name?: string;
-		country?: number;
-		city?: string;
-		province?: string;
-		address?: string;
-		zip?: string;
-		phone?: string;
-		countryPhoneCode?: string;
-		countryCode?: string;
-		phoneConfirmed?: boolean;
-		image?: string;
-		passwordValidate?: boolean;
-		twoFactorAuth?: boolean;
-		allowAlarmsSentSms?: boolean;
-		allowAlarmsSentEmail?: boolean;
-		allowCommentAlarmsSentEmail?: boolean;
-		allowCommentAlarmsSentSms?: boolean;
-		languagePreference?: string;
-		description?: string;
-		isBlocked?: boolean;
-		imageCompany?: string;
-		nameCompany?: string;
-		addressCompany?: string;
-		footerCompany?: string;
-		company?: number;
-		role?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-		account?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-		plant?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-		area?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-		system?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-	}
 
 	interface Props {
 		user?: User;
@@ -175,11 +115,9 @@
 	);
 
 	// Determine role level to control visibility of account/plant/area/system fields
-	const selectedRole = $derived(
-		roles.find((r) => r.id?.toString() === selectedRoleValue)
-	);
+	const selectedRole = $derived(roles.find((r) => r.id?.toString() === selectedRoleValue));
 	const roleLevel = $derived(selectedRole?.level ?? 0);
-	
+
 	// Role levels: 1=SUPERADMIN, 3=ACCOUNT, 4=PLANT, 5=AREA, 6=SYSTEM
 	const showAccount = $derived(roleLevel >= 3 && roleLevel <= 6);
 	const showPlant = $derived(roleLevel >= 4 && roleLevel <= 6);
@@ -395,26 +333,26 @@
 			<div class="grid gap-4 sm:gap-6 lg:grid-cols-2">
 				<div class="space-y-4 sm:space-y-6">
 					<!-- Role & Hierarchy Section -->
-					<div class="rounded-lg border p-4 space-y-4">
+					<div class="space-y-4 rounded-lg border p-4">
 						<h3 class="text-sm font-semibold">Role & Organization</h3>
-						
+
 						<!-- Role Selection -->
 						<div class="space-y-2">
 							<label for="role" class="text-sm font-medium">Role</label>
-						<Select.Root type="single" name="role" bind:value={selectedRoleValue}>
-							<Select.Trigger class="w-full" disabled={isSubmitting || isLoading}>
-								{selectedRoleTriggerContent}
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Group>
-									<Select.Label>Roles</Select.Label>
-									{#each roles as role (role.id)}
-										<Select.Item value={role.id?.toString() || ''} label={role.description || ''}>
-											{role.name}
-										</Select.Item>
-									{/each}
-								</Select.Group>
-							</Select.Content>
+							<Select.Root type="single" name="role" bind:value={selectedRoleValue}>
+								<Select.Trigger class="w-full" disabled={isSubmitting || isLoading}>
+									{selectedRoleTriggerContent}
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Group>
+										<Select.Label>Roles</Select.Label>
+										{#each roles as role (role.id)}
+											<Select.Item value={role.id?.toString() || ''} label={role.description || ''}>
+												{role.name}
+											</Select.Item>
+										{/each}
+									</Select.Group>
+								</Select.Content>
 							</Select.Root>
 						</div>
 
@@ -504,9 +442,9 @@
 					</div>
 
 					<!-- Basic Information -->
-					<div class="rounded-lg border p-4 space-y-4">
+					<div class="space-y-4 rounded-lg border p-4">
 						<h3 class="text-sm font-semibold">Basic Information</h3>
-						
+
 						<!-- Code -->
 						<div class="space-y-2">
 							<label for="code" class="text-sm font-medium">Code</label>
@@ -572,14 +510,14 @@
 					</div>
 
 					<!-- Contact Information -->
-					<div class="rounded-lg border p-4 space-y-4">
+					<div class="space-y-4 rounded-lg border p-4">
 						<h3 class="text-sm font-semibold">Contact Information</h3>
-						
+
 						<!-- Phone Code and Number -->
 						<div class="space-y-2">
 							<label class="text-sm font-medium">Phone</label>
 							<div class="grid grid-cols-[140px_1fr] gap-2">
-									<PhoneCodeAutocomplete
+								<PhoneCodeAutocomplete
 									bind:value={phoneCode}
 									placeholder="Code"
 									disabled={isSubmitting || isLoading}
@@ -603,9 +541,9 @@
 					</div>
 
 					<!-- Address Information -->
-					<div class="rounded-lg border p-4 space-y-4">
+					<div class="space-y-4 rounded-lg border p-4">
 						<h3 class="text-sm font-semibold">Address</h3>
-						
+
 						<!-- Country -->
 						<CountryAutocomplete
 							bind:value={countryValue}
@@ -662,140 +600,141 @@
 				<!-- Right Column -->
 				<div class="space-y-4 sm:space-y-6">
 					<!-- Settings -->
-					<div class="rounded-lg border p-4 space-y-4">
+					<div class="space-y-4 rounded-lg border p-4">
 						<h3 class="text-sm font-semibold">Account Settings</h3>
-						
-						<div class="flex items-center space-x-2">
-						<Checkbox
-							id="isBlocked"
-							checked={formData.isBlocked}
-							onCheckedChange={(checked) => {
-								formData.isBlocked = checked === true;
-							}}
-							disabled={isSubmitting || isLoading}
-						/>
-						<label
-							for="isBlocked"
-							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-						>
-							Blocked User
-						</label>
-					</div>
 
-					<div class="flex items-center space-x-2">
-						<Checkbox
-							id="twoFactorAuth"
-							checked={formData.twoFactorAuth}
-							onCheckedChange={(checked) => {
-								formData.twoFactorAuth = checked === true;
-							}}
-							disabled={isSubmitting || isLoading}
-						/>
-						<label
-							for="twoFactorAuth"
-							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-						>
+						<div class="flex items-center space-x-2">
+							<Checkbox
+								id="isBlocked"
+								checked={formData.isBlocked}
+								onCheckedChange={(checked) => {
+									formData.isBlocked = checked === true;
+								}}
+								disabled={isSubmitting || isLoading}
+							/>
+							<label
+								for="isBlocked"
+								class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							>
+								Blocked User
+							</label>
+						</div>
+
+						<div class="flex items-center space-x-2">
+							<Checkbox
+								id="twoFactorAuth"
+								checked={formData.twoFactorAuth}
+								onCheckedChange={(checked) => {
+									formData.twoFactorAuth = checked === true;
+								}}
+								disabled={isSubmitting || isLoading}
+							/>
+							<label
+								for="twoFactorAuth"
+								class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							>
 								Two Factor Authentication
 							</label>
 						</div>
 					</div>
 
 					<!-- Language & Preferences -->
-					<div class="rounded-lg border p-4 space-y-4">
+					<div class="space-y-4 rounded-lg border p-4">
 						<h3 class="text-sm font-semibold">Preferences</h3>
-						
+
 						<!-- Language -->
-					<LanguageAutocomplete
-						bind:value={languageCode}
-						label="Language"
-						placeholder="Select a language"
-						disabled={isSubmitting || isLoading}
-					/>
+						<LanguageAutocomplete
+							bind:value={languageCode}
+							label="Language"
+							placeholder="Select a language"
+							disabled={isSubmitting || isLoading}
+						/>
 
-					<!-- Alarm Notifications -->
-					<div class="rounded-lg border p-4">
-						<h3 class="mb-4 text-sm font-semibold">Alarm Notifications</h3>
-						<div class="space-y-4">
-							<div class="flex items-center space-x-2">
-								<Checkbox
-									id="allowAlarmsSentSms"
-									checked={formData.allowAlarmsSentSms}
-									onCheckedChange={(checked) => {
-										formData.allowAlarmsSentSms = checked === true;
-									}}
-									disabled={isSubmitting || isLoading}
-								/>
-								<label
-									for="allowAlarmsSentSms"
-									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Alarms via SMS
-								</label>
-							</div>
+						<!-- Alarm Notifications -->
+						<div class="rounded-lg border p-4">
+							<h3 class="mb-4 text-sm font-semibold">Alarm Notifications</h3>
+							<div class="space-y-4">
+								<div class="flex items-center space-x-2">
+									<Checkbox
+										id="allowAlarmsSentSms"
+										checked={formData.allowAlarmsSentSms}
+										onCheckedChange={(checked) => {
+											formData.allowAlarmsSentSms = checked === true;
+										}}
+										disabled={isSubmitting || isLoading}
+									/>
+									<label
+										for="allowAlarmsSentSms"
+										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Alarms via SMS
+									</label>
+								</div>
 
-							<div class="flex items-center space-x-2">
-								<Checkbox
-									id="allowAlarmsSentEmail"
-									checked={formData.allowAlarmsSentEmail}
-									onCheckedChange={(checked) => {
-										formData.allowAlarmsSentEmail = checked === true;
-									}}
-									disabled={isSubmitting || isLoading}
-								/>
-								<label
-									for="allowAlarmsSentEmail"
-									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Alarms via Email
-								</label>
-							</div>
+								<div class="flex items-center space-x-2">
+									<Checkbox
+										id="allowAlarmsSentEmail"
+										checked={formData.allowAlarmsSentEmail}
+										onCheckedChange={(checked) => {
+											formData.allowAlarmsSentEmail = checked === true;
+										}}
+										disabled={isSubmitting || isLoading}
+									/>
+									<label
+										for="allowAlarmsSentEmail"
+										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Alarms via Email
+									</label>
+								</div>
 
-							<div class="flex items-center space-x-2">
-								<Checkbox
-									id="allowCommentAlarmsSentEmail"
-									checked={formData.allowCommentAlarmsSentEmail}
-									onCheckedChange={(checked) => {
-										formData.allowCommentAlarmsSentEmail = checked === true;
-									}}
-									disabled={isSubmitting || isLoading}
-								/>
-								<label
-									for="allowCommentAlarmsSentEmail"
-									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Comment Alarms via Email
-								</label>
-							</div>
+								<div class="flex items-center space-x-2">
+									<Checkbox
+										id="allowCommentAlarmsSentEmail"
+										checked={formData.allowCommentAlarmsSentEmail}
+										onCheckedChange={(checked) => {
+											formData.allowCommentAlarmsSentEmail = checked === true;
+										}}
+										disabled={isSubmitting || isLoading}
+									/>
+									<label
+										for="allowCommentAlarmsSentEmail"
+										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Comment Alarms via Email
+									</label>
+								</div>
 
-							<div class="flex items-center space-x-2">
-								<Checkbox
-									id="allowCommentAlarmsSentSms"
-									checked={formData.allowCommentAlarmsSentSms}
-									onCheckedChange={(checked) => {
-										formData.allowCommentAlarmsSentSms = checked === true;
-									}}
-									disabled={isSubmitting || isLoading}
-								/>
-								<label
-									for="allowCommentAlarmsSentSms"
-									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Comment Alarms via SMS
-								</label>
+								<div class="flex items-center space-x-2">
+									<Checkbox
+										id="allowCommentAlarmsSentSms"
+										checked={formData.allowCommentAlarmsSentSms}
+										onCheckedChange={(checked) => {
+											formData.allowCommentAlarmsSentSms = checked === true;
+										}}
+										disabled={isSubmitting || isLoading}
+									/>
+									<label
+										for="allowCommentAlarmsSentSms"
+										class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+									>
+										Comment Alarms via SMS
+									</label>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<!-- Image Upload -->
-					<FileUpload
-						fileType="image"
-						label="User Image"
-						maxSize={5}
-						existingFileUrl={user?.image}
-						disabled={isSubmitting || isLoading}
-						on:fileChange={handleFileChange}
-						on:error={handleFileError}
-					/>
+						<!-- Image Upload -->
+						<FileUpload
+							fileType="image"
+							label="User Image"
+							maxSize={5}
+							existingFileUrl={user?.image}
+							disabled={isSubmitting || isLoading}
+							on:fileChange={handleFileChange}
+							on:error={handleFileError}
+						/>
+					</div>
 				</div>
 			</div>
 		</form>

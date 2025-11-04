@@ -3,6 +3,7 @@ export { default as AnimatedBackground } from './animated-background.svelte';
 export { default as DashboardCard } from './dashboard-card.svelte';
 export { default as FileUpload } from './file-upload.svelte';
 export { default as FloatingAction } from './floating-action.svelte';
+export { default as Icon } from './icon.svelte';
 export { default as LoadingOverlay } from './loading-overlay.svelte';
 export { default as LocationMap } from './location-map.svelte';
 export { default as Logo } from './logo.svelte';

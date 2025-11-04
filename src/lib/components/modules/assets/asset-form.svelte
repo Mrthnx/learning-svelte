@@ -9,29 +9,9 @@
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { systemService, type System } from '$lib/services/system.service';
-	import {
-		isRequired,
-		isValidLatitude,
-		isValidLongitude,
-		validationMessages
-	} from '$lib/shared';
-
-	interface Asset {
-		id?: number | null;
-		code?: string;
-		description?: string;
-		order?: number;
-		latitude?: number;
-		longitude?: number;
-		image?: string;
-		rpm?: number;
-		system?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-	}
+	import type { Asset, System } from '$lib/types';
+	import { systemService } from '$lib/services/system.service';
+	import { isRequired, isValidLatitude, isValidLongitude, validationMessages } from '$lib/shared';
 
 	interface Props {
 		asset?: Asset;
@@ -69,7 +49,9 @@
 	let imageFile: File | null = $state(null);
 	let systems: System[] = $state([]);
 	let selectedSystem = $state<{ value: string; label: string } | undefined>(
-		asset?.system ? { value: asset.system.id!.toString(), label: asset.system.code || '' } : undefined
+		asset?.system
+			? { value: asset.system.id!.toString(), label: asset.system.code || '' }
+			: undefined
 	);
 
 	const isDirty = $derived(
@@ -135,7 +117,7 @@
 			return;
 		}
 
-		const selectedSystemData = systems.find(sys => sys.id?.toString() === selectedSystem?.value);
+		const selectedSystemData = systems.find((sys) => sys.id?.toString() === selectedSystem?.value);
 		if (selectedSystemData) {
 			formData.system = {
 				id: selectedSystemData.id!,

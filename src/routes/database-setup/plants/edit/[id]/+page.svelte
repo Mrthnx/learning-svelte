@@ -63,10 +63,12 @@
 
 	{#if isLoading}
 		<div class="flex items-center justify-center p-12">
-			<div class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+			<div
+				class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
+			></div>
 		</div>
 	{:else if plant}
-		<PlantForm plant={plant} onSubmit={handleSubmit} onCancel={handleCancel} isEdit={true} />
+		<PlantForm {plant} onSubmit={handleSubmit} onCancel={handleCancel} isEdit={true} />
 	{/if}
 </div>
 

@@ -9,7 +9,8 @@
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { plantService, type Plant } from '$lib/services/plant.service';
+	import type { Area, Plant } from '$lib/types';
+	import { plantService } from '$lib/services/plant.service';
 	import {
 		isRequired,
 		isValidEmail,
@@ -18,24 +19,6 @@
 		isValidLongitude,
 		validationMessages
 	} from '$lib/shared';
-
-	interface Area {
-		id?: number | null;
-		code?: string;
-		description?: string;
-		nameContactor?: string;
-		telephoneContactor?: string;
-		mailContactor?: string;
-		order?: number;
-		latitude?: number;
-		longitude?: number;
-		image?: string;
-		plant?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-	}
 
 	interface Props {
 		area?: Area;
@@ -151,7 +134,7 @@
 			return;
 		}
 
-		const selectedPlantData = plants.find(p => p.id?.toString() === selectedPlant?.value);
+		const selectedPlantData = plants.find((p) => p.id?.toString() === selectedPlant?.value);
 		if (selectedPlantData) {
 			formData.plant = {
 				id: selectedPlantData.id!,

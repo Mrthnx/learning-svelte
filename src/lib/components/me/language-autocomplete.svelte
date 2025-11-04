@@ -73,7 +73,7 @@
 	<div class="relative">
 		<button
 			type="button"
-			class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+			class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 			class:border-destructive={error}
 			{disabled}
 			onclick={toggleDropdown}
@@ -94,7 +94,7 @@
 							e.stopPropagation();
 							clear();
 						}}
-						class="rounded-sm hover:bg-muted p-0.5"
+						class="rounded-sm p-0.5 hover:bg-muted"
 					>
 						<X class="h-3.5 w-3.5" />
 					</button>
@@ -120,7 +120,7 @@
 					{#each filteredLanguages as language (language.key)}
 						<button
 							type="button"
-							class="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[selected=true]:bg-accent"
+							class="relative flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground data-[selected=true]:bg-accent"
 							data-selected={value === language.key}
 							onclick={() => selectLanguage(language)}
 						>
@@ -140,10 +140,6 @@
 </div>
 
 {#if isOpen}
-	<button
-		type="button"
-		class="fixed inset-0 z-40"
-		onclick={() => (isOpen = false)}
-		tabindex="-1"
+	<button type="button" class="fixed inset-0 z-40" onclick={() => (isOpen = false)} tabindex="-1"
 	></button>
 {/if}

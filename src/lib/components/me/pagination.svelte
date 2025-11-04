@@ -54,7 +54,7 @@
 		<p class="hidden text-sm text-muted-foreground sm:block">
 			Showing {startRecord} to {endRecord} of {totalRecords} results
 		</p>
-		
+
 		<!-- Mobile: Compact version -->
 		<p class="text-center text-xs text-muted-foreground sm:hidden">
 			Page {currentPage} of {totalPages}

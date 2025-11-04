@@ -79,7 +79,7 @@
 			></div>
 		</div>
 	{:else}
-		<div class="rounded-md border max-h-[60vh] overflow-auto">
+		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<SystemTable
 				systems={filteredSystems}
 				onEdit={handleEdit}

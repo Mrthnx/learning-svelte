@@ -111,20 +111,14 @@
 
 	async function loadExcelData() {
 		try {
-			const response = await api.get(
-				`analysis-data-trib/by-lubricant/${plantLubricant!.id}`
-			);
+			const response = await api.get(`analysis-data-trib/by-lubricant/${plantLubricant!.id}`);
 
 			if (response.data && Array.isArray(response.data)) {
 				// Map API response to ExcelRow format
 				const loadedData: ExcelRow[] = response.data.map((item: any) => ({
 					id: item.id?.toString() || crypto.randomUUID(),
 					date: item.surveyDataDate || item.date || new Date().toISOString().split('T')[0],
-					details:
-						item.sampleId ||
-						item.details ||
-						item.description ||
-						`Sample ${item.id || ''}`
+					details: item.sampleId || item.details || item.description || `Sample ${item.id || ''}`
 				}));
 
 				formData.excelData = loadedData;
@@ -299,7 +293,7 @@
 					id="plant"
 					bind:value={selectedPlant}
 					disabled={isSubmitting || isLoading}
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 {errors.plant
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 {errors.plant
 						? 'border-destructive'
 						: ''}"
 					onchange={(e) => {
@@ -402,7 +396,7 @@
 
 			<!-- Excel Upload -->
 			<div class="space-y-2">
-				<label for="excel" class="text-sm font-medium flex items-center gap-2">
+				<label for="excel" class="flex items-center gap-2 text-sm font-medium">
 					<FileSpreadsheet class="h-4 w-4" />
 					Excel Data Upload
 				</label>
@@ -416,9 +410,7 @@
 						class="cursor-pointer"
 					/>
 				</div>
-				<p class="text-xs text-muted-foreground">
-					Upload Excel files to populate the table below
-				</p>
+				<p class="text-xs text-muted-foreground">Upload Excel files to populate the table below</p>
 			</div>
 
 			<!-- Excel Data Table -->

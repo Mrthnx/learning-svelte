@@ -1,86 +1,65 @@
 import { api } from './api';
-import { createApiUrl } from '../shared';
+import { createApiUrl, API_ENDPOINTS, buildEndpoint } from '../shared';
+import type {
+	Component,
+	PaginateRequest,
+	PaginateResponse,
+	ApiResponse,
+	PaginateData
+} from '$lib/types';
 
-export interface Component {
-	id?: number | null;
-	code?: string;
-	description?: string;
-	order?: number;
-	image?: string;
-	mawoi?: {
-		id?: number;
-		code?: string;
-		description?: string;
+export async function getAllComponents(
+	params: PaginateRequest = {}
+): Promise<PaginateResponse<Component>> {
+	const { page = 1, pageSize = 10, filters = {} } = params;
+
+	const url = createApiUrl(API_ENDPOINTS.COMPONENTS, page, pageSize, filters);
+	const response: ApiResponse<PaginateData<Component>> = await api.getLoader(url);
+
+	return {
+		rows: response.data.records || [],
+		page,
+		size: pageSize,
+		total: response.data.total || 0
 	};
-	componentType?: {
-		id?: number;
-		code?: string;
-		description?: string;
-		image?: string;
+}
+
+export async function getComponentById(id: number): Promise<Component> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
+	const response: ApiResponse<Component> = await api.get(endpoint);
+	return response.data;
+}
+
+export async function createComponent(
+	component: Omit<Component, 'id'>
+): Promise<{ success: boolean }> {
+	const data = {
+		id: null,
+		...component
 	};
+	await api.post(API_ENDPOINTS.COMPONENTS, data);
+	return { success: true };
 }
 
-export interface PaginateRequest {
-	page?: number;
-	pageSize?: number;
-	filters?: Record<string, any>;
+export async function updateComponent(
+	id: number,
+	component: Component
+): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
+	await api.put(endpoint, component);
+	return { success: true };
 }
 
-export interface ApiResponse<T> {
-	trackingId: string;
-	data: T;
-	response: any;
-}
-
-export interface PaginateData<T> {
-	ok: boolean;
-	records: T[];
-	total: number;
-}
-
-export interface PaginateResponse<T> {
-	rows: T[];
-	page: number;
-	size: number;
-	total: number;
+export async function deleteComponent(id: number): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
+	await api.del(endpoint);
+	return { success: true };
 }
 
 export const componentService = {
-	async getAll(params: PaginateRequest = {}): Promise<PaginateResponse<Component>> {
-		const { page = 1, pageSize = 10, filters = {} } = params;
-
-		const url = createApiUrl('component', page, pageSize, filters);
-		const response: ApiResponse<PaginateData<Component>> = await api.getLoader(url);
-
-		return {
-			rows: response.data.records || [],
-			page,
-			size: pageSize,
-			total: response.data.total || 0
-		};
-	},
-
-	async getById(id: number): Promise<Component> {
-		const response: ApiResponse<Component> = await api.get(`component/${id}`);
-		return response.data;
-	},
-
-	async create(component: Omit<Component, 'id'>): Promise<{ success: boolean }> {
-		const data = {
-			id: null,
-			...component
-		};
-		await api.post('component', data);
-		return { success: true };
-	},
-
-	async update(id: number, component: Component): Promise<{ success: boolean }> {
-		await api.put(`component/${id}`, component);
-		return { success: true };
-	},
-
-	async delete(id: number): Promise<{ success: boolean }> {
-		await api.del(`component/${id}`);
-		return { success: true };
-	}
+	getAll: getAllComponents,
+	getById: getComponentById,
+	create: createComponent,
+	update: updateComponent,
+	delete: deleteComponent
 };

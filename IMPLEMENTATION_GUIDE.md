@@ -5,6 +5,7 @@ Este documento te guía para completar las implementaciones de los módulos gene
 ## 📁 Estructura Creada
 
 Se han generado las estructuras básicas para:
+
 - ✅ **Accounts** (Completamente implementado - usar como referencia)
 - ✅ **Plants** (Completamente implementado - usar como referencia)
 - 🔨 **Areas** (Estructura básica generada)
@@ -20,6 +21,7 @@ Se han generado las estructuras básicas para:
 **Ubicación**: `src/lib/components/modules/{entity}s/{entity}-form.svelte`
 
 **Pasos**:
+
 1. Copia el contenido de `plant-form.svelte`
 2. Reemplaza todas las referencias de `Plant` por la entidad correspondiente (ej: `Area`)
 3. Ajusta los campos específicos según el ViewModel en `VIEWMODELS.md`
@@ -27,6 +29,7 @@ Se han generado las estructuras básicas para:
 5. Actualiza los imports del servicio correspondiente
 
 **Ejemplo para Areas**:
+
 ```svelte
 import { plantService, type Plant } from '$lib/services/plant.service';
 import { areaService, type Area } from '$lib/services/area.service';
@@ -37,6 +40,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 **Ubicación**: `src/lib/components/modules/{entity}s/{entity}-table.svelte`
 
 **Pasos**:
+
 1. Copia el contenido de `plant-table.svelte`
 2. Reemplaza todas las referencias de `Plant` por la entidad correspondiente
 3. Ajusta las columnas según los campos de tu entidad
@@ -47,6 +51,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 **Ubicación**: `src/routes/database-setup/{entity}s/+page.svelte`
 
 **Pasos**:
+
 1. Copia el contenido de `plants/+page.svelte`
 2. Reemplaza:
    - `Plant` → `{Entity}` (ej: `Area`)
@@ -60,6 +65,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 **Ubicación**: `src/routes/database-setup/{entity}s/create/+page.svelte`
 
 **Pasos**:
+
 1. Copia el contenido de `plants/create/+page.svelte`
 2. Reemplaza las mismas referencias que en el paso 3
 3. Verifica que las rutas de navegación sean correctas
@@ -69,6 +75,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 **Ubicación**: `src/routes/database-setup/{entity}s/edit/[id]/+page.svelte`
 
 **Crear nueva estructura**:
+
 ```svelte
 <script lang="ts">
 	import { goto } from '$app/navigation';
@@ -157,6 +164,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 ## 📋 Checklist por Módulo
 
 ### Areas
+
 - [ ] Completar `area-form.svelte` (debe mostrar selector de Plant)
 - [ ] Completar `area-table.svelte` (incluir columna de Plant)
 - [ ] Completar `areas/+page.svelte`
@@ -164,6 +172,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 - [ ] Crear `areas/edit/[id]/+page.svelte`
 
 ### Systems
+
 - [ ] Completar `system-form.svelte` (debe mostrar selector de Area)
 - [ ] Completar `system-table.svelte` (incluir columna de Area)
 - [ ] Completar `systems/+page.svelte`
@@ -171,6 +180,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 - [ ] Crear `systems/edit/[id]/+page.svelte`
 
 ### Assets (Mawois)
+
 - [ ] Completar `asset-form.svelte` (debe mostrar selector de System, incluir campo RPM)
 - [ ] Completar `asset-table.svelte` (incluir columna de System y RPM)
 - [ ] Completar `assets/+page.svelte`
@@ -179,6 +189,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 - [ ] **Nota**: Verificar si el endpoint es `/assets` o `/mawois` en tu backend
 
 ### Components
+
 - [ ] Completar `component-form.svelte` (selector de Asset/Mawoi y ComponentType)
 - [ ] Completar `component-table.svelte` (columnas de Asset y ComponentType)
 - [ ] Completar `components/+page.svelte`
@@ -186,6 +197,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 - [ ] Crear `components/edit/[id]/+page.svelte`
 
 ### Users
+
 - [ ] Completar `user-form.svelte` (incluir campos específicos de usuario: email, role, etc.)
 - [ ] Completar `user-table.svelte` (columnas de usuario: email, role, active, etc.)
 - [ ] Completar `users/+page.svelte`
@@ -196,14 +208,23 @@ import { areaService, type Area } from '$lib/services/area.service';
 ## 🔧 Campos Específicos por Entidad
 
 ### AccountViewModel (Referencia)
+
 ```typescript
 {
-  id, code, description, nameContactor, telephoneContactor,
-  mailContactor, latitude, longitude, image
+	(id,
+		code,
+		description,
+		nameContactor,
+		telephoneContactor,
+		mailContactor,
+		latitude,
+		longitude,
+		image);
 }
 ```
 
 ### PlantViewModel (Referencia)
+
 ```typescript
 {
   ...AccountViewModel fields,
@@ -212,6 +233,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 ```
 
 ### AreaViewModel
+
 ```typescript
 {
   ...PlantViewModel fields (except account),
@@ -220,6 +242,7 @@ import { areaService, type Area } from '$lib/services/area.service';
 ```
 
 ### SystemViewModel
+
 ```typescript
 {
   ...AreaViewModel fields (except plant),
@@ -228,37 +251,60 @@ import { areaService, type Area } from '$lib/services/area.service';
 ```
 
 ### MawoiViewModel (Asset)
+
 ```typescript
 {
-  id, code, description, order, latitude, longitude, image,
-  rpm,  // ⚠️ Campo específico
-  system  // Reference to System
+	(id,
+		code,
+		description,
+		order,
+		latitude,
+		longitude,
+		image,
+		rpm, // ⚠️ Campo específico
+		system); // Reference to System
 }
 ```
 
 ### ComponentViewModel
+
 ```typescript
 {
-  id, code, description, order, image,
-  mawoi,  // Reference to Mawoi/Asset
-  componentType  // Reference to ComponentType
+	(id,
+		code,
+		description,
+		order,
+		image,
+		mawoi, // Reference to Mawoi/Asset
+		componentType); // Reference to ComponentType
 }
 ```
 
 ### UserViewModel
+
 ```typescript
 {
-  id, name, lastName, email, image, active, phone, dni,
-  notifyWhatsapp, notifyEmail, language,
-  account,  // Reference to Account
-  role,  // Reference to Role
-  plants  // Array of plants the user has access to
+	(id,
+		name,
+		lastName,
+		email,
+		image,
+		active,
+		phone,
+		dni,
+		notifyWhatsapp,
+		notifyEmail,
+		language,
+		account, // Reference to Account
+		role, // Reference to Role
+		plants); // Array of plants the user has access to
 }
 ```
 
 ## 🎨 Tips de Implementación
 
 ### 1. Selectors Jerárquicos
+
 Para entidades con jerarquía (Area → Plant → Account), considera cargar los selects en cascada:
 
 ```typescript
@@ -267,14 +313,16 @@ let accounts: Account[] = $state([]);
 let plants: Plant[] = $state([]);
 
 $effect(() => {
-  if (selectedAccount) {
-    loadPlants(selectedAccount.value);
-  }
+	if (selectedAccount) {
+		loadPlants(selectedAccount.value);
+	}
 });
 ```
 
 ### 2. Validaciones
+
 Usa las funciones de validación de `$lib/shared/validators.ts`:
+
 - `isRequired(value)`
 - `isValidEmail(email)`
 - `isValidPhone(phone)`
@@ -282,13 +330,15 @@ Usa las funciones de validación de `$lib/shared/validators.ts`:
 - `isValidLongitude(lng)`
 
 ### 3. Manejo de Errores
+
 Siempre usa try-catch y muestra mensajes con `toast`:
+
 ```typescript
 try {
-  await service.create(data);
-  toast.success('Created successfully');
+	await service.create(data);
+	toast.success('Created successfully');
 } catch (error: any) {
-  toast.error(error.message || 'Failed to create');
+	toast.error(error.message || 'Failed to create');
 }
 ```
 

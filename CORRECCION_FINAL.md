@@ -3,6 +3,7 @@
 ## Problema Resuelto
 
 El servicio de roles tenía un import incorrecto que causaba el error:
+
 ```
 Failed to resolve import "$lib/api/client" from "src/lib/services/role.service.ts"
 ```
@@ -12,38 +13,45 @@ Failed to resolve import "$lib/api/client" from "src/lib/services/role.service.t
 Se actualizó `role.service.ts` para seguir el mismo patrón que los demás servicios existentes:
 
 ### Antes (❌ Incorrecto):
+
 ```typescript
 import { api } from '$lib/api/client';
 import type { PaginatedResponse } from './types';
 
 class RoleService {
-  private readonly basePath = '/roles';
-  // ...
+	private readonly basePath = '/roles';
+	// ...
 }
 
 export const roleService = new RoleService();
 ```
 
 ### Después (✅ Correcto):
+
 ```typescript
 import { api } from './api';
 import { createApiUrl } from '../shared';
-import type { PaginateResponse, PaginateRequest, ApiResponse, PaginateData } from './account.service';
+import type {
+	PaginateResponse,
+	PaginateRequest,
+	ApiResponse,
+	PaginateData
+} from './account.service';
 
 export const roleService = {
-  async getAll(params: PaginateRequest = {}): Promise<PaginateResponse<Role>> {
-    const { page = 1, pageSize = 10, filters = {} } = params;
-    const url = createApiUrl('roles', page, pageSize, filters);
-    const response: ApiResponse<PaginateData<Role>> = await api.getLoader(url);
-    
-    return {
-      rows: response.data.records || [],
-      page,
-      size: pageSize,
-      total: response.data.total || 0
-    };
-  },
-  // ... otros métodos
+	async getAll(params: PaginateRequest = {}): Promise<PaginateResponse<Role>> {
+		const { page = 1, pageSize = 10, filters = {} } = params;
+		const url = createApiUrl('roles', page, pageSize, filters);
+		const response: ApiResponse<PaginateData<Role>> = await api.getLoader(url);
+
+		return {
+			rows: response.data.records || [],
+			page,
+			size: pageSize,
+			total: response.data.total || 0
+		};
+	}
+	// ... otros métodos
 };
 ```
 
@@ -59,22 +67,22 @@ export const roleService = {
 
 ```typescript
 // Obtener todos los roles con paginación
-roleService.getAll({ page: 1, pageSize: 10, filters: {} })
+roleService.getAll({ page: 1, pageSize: 10, filters: {} });
 
 // Obtener un rol por ID
-roleService.getById(id)
+roleService.getById(id);
 
 // Crear un nuevo rol
-roleService.create({ code: 'ADMIN', description: 'Administrator', permissions: [1,2,3] })
+roleService.create({ code: 'ADMIN', description: 'Administrator', permissions: [1, 2, 3] });
 
 // Actualizar un rol existente
-roleService.update(id, role)
+roleService.update(id, role);
 
 // Eliminar un rol
-roleService.delete(id)
+roleService.delete(id);
 
 // Obtener permisos disponibles
-roleService.getPermissions()
+roleService.getPermissions();
 ```
 
 ## Integración con User Form
@@ -131,6 +139,7 @@ Para verificar que todo funciona correctamente:
 **Servicio de Roles**: ✅ **COMPLETADO Y FUNCIONAL**
 
 El servicio ahora:
+
 - ✅ Usa los imports correctos
 - ✅ Sigue el patrón establecido en el proyecto
 - ✅ Es compatible con todos los demás servicios

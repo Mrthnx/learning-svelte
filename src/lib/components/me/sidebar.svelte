@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { SidebarDesktop, SidebarMobile, FloatingAction } from '$lib/components/me';
 
-	let isMobileDrawerOpen = false;
-
-	// Sincronizar el estado del drawer con el FAB
-	$: if (isMobileDrawerOpen !== undefined) {
-		// El estado se maneja desde FloatingActionButton
-	}
+	let isMobileDrawerOpen = $state(false);
 </script>
 
 <!-- Desktop Sidebar (existing) -->

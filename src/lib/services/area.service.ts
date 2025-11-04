@@ -1,48 +1,12 @@
 import { api } from './api';
-import { createApiUrl, normalizeCoordinate } from '../shared';
-
-export interface Area {
-	id?: number | null;
-	code?: string;
-	description?: string;
-	nameContactor?: string;
-	telephoneContactor?: string;
-	mailContactor?: string;
-	order?: number;
-	latitude?: number;
-	longitude?: number;
-	image?: string;
-	plant?: {
-		id?: number;
-		code?: string;
-		description?: string;
-	};
-}
-
-export interface PaginateRequest {
-	page?: number;
-	pageSize?: number;
-	filters?: Record<string, any>;
-}
-
-export interface ApiResponse<T> {
-	trackingId: string;
-	data: T;
-	response: any;
-}
-
-export interface PaginateData<T> {
-	ok: boolean;
-	records: T[];
-	total: number;
-}
-
-export interface PaginateResponse<T> {
-	rows: T[];
-	page: number;
-	size: number;
-	total: number;
-}
+import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint } from '../shared';
+import type {
+	Area,
+	PaginateRequest,
+	PaginateResponse,
+	ApiResponse,
+	PaginateData
+} from '$lib/types';
 
 function normalizeArea(area: Area): Area {
 	return {
@@ -52,42 +16,51 @@ function normalizeArea(area: Area): Area {
 	};
 }
 
+export async function getAllAreas(params: PaginateRequest = {}): Promise<PaginateResponse<Area>> {
+	const { page = 1, pageSize = 10, filters = {} } = params;
+
+	const url = createApiUrl(API_ENDPOINTS.AREAS, page, pageSize, filters);
+	const response: ApiResponse<PaginateData<Area>> = await api.getLoader(url);
+
+	return {
+		rows: (response.data.records || []).map(normalizeArea),
+		page,
+		size: pageSize,
+		total: response.data.total || 0
+	};
+}
+
+export async function getAreaById(id: number): Promise<Area> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.AREAS, id);
+	const response: ApiResponse<Area> = await api.get(endpoint);
+	return normalizeArea(response.data);
+}
+
+export async function createArea(area: Omit<Area, 'id'>): Promise<{ success: boolean }> {
+	const data = {
+		id: null,
+		...area
+	};
+	await api.post(API_ENDPOINTS.AREAS, data);
+	return { success: true };
+}
+
+export async function updateArea(id: number, area: Area): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.AREAS, id);
+	await api.put(endpoint, area);
+	return { success: true };
+}
+
+export async function deleteArea(id: number): Promise<{ success: boolean }> {
+	const endpoint = buildEndpoint(API_ENDPOINTS.AREAS, id);
+	await api.del(endpoint);
+	return { success: true };
+}
+
 export const areaService = {
-	async getAll(params: PaginateRequest = {}): Promise<PaginateResponse<Area>> {
-		const { page = 1, pageSize = 10, filters = {} } = params;
-
-		const url = createApiUrl('areas', page, pageSize, filters);
-		const response: ApiResponse<PaginateData<Area>> = await api.getLoader(url);
-
-		return {
-			rows: (response.data.records || []).map(normalizeArea),
-			page,
-			size: pageSize,
-			total: response.data.total || 0
-		};
-	},
-
-	async getById(id: number): Promise<Area> {
-		const response: ApiResponse<Area> = await api.get(`areas/${id}`);
-		return normalizeArea(response.data);
-	},
-
-	async create(area: Omit<Area, 'id'>): Promise<{ success: boolean }> {
-		const data = {
-			id: null,
-			...area
-		};
-		await api.post('areas', data);
-		return { success: true };
-	},
-
-	async update(id: number, area: Area): Promise<{ success: boolean }> {
-		await api.put(`areas/${id}`, area);
-		return { success: true };
-	},
-
-	async delete(id: number): Promise<{ success: boolean }> {
-		await api.del(`areas/${id}`);
-		return { success: true };
-	}
+	getAll: getAllAreas,
+	getById: getAreaById,
+	create: createArea,
+	update: updateArea,
+	delete: deleteArea
 };

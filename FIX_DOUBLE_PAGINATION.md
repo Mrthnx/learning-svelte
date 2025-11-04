@@ -19,27 +19,28 @@ El problema ocurre porque hay **dos disparadores** para cargar los datos:
 ```typescript
 // ❌ PROBLEMA: Dos llamadas
 $effect(() => {
-  isDebouncing = true;
-  const cleanup = useDebounce(
-    { filterCode, filterDescription },
-    () => {
-      currentPage = 1;
-      loadPlants();  // <- Primera llamada (del effect)
-      isDebouncing = false;
-    },
-    500
-  );
-  return cleanup;
+	isDebouncing = true;
+	const cleanup = useDebounce(
+		{ filterCode, filterDescription },
+		() => {
+			currentPage = 1;
+			loadPlants(); // <- Primera llamada (del effect)
+			isDebouncing = false;
+		},
+		500
+	);
+	return cleanup;
 });
 
 onMount(() => {
-  loadPlants();  // <- Segunda llamada (del onMount)
+	loadPlants(); // <- Segunda llamada (del onMount)
 });
 ```
 
 ### ¿Por qué sucede?
 
 El `$effect` se ejecuta en la carga inicial porque:
+
 - `filterCode` y `filterDescription` se inicializan como `''` (cadena vacía)
 - Esto dispara el efecto reactivo
 - El debounce espera 500ms y luego ejecuta `loadPlants()`
@@ -59,27 +60,27 @@ let isInitialLoad = $state(true);
 
 // Load data on mount
 onMount(() => {
-  loadPlants();
-  isInitialLoad = false;  // Desactivar flag después de la carga inicial
+	loadPlants();
+	isInitialLoad = false; // Desactivar flag después de la carga inicial
 });
 
 // Debounced search - auto-search when user stops typing
 $effect(() => {
-  // Skip initial effect execution
-  if (isInitialLoad) return;  // <- Evita ejecución inicial
-  
-  isDebouncing = true;
-  const cleanup = useDebounce(
-    { filterCode, filterDescription },
-    () => {
-      currentPage = 1;
-      loadPlants();
-      isDebouncing = false;
-    },
-    500
-  );
-  
-  return cleanup;
+	// Skip initial effect execution
+	if (isInitialLoad) return; // <- Evita ejecución inicial
+
+	isDebouncing = true;
+	const cleanup = useDebounce(
+		{ filterCode, filterDescription },
+		() => {
+			currentPage = 1;
+			loadPlants();
+			isDebouncing = false;
+		},
+		500
+	);
+
+	return cleanup;
 });
 ```
 
@@ -104,25 +105,28 @@ $effect(() => {
 ### Manual (para un archivo específico):
 
 1. Agregar la bandera `isInitialLoad`:
+
 ```typescript
 let isInitialLoad = $state(true);
 ```
 
 2. Modificar `onMount`:
+
 ```typescript
 onMount(() => {
-  loadPlants();
-  isInitialLoad = false;  // Agregar esta línea
+	loadPlants();
+	isInitialLoad = false; // Agregar esta línea
 });
 ```
 
 3. Agregar check en `$effect`:
+
 ```typescript
 $effect(() => {
-  // Agregar estas líneas al inicio
-  if (isInitialLoad) return;
-  
-  // ... resto del código
+	// Agregar estas líneas al inicio
+	if (isInitialLoad) return;
+
+	// ... resto del código
 });
 ```
 
@@ -134,6 +138,7 @@ chmod +x fix_double_pagination.sh
 ```
 
 El script corregirá automáticamente:
+
 - ✅ Plants (ya corregido manualmente)
 - ✅ Areas
 - ✅ Systems
@@ -146,12 +151,14 @@ El script corregirá automáticamente:
 ## 📊 Impacto
 
 ### Antes del Fix:
+
 - ❌ 2 llamadas al API en cada carga de página
 - ❌ Mayor carga en el servidor
 - ❌ Mayor tiempo de carga
 - ❌ Posibles inconsistencias en datos
 
 ### Después del Fix:
+
 - ✅ 1 sola llamada al API en cada carga
 - ✅ Menor carga en el servidor
 - ✅ Tiempo de carga optimizado
@@ -170,12 +177,14 @@ Para verificar que el fix funciona:
 5. Verifica que solo hay **1 llamada** al endpoint de paginación
 
 **Antes**:
+
 ```
 GET /api/plants?page=1&pageSize=10  [200] 150ms
 GET /api/plants?page=1&pageSize=10  [200] 145ms  <- Duplicado
 ```
 
 **Después**:
+
 ```
 GET /api/plants?page=1&pageSize=10  [200] 150ms  <- Solo una
 ```
@@ -192,26 +201,26 @@ let isInitialLoad = $state(true);
 
 // 2. Cargar datos en mount
 onMount(() => {
-  loadData();
-  isInitialLoad = false;
+	loadData();
+	isInitialLoad = false;
 });
 
 // 3. Debounce para filtros (con guard)
 $effect(() => {
-  if (isInitialLoad) return;  // ← Importante!
-  
-  isDebouncing = true;
-  const cleanup = useDebounce(
-    { filter1, filter2 },
-    () => {
-      currentPage = 1;
-      loadData();
-      isDebouncing = false;
-    },
-    500
-  );
-  
-  return cleanup;
+	if (isInitialLoad) return; // ← Importante!
+
+	isDebouncing = true;
+	const cleanup = useDebounce(
+		{ filter1, filter2 },
+		() => {
+			currentPage = 1;
+			loadData();
+			isDebouncing = false;
+		},
+		500
+	);
+
+	return cleanup;
 });
 ```
 
@@ -219,14 +228,14 @@ $effect(() => {
 
 ## 📝 Módulos Afectados
 
-| Módulo | Estado | Ubicación |
-|--------|--------|-----------|
-| Plants | ✅ Corregido | `/database-setup/plants/+page.svelte` |
-| Areas | ⚠️ Por corregir | `/database-setup/areas/+page.svelte` |
-| Systems | ⚠️ Por corregir | `/database-setup/systems/+page.svelte` |
-| Assets | ⚠️ Por corregir | `/database-setup/assets/+page.svelte` |
+| Módulo     | Estado          | Ubicación                                 |
+| ---------- | --------------- | ----------------------------------------- |
+| Plants     | ✅ Corregido    | `/database-setup/plants/+page.svelte`     |
+| Areas      | ⚠️ Por corregir | `/database-setup/areas/+page.svelte`      |
+| Systems    | ⚠️ Por corregir | `/database-setup/systems/+page.svelte`    |
+| Assets     | ⚠️ Por corregir | `/database-setup/assets/+page.svelte`     |
 | Components | ⚠️ Por corregir | `/database-setup/components/+page.svelte` |
-| Users | ⚠️ Por corregir | `/database-setup/users/+page.svelte` |
+| Users      | ⚠️ Por corregir | `/database-setup/users/+page.svelte`      |
 
 Ejecuta `./fix_double_pagination.sh` para corregir todos a la vez.
 
@@ -235,10 +244,12 @@ Ejecuta `./fix_double_pagination.sh` para corregir todos a la vez.
 ## 🚨 Backups
 
 El script crea backups automáticamente:
+
 - Original: `+page.svelte`
 - Backup: `+page.svelte.backup`
 
 Para restaurar un backup:
+
 ```bash
 mv +page.svelte.backup +page.svelte
 ```

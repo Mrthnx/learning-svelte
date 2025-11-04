@@ -8,28 +8,9 @@
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { assetService, type Asset } from '$lib/services/asset.service';
+	import type { Component, Asset } from '$lib/types';
+	import { assetService } from '$lib/services/asset.service';
 	import { isRequired, validationMessages } from '$lib/shared';
-
-	interface ComponentType {
-		id?: number;
-		code?: string;
-		description?: string;
-	}
-
-	interface Component {
-		id?: number | null;
-		code?: string;
-		description?: string;
-		order?: number;
-		image?: string;
-		mawoi?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-		componentType?: ComponentType;
-	}
 
 	interface Props {
 		component?: Component;
@@ -65,7 +46,9 @@
 	let imageFile: File | null = $state(null);
 	let assets: Asset[] = $state([]);
 	let selectedAsset = $state<{ value: string; label: string } | undefined>(
-		component?.mawoi ? { value: component.mawoi.id!.toString(), label: component.mawoi.code || '' } : undefined
+		component?.mawoi
+			? { value: component.mawoi.id!.toString(), label: component.mawoi.code || '' }
+			: undefined
 	);
 
 	const isDirty = $derived(
@@ -120,7 +103,7 @@
 			return;
 		}
 
-		const selectedAssetData = assets.find(a => a.id?.toString() === selectedAsset?.value);
+		const selectedAssetData = assets.find((a) => a.id?.toString() === selectedAsset?.value);
 		if (selectedAssetData) {
 			formData.mawoi = {
 				id: selectedAssetData.id!,

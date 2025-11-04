@@ -3,21 +3,26 @@
 ## ✅ Lo que se ha completado
 
 ### 1. **Plants** (100% completo)
+
 Implementación completa siguiendo el patrón de Accounts:
 
 **Servicio**:
+
 - `src/lib/services/plant.service.ts` ✅
 
 **Componentes**:
+
 - `src/lib/components/modules/plants/plant-form.svelte` ✅
 - `src/lib/components/modules/plants/plant-table.svelte` ✅
 - `src/lib/components/modules/plants/index.ts` ✅
 
 **Rutas**:
+
 - `src/routes/database-setup/plants/+page.svelte` ✅
 - `src/routes/database-setup/plants/create/+page.svelte` ✅
 
 **Características**:
+
 - CRUD completo
 - Selector de Account
 - Validación de formularios
@@ -31,6 +36,7 @@ Implementación completa siguiendo el patrón de Accounts:
 Para cada una de estas entidades se generó:
 
 **Servicios** (ubicados en `src/lib/services/`):
+
 - ✅ `area.service.ts`
 - ✅ `system.service.ts`
 - ✅ `asset.service.ts`
@@ -38,11 +44,13 @@ Para cada una de estas entidades se generó:
 - ✅ `user.service.ts`
 
 **Componentes** (ubicados en `src/lib/components/modules/`):
+
 - 🔨 `{entity}s/{entity}-form.svelte` (placeholder)
 - 🔨 `{entity}s/{entity}-table.svelte` (placeholder)
 - ✅ `{entity}s/index.ts`
 
 **Rutas** (ubicadas en `src/routes/database-setup/`):
+
 - 🔨 `{entity}s/+page.svelte` (placeholder)
 - 🔨 `{entity}s/create/+page.svelte` (placeholder)
 - ⚠️ `{entity}s/edit/[id]/+page.svelte` (pendiente)
@@ -109,6 +117,7 @@ frontend/
 ## 🎯 Qué sigue
 
 ### Inmediato
+
 1. Leer `IMPLEMENTATION_GUIDE.md` para entender el proceso
 2. Empezar con **Areas** (es la siguiente en la jerarquía)
 3. Copiar `plant-form.svelte` y adaptarlo para Areas
@@ -117,6 +126,7 @@ frontend/
 6. Copiar `plants/create/+page.svelte` y adaptarlo para Areas
 
 ### Orden sugerido
+
 1. **Areas** → Depende de Plants
 2. **Systems** → Depende de Areas
 3. **Assets** → Depende de Systems (⚠️ verificar endpoint: `/assets` o `/mawois`)
@@ -126,10 +136,13 @@ frontend/
 ## 🛠️ Herramientas Creadas
 
 ### 1. Script de Generación
+
 `generate_modules.sh` - Genera automáticamente la estructura básica de cualquier módulo
 
 ### 2. Guía de Implementación
+
 `IMPLEMENTATION_GUIDE.md` - Guía paso a paso con:
+
 - Instrucciones detalladas
 - Ejemplos de código
 - Checklist por módulo
@@ -137,6 +150,7 @@ frontend/
 - Referencias y mejores prácticas
 
 ### 3. Documentación de ViewModels
+
 `VIEWMODELS.md` - Referencia completa de todas las estructuras de datos del backend
 
 ## 📊 Estadísticas
@@ -162,6 +176,7 @@ Module/
 ```
 
 **Características comunes**:
+
 - Validación de formularios
 - Búsqueda y filtros
 - Paginación

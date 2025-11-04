@@ -9,7 +9,8 @@
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
-	import { accountService, type Account } from '$lib/services/account.service';
+	import type { Plant, Account } from '$lib/types';
+	import { accountService } from '$lib/services/account.service';
 	import {
 		isRequired,
 		isValidEmail,
@@ -18,24 +19,6 @@
 		isValidLongitude,
 		validationMessages
 	} from '$lib/shared';
-
-	interface Plant {
-		id?: number | null;
-		code?: string;
-		description?: string;
-		nameContactor?: string;
-		telephoneContactor?: string;
-		mailContactor?: string;
-		order?: number;
-		latitude?: number;
-		longitude?: number;
-		image?: string;
-		account?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-	}
 
 	interface Props {
 		plant?: Plant;
@@ -75,7 +58,9 @@
 	let imageFile: File | null = $state(null);
 	let accounts: Account[] = $state([]);
 	let selectedAccount = $state<{ value: string; label: string } | undefined>(
-		plant?.account ? { value: plant.account.id!.toString(), label: plant.account.code || '' } : undefined
+		plant?.account
+			? { value: plant.account.id!.toString(), label: plant.account.code || '' }
+			: undefined
 	);
 
 	const isDirty = $derived(
@@ -154,7 +139,9 @@
 		}
 
 		// Set account from selection
-		const selectedAccountData = accounts.find(acc => acc.id?.toString() === selectedAccount?.value);
+		const selectedAccountData = accounts.find(
+			(acc) => acc.id?.toString() === selectedAccount?.value
+		);
 		if (selectedAccountData) {
 			formData.account = {
 				id: selectedAccountData.id!,

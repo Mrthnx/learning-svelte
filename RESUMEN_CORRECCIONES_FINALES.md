@@ -6,25 +6,27 @@
 
 **Problema**: Todas las rutas llamaban 2 veces al endpoint de paginación al cargar.
 
-**Causa**: 
+**Causa**:
+
 - `onMount()` ejecutaba la carga
 - `$effect()` con debounce también ejecutaba la carga en la inicialización
 
 **Solución Aplicada**:
+
 ```typescript
 // Agregado flag isInitialLoad
 let isInitialLoad = $state(true);
 
 // onMount establece el flag a false después de cargar
 onMount(() => {
-  loadData();
-  isInitialLoad = false;
+	loadData();
+	isInitialLoad = false;
 });
 
 // $effect verifica el flag antes de ejecutar
 $effect(() => {
-  if (isInitialLoad) return;  // ← Evita ejecución inicial
-  // ... resto del código de debounce
+	if (isInitialLoad) return; // ← Evita ejecución inicial
+	// ... resto del código de debounce
 });
 ```
 
@@ -40,6 +42,7 @@ $effect(() => {
 | Users | ✅ Corregido | `/database-setup/users/+page.svelte` |
 
 **Resultado**:
+
 - ✅ De 2 llamadas → 1 llamada por carga
 - ✅ Mejora del 50% en llamadas al API
 - ✅ Carga más rápida
@@ -51,12 +54,14 @@ $effect(() => {
 
 **Problema**: La columna "Role" en la tabla de usuarios no mostraba nada, aunque el role venía en los datos.
 
-**Causa**: 
+**Causa**:
+
 - La tabla buscaba `user.role.code`
 - Pero el backend envía `user.role.name`
 - Ejemplo de dato: `{role: {id: 2, name: "ACCOUNT_ADMIN"}}`
 
 **Solución Aplicada**:
+
 ```typescript
 // Antes (❌):
 <Badge variant="secondary">{user.role.code}</Badge>
@@ -66,9 +71,11 @@ $effect(() => {
 ```
 
 **Archivo Modificado**:
+
 - `src/lib/components/modules/users/user-table.svelte` (línea 83)
 
 **Beneficios**:
+
 - ✅ Muestra el nombre del role correctamente
 - ✅ Fallback a `code` si `name` no existe
 - ✅ Fallback a 'N/A' si ninguno existe
@@ -80,15 +87,15 @@ $effect(() => {
 
 ### Todos los Módulos Funcionando Correctamente:
 
-| Módulo | Paginación | Formulario | Tabla | Role Display | Estado |
-|--------|------------|------------|-------|--------------|--------|
-| **Accounts** | ✅ | ✅ | ✅ | N/A | 100% |
-| **Plants** | ✅ | ✅ | ✅ | N/A | 100% |
-| **Areas** | ✅ | ✅ | ✅ | N/A | 100% |
-| **Systems** | ✅ | ✅ | ✅ | N/A | 100% |
-| **Assets** | ✅ | ✅ | ✅ | N/A | 100% |
-| **Components** | ✅ | ✅ | ✅ | N/A | 100% |
-| **Users** | ✅ | ✅ | ✅ | ✅ | 100% |
+| Módulo         | Paginación | Formulario | Tabla | Role Display | Estado |
+| -------------- | ---------- | ---------- | ----- | ------------ | ------ |
+| **Accounts**   | ✅         | ✅         | ✅    | N/A          | 100%   |
+| **Plants**     | ✅         | ✅         | ✅    | N/A          | 100%   |
+| **Areas**      | ✅         | ✅         | ✅    | N/A          | 100%   |
+| **Systems**    | ✅         | ✅         | ✅    | N/A          | 100%   |
+| **Assets**     | ✅         | ✅         | ✅    | N/A          | 100%   |
+| **Components** | ✅         | ✅         | ✅    | N/A          | 100%   |
+| **Users**      | ✅         | ✅         | ✅    | ✅           | 100%   |
 
 ---
 
@@ -103,12 +110,14 @@ $effect(() => {
 5. Verifica que solo hay **1 llamada** al endpoint
 
 **Antes**:
+
 ```
 GET /api/plants?page=1&pageSize=10  [200] 150ms
 GET /api/plants?page=1&pageSize=10  [200] 145ms  ← Duplicado
 ```
 
 **Después**:
+
 ```
 GET /api/plants?page=1&pageSize=10  [200] 150ms  ← Solo una
 ```
@@ -124,6 +133,7 @@ GET /api/plants?page=1&pageSize=10  [200] 150ms  ← Solo una
 ## 📁 Archivos Modificados
 
 ### Corrección de Paginación (7 archivos):
+
 ```
 src/routes/database-setup/
 ├── accounts/+page.svelte        ← Corregido
@@ -136,6 +146,7 @@ src/routes/database-setup/
 ```
 
 ### Corrección de Display de Role (1 archivo):
+
 ```
 src/lib/components/modules/users/
 └── user-table.svelte            ← Corregido
@@ -157,27 +168,27 @@ let filterDescription = $state('');
 
 // Carga inicial en mount
 onMount(() => {
-  loadData();
-  isInitialLoad = false;  // Crucial: desactivar flag
+	loadData();
+	isInitialLoad = false; // Crucial: desactivar flag
 });
 
 // Efecto reactivo para búsqueda con debounce
 $effect(() => {
-  // Guard: evitar ejecución en carga inicial
-  if (isInitialLoad) return;
-  
-  isDebouncing = true;
-  const cleanup = useDebounce(
-    { filterCode, filterDescription },
-    () => {
-      currentPage = 1;
-      loadData();
-      isDebouncing = false;
-    },
-    500  // 500ms de espera
-  );
-  
-  return cleanup;
+	// Guard: evitar ejecución en carga inicial
+	if (isInitialLoad) return;
+
+	isDebouncing = true;
+	const cleanup = useDebounce(
+		{ filterCode, filterDescription },
+		() => {
+			currentPage = 1;
+			loadData();
+			isDebouncing = false;
+		},
+		500 // 500ms de espera
+	);
+
+	return cleanup;
 });
 ```
 
@@ -212,10 +223,16 @@ $effect(() => {
 ### Para Nuevos Módulos con Paginación:
 
 1. **Siempre usar el patrón corregido**:
+
    ```typescript
    let isInitialLoad = $state(true);
-   onMount(() => { loadData(); isInitialLoad = false; });
-   $effect(() => { if (isInitialLoad) return; /* debounce */ });
+   onMount(() => {
+   	loadData();
+   	isInitialLoad = false;
+   });
+   $effect(() => {
+   	if (isInitialLoad) return; /* debounce */
+   });
    ```
 
 2. **Verificar en DevTools** después de implementar
@@ -225,8 +242,11 @@ $effect(() => {
 ### Para Display de Datos del Backend:
 
 1. **Usar fallbacks** cuando no estés seguro de la estructura:
+
    ```typescript
-   {data.field1 || data.field2 || 'default'}
+   {
+   	data.field1 || data.field2 || 'default';
+   }
    ```
 
 2. **Verificar los ViewModels** antes de implementar
@@ -252,18 +272,21 @@ Para cada módulo, verificar:
 ## 🎯 Impacto de las Correcciones
 
 ### Performance:
+
 - ✅ Reducción del 50% en llamadas al API
 - ✅ Carga inicial más rápida
 - ✅ Menor carga en el servidor
 - ✅ Mejor experiencia de usuario
 
 ### UX:
+
 - ✅ Roles ahora visibles en tabla de usuarios
 - ✅ Sin recargas innecesarias
 - ✅ Búsqueda más fluida con debounce
 - ✅ Feedback visual consistente
 
 ### Código:
+
 - ✅ Patrón consistente en todos los módulos
 - ✅ Código más mantenible
 - ✅ Fácil de replicar en nuevos módulos

@@ -11,14 +11,7 @@
 		children?: import('svelte').Snippet;
 	}
 
-	let {
-		title,
-		description,
-		actionLabel,
-		actionIcon,
-		onAction,
-		children
-	}: Props = $props();
+	let { title, description, actionLabel, actionIcon, onAction, children }: Props = $props();
 </script>
 
 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
