@@ -283,102 +283,44 @@ export const LANG_VALUES = [
 ];
 
 export const GMT_VALUES = [
-	{
-		key: '+0000',
-		value: 'GMT(+0)'
-	},
-	{
-		key: '+0100',
-		value: 'GMT(+1)'
-	},
-	{
-		key: '+0200',
-		value: 'GMT(+2)'
-	},
-	{
-		key: '+0300',
-		value: 'GMT(+3)'
-	},
-	{
-		key: '+0400',
-		value: 'GMT(+4)'
-	},
-	{
-		key: '+0500',
-		value: 'GMT(+5)'
-	},
-	{
-		key: '+0600',
-		value: 'GMT(+6)'
-	},
-	{
-		key: '+0700',
-		value: 'GMT(+7)'
-	},
-	{
-		key: '+0800',
-		value: 'GMT(+8)'
-	},
-	{
-		key: '+0900',
-		value: 'GMT(+9)'
-	},
-	{
-		key: '+1000',
-		value: 'GMT(+10)'
-	},
-	{
-		key: '+1100',
-		value: 'GMT(+11)'
-	},
-	{
-		key: '+1200',
-		value: 'GMT(+12)'
-	},
-	{
-		key: '-1100',
-		value: 'GMT(-11)'
-	},
-	{
-		key: '-1000',
-		value: 'GMT(-10)'
-	},
-	{
-		key: '-0900',
-		value: 'GMT(-9)'
-	},
-	{
-		key: '-0800',
-		value: 'GMT(-8)'
-	},
-	{
-		key: '-0700',
-		value: 'GMT(-7)'
-	},
-	{
-		key: '-0600',
-		value: 'GMT(-6)'
-	},
-	{
-		key: '-0500',
-		value: 'GMT(-5)'
-	},
-	{
-		key: '-0400',
-		value: 'GMT(-4)'
-	},
-	{
-		key: '-0300',
-		value: 'GMT(-3)'
-	},
-	{
-		key: '-0200',
-		value: 'GMT(-2)'
-	},
-	{
-		key: '-0100',
-		value: 'GMT(-1)'
-	}
+	{ key: '-1200', value: 'GMT-12:00', region: 'Baker Island' },
+	{ key: '-1100', value: 'GMT-11:00', region: 'American Samoa' },
+	{ key: '-1000', value: 'GMT-10:00', region: 'Hawaii' },
+	{ key: '-0930', value: 'GMT-09:30', region: 'Marquesas Islands' },
+	{ key: '-0900', value: 'GMT-09:00', region: 'Alaska' },
+	{ key: '-0800', value: 'GMT-08:00', region: 'Pacific Time (US & Canada)' },
+	{ key: '-0700', value: 'GMT-07:00', region: 'Mountain Time (US & Canada)' },
+	{ key: '-0600', value: 'GMT-06:00', region: 'Central Time (US & Canada)' },
+	{ key: '-0500', value: 'GMT-05:00', region: 'Eastern Time (US & Canada)' },
+	{ key: '-0400', value: 'GMT-04:00', region: 'Atlantic Time' },
+	{ key: '-0330', value: 'GMT-03:30', region: 'Newfoundland' },
+	{ key: '-0300', value: 'GMT-03:00', region: 'Buenos Aires, São Paulo' },
+	{ key: '-0200', value: 'GMT-02:00', region: 'Mid-Atlantic' },
+	{ key: '-0100', value: 'GMT-01:00', region: 'Azores' },
+	{ key: '+0000', value: 'GMT+00:00', region: 'London, Dublin, Lisbon' },
+	{ key: '+0100', value: 'GMT+01:00', region: 'Paris, Berlin, Rome' },
+	{ key: '+0200', value: 'GMT+02:00', region: 'Cairo, Athens, Helsinki' },
+	{ key: '+0300', value: 'GMT+03:00', region: 'Moscow, Istanbul, Nairobi' },
+	{ key: '+0330', value: 'GMT+03:30', region: 'Tehran' },
+	{ key: '+0400', value: 'GMT+04:00', region: 'Dubai, Baku' },
+	{ key: '+0430', value: 'GMT+04:30', region: 'Kabul' },
+	{ key: '+0500', value: 'GMT+05:00', region: 'Karachi, Tashkent' },
+	{ key: '+0530', value: 'GMT+05:30', region: 'Mumbai, New Delhi' },
+	{ key: '+0545', value: 'GMT+05:45', region: 'Kathmandu' },
+	{ key: '+0600', value: 'GMT+06:00', region: 'Dhaka, Almaty' },
+	{ key: '+0630', value: 'GMT+06:30', region: 'Yangon' },
+	{ key: '+0700', value: 'GMT+07:00', region: 'Bangkok, Jakarta' },
+	{ key: '+0800', value: 'GMT+08:00', region: 'Beijing, Singapore, Perth' },
+	{ key: '+0845', value: 'GMT+08:45', region: 'Eucla' },
+	{ key: '+0900', value: 'GMT+09:00', region: 'Tokyo, Seoul' },
+	{ key: '+0930', value: 'GMT+09:30', region: 'Adelaide, Darwin' },
+	{ key: '+1000', value: 'GMT+10:00', region: 'Sydney, Melbourne' },
+	{ key: '+1030', value: 'GMT+10:30', region: 'Lord Howe Island' },
+	{ key: '+1100', value: 'GMT+11:00', region: 'Solomon Islands' },
+	{ key: '+1200', value: 'GMT+12:00', region: 'Auckland, Fiji' },
+	{ key: '+1245', value: 'GMT+12:45', region: 'Chatham Islands' },
+	{ key: '+1300', value: 'GMT+13:00', region: 'Tonga' },
+	{ key: '+1400', value: 'GMT+14:00', region: 'Line Islands' }
 ];
 
 export interface ILanguageState {

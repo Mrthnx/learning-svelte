@@ -7,6 +7,9 @@
 	import { Save, X } from 'lucide-svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import PhoneCodeAutocomplete from '$lib/components/me/phonecode-autocomplete.svelte';
+	import LanguageAutocomplete from '$lib/components/me/language-autocomplete.svelte';
+	import CountryAutocomplete from '$lib/components/me/country-autocomplete.svelte';
 	import AccountModalTable from '../accounts/account-modal-table.svelte';
 	import PlantModalTable from '../plants/plant-modal-table.svelte';
 	import AreaModalTable from '../areas/area-modal-table.svelte';
@@ -22,16 +25,39 @@
 
 	interface User {
 		id?: number | null;
-		name?: string;
-		lastName?: string;
+		code?: string;
 		email?: string;
-		image?: string;
-		active?: boolean;
+		password?: string;
+		name?: string;
+		country?: number;
+		city?: string;
+		province?: string;
+		address?: string;
+		zip?: string;
 		phone?: string;
-		dni?: string;
-		notifyWhatsapp?: boolean;
-		notifyEmail?: boolean;
-		language?: string;
+		countryPhoneCode?: string;
+		countryCode?: string;
+		phoneConfirmed?: boolean;
+		image?: string;
+		passwordValidate?: boolean;
+		twoFactorAuth?: boolean;
+		allowAlarmsSentSms?: boolean;
+		allowAlarmsSentEmail?: boolean;
+		allowCommentAlarmsSentEmail?: boolean;
+		allowCommentAlarmsSentSms?: boolean;
+		languagePreference?: string;
+		description?: string;
+		isBlocked?: boolean;
+		imageCompany?: string;
+		nameCompany?: string;
+		addressCompany?: string;
+		footerCompany?: string;
+		company?: number;
+		role?: {
+			id?: number;
+			code?: string;
+			description?: string;
+		};
 		account?: {
 			id?: number;
 			code?: string;
@@ -48,11 +74,6 @@
 			description?: string;
 		};
 		system?: {
-			id?: number;
-			code?: string;
-			description?: string;
-		};
-		role?: {
 			id?: number;
 			code?: string;
 			description?: string;
@@ -81,21 +102,38 @@
 
 	let formData = $state<User>({
 		id: user?.id ?? null,
-		name: user?.name ?? '',
-		lastName: user?.lastName ?? '',
+		code: user?.code ?? '',
 		email: user?.email ?? '',
-		image: user?.image ?? '',
-		active: user?.active ?? true,
+		name: user?.name ?? '',
+		country: user?.country,
+		city: user?.city ?? '',
+		province: user?.province ?? '',
+		address: user?.address ?? '',
+		zip: user?.zip ?? '',
 		phone: user?.phone ?? '',
-		dni: user?.dni ?? '',
-		notifyWhatsapp: user?.notifyWhatsapp ?? false,
-		notifyEmail: user?.notifyEmail ?? false,
-		language: user?.language ?? 'en',
+		countryPhoneCode: user?.countryPhoneCode ?? '',
+		countryCode: user?.countryCode ?? '',
+		phoneConfirmed: user?.phoneConfirmed ?? false,
+		image: user?.image ?? '',
+		passwordValidate: user?.passwordValidate ?? false,
+		twoFactorAuth: user?.twoFactorAuth ?? false,
+		allowAlarmsSentSms: user?.allowAlarmsSentSms ?? false,
+		allowAlarmsSentEmail: user?.allowAlarmsSentEmail ?? false,
+		allowCommentAlarmsSentEmail: user?.allowCommentAlarmsSentEmail ?? false,
+		allowCommentAlarmsSentSms: user?.allowCommentAlarmsSentSms ?? false,
+		languagePreference: user?.languagePreference ?? 'en',
+		description: user?.description ?? '',
+		isBlocked: user?.isBlocked ?? false,
+		imageCompany: user?.imageCompany ?? '',
+		nameCompany: user?.nameCompany ?? '',
+		addressCompany: user?.addressCompany ?? '',
+		footerCompany: user?.footerCompany ?? '',
+		company: user?.company,
+		role: user?.role,
 		account: user?.account,
 		plant: user?.plant,
 		area: user?.area,
-		system: user?.system,
-		role: user?.role
+		system: user?.system
 	});
 
 	let originalData = $state<User>({ ...formData });
@@ -103,6 +141,9 @@
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
 	let roles = $state<Role[]>(availableRoles);
+	let countryValue = $state<number | null>(user?.country ?? null);
+	let phoneCode = $state<string | null>(user?.countryPhoneCode || null);
+	let languageCode = $state<string | null>(user?.languagePreference || 'en');
 
 	// SearchInput values
 	let accountSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
@@ -133,16 +174,32 @@
 		roles.find((r) => r.id?.toString() === selectedRoleValue)?.name || 'Select a role'
 	);
 
+	// Determine role level to control visibility of account/plant/area/system fields
+	const selectedRole = $derived(
+		roles.find((r) => r.id?.toString() === selectedRoleValue)
+	);
+	const roleLevel = $derived(selectedRole?.level ?? 0);
+	
+	// Role levels: 1=SUPERADMIN, 3=ACCOUNT, 4=PLANT, 5=AREA, 6=SYSTEM
+	const showAccount = $derived(roleLevel >= 3 && roleLevel <= 6);
+	const showPlant = $derived(roleLevel >= 4 && roleLevel <= 6);
+	const showArea = $derived(roleLevel >= 5 && roleLevel <= 6);
+	const showSystem = $derived(roleLevel === 6);
+
 	const isDirty = $derived(
-		formData.name !== originalData.name ||
-			formData.lastName !== originalData.lastName ||
+		formData.code !== originalData.code ||
+			formData.name !== originalData.name ||
 			formData.email !== originalData.email ||
+			formData.country !== originalData.country ||
+			formData.city !== originalData.city ||
+			formData.province !== originalData.province ||
+			formData.address !== originalData.address ||
+			formData.zip !== originalData.zip ||
 			formData.phone !== originalData.phone ||
-			formData.dni !== originalData.dni ||
-			formData.active !== originalData.active ||
-			formData.notifyWhatsapp !== originalData.notifyWhatsapp ||
-			formData.notifyEmail !== originalData.notifyEmail ||
-			formData.language !== originalData.language ||
+			formData.countryPhoneCode !== originalData.countryPhoneCode ||
+			formData.description !== originalData.description ||
+			formData.isBlocked !== originalData.isBlocked ||
+			formData.languagePreference !== originalData.languagePreference ||
 			formData.image !== originalData.image ||
 			formData.account?.id !== originalData.account?.id ||
 			formData.plant?.id !== originalData.plant?.id ||
@@ -168,18 +225,24 @@
 			errors.name = validationMessages.required('Name');
 		}
 
-		if (!isRequired(formData.lastName)) {
-			errors.lastName = validationMessages.required('Last Name');
-		}
-
 		if (!isRequired(formData.email)) {
 			errors.email = validationMessages.required('Email');
 		} else if (!isValidEmail(formData.email)) {
 			errors.email = validationMessages.invalidEmail;
 		}
 
-		if (!accountSearchValue.id) {
+		// Validate required hierarchical fields based on role level
+		if (showAccount && !accountSearchValue.id) {
 			errors.account = validationMessages.required('Account');
+		}
+		if (showPlant && !plantSearchValue.id) {
+			errors.plant = validationMessages.required('Plant');
+		}
+		if (showArea && !areaSearchValue.id) {
+			errors.area = validationMessages.required('Area');
+		}
+		if (showSystem && !systemSearchValue.id) {
+			errors.system = validationMessages.required('System');
 		}
 
 		if (formData.phone && !isValidPhone(formData.phone)) {
@@ -196,32 +259,52 @@
 			return;
 		}
 
-		if (accountSearchValue.id) {
+		// Set or nullify hierarchical fields based on role level
+		if (showAccount && accountSearchValue.id) {
 			formData.account = {
 				id: accountSearchValue.id,
 				description: accountSearchValue.description
 			};
+		} else {
+			formData.account = undefined;
 		}
 
-		if (plantSearchValue.id) {
+		if (showPlant && plantSearchValue.id) {
 			formData.plant = {
 				id: plantSearchValue.id,
 				description: plantSearchValue.description
 			};
+		} else {
+			formData.plant = undefined;
 		}
 
-		if (areaSearchValue.id) {
+		if (showArea && areaSearchValue.id) {
 			formData.area = {
 				id: areaSearchValue.id,
 				description: areaSearchValue.description
 			};
+		} else {
+			formData.area = undefined;
 		}
 
-		if (systemSearchValue.id) {
+		if (showSystem && systemSearchValue.id) {
 			formData.system = {
 				id: systemSearchValue.id,
 				description: systemSearchValue.description
 			};
+		} else {
+			formData.system = undefined;
+		}
+
+		// Update from autocompletes
+		if (countryValue) {
+			formData.country = countryValue;
+		}
+		if (phoneCode) {
+			formData.countryPhoneCode = phoneCode;
+		}
+		if (languageCode) {
+			formData.languagePreference = languageCode;
 		}
 
 		// Set role if selected
@@ -332,66 +415,99 @@
 					</div>
 
 					<!-- Account Selection -->
-					<div class="space-y-2">
-						<label class="text-sm font-medium">
-							Account <span class="text-destructive">*</span>
-						</label>
-						<SearchInput
-							bind:value={accountSearchValue}
-							placeholder="Select account..."
-							width="w-full"
-							modalTitle="Search Account"
-							modalDescription="Search and select an account. Double-click to select."
-							modalContent={AccountModalTable}
-							modalContentProps={{ onselect: handleAccountSelect }}
-						/>
-						{#if errors.account}
-							<p class="text-sm text-destructive">{errors.account}</p>
-						{/if}
-					</div>
+					{#if showAccount}
+						<div class="space-y-2">
+							<label class="text-sm font-medium">
+								Account <span class="text-destructive">*</span>
+							</label>
+							<SearchInput
+								bind:value={accountSearchValue}
+								placeholder="Select account..."
+								width="w-full"
+								modalTitle="Search Account"
+								modalDescription="Search and select an account."
+								modalContent={AccountModalTable}
+								modalContentProps={{ onselect: handleAccountSelect }}
+							/>
+							{#if errors.account}
+								<p class="text-sm text-destructive">{errors.account}</p>
+							{/if}
+						</div>
+					{/if}
 
 					<!-- Plant Selection -->
-					<div class="space-y-2">
-						<label class="text-sm font-medium">Plant</label>
-						<SearchInput
-							bind:value={plantSearchValue}
-							placeholder="Select plant..."
-							width="w-full"
-							modalTitle="Search Plant"
-							modalDescription="Search and select a plant. Double-click to select."
-							modalContent={PlantModalTable}
-							modalContentProps={{ onselect: handlePlantSelect }}
-						/>
-					</div>
+					{#if showPlant}
+						<div class="space-y-2">
+							<label class="text-sm font-medium">
+								Plant <span class="text-destructive">*</span>
+							</label>
+							<SearchInput
+								bind:value={plantSearchValue}
+								placeholder="Select plant..."
+								width="w-full"
+								modalTitle="Search Plant"
+								modalDescription="Search and select a plant."
+								modalContent={PlantModalTable}
+								modalContentProps={{ onselect: handlePlantSelect }}
+							/>
+							{#if errors.plant}
+								<p class="text-sm text-destructive">{errors.plant}</p>
+							{/if}
+						</div>
+					{/if}
 
 					<!-- Area Selection -->
-					<div class="space-y-2">
-						<label class="text-sm font-medium">Area</label>
-						<SearchInput
-							bind:value={areaSearchValue}
-							placeholder="Select area..."
-							width="w-full"
-							modalTitle="Search Area"
-							modalDescription="Search and select an area. Double-click to select."
-							modalContent={AreaModalTable}
-							modalContentProps={{ onselect: handleAreaSelect }}
-						/>
-					</div>
+					{#if showArea}
+						<div class="space-y-2">
+							<label class="text-sm font-medium">
+								Area <span class="text-destructive">*</span>
+							</label>
+							<SearchInput
+								bind:value={areaSearchValue}
+								placeholder="Select area..."
+								width="w-full"
+								modalTitle="Search Area"
+								modalDescription="Search and select an area."
+								modalContent={AreaModalTable}
+								modalContentProps={{ onselect: handleAreaSelect }}
+							/>
+							{#if errors.area}
+								<p class="text-sm text-destructive">{errors.area}</p>
+							{/if}
+						</div>
+					{/if}
 
 					<!-- System Selection -->
+					{#if showSystem}
+						<div class="space-y-2">
+							<label class="text-sm font-medium">
+								System <span class="text-destructive">*</span>
+							</label>
+							<SearchInput
+								bind:value={systemSearchValue}
+								placeholder="Select system..."
+								width="w-full"
+								modalTitle="Search System"
+								modalDescription="Search and select a system."
+								modalContent={SystemModalTable}
+								modalContentProps={{ onselect: handleSystemSelect }}
+							/>
+							{#if errors.system}
+								<p class="text-sm text-destructive">{errors.system}</p>
+							{/if}
+						</div>
+					{/if}
+
+					<!-- Code -->
 					<div class="space-y-2">
-						<label class="text-sm font-medium">System</label>
-						<SearchInput
-							bind:value={systemSearchValue}
-							placeholder="Select system..."
-							width="w-full"
-							modalTitle="Search System"
-							modalDescription="Search and select a system. Double-click to select."
-							modalContent={SystemModalTable}
-							modalContentProps={{ onselect: handleSystemSelect }}
+						<label for="code" class="text-sm font-medium">Code</label>
+						<Input
+							id="code"
+							bind:value={formData.code}
+							placeholder="User code"
+							disabled={isSubmitting || isLoading}
 						/>
 					</div>
-
 					<!-- Name -->
 					<div class="space-y-2">
 						<label for="name" class="text-sm font-medium">
@@ -400,7 +516,7 @@
 						<Input
 							id="name"
 							bind:value={formData.name}
-							placeholder="Enter first name"
+							placeholder="Enter full name"
 							disabled={isSubmitting || isLoading}
 							class={errors.name ? 'border-destructive' : ''}
 							oninput={() => {
@@ -409,26 +525,6 @@
 						/>
 						{#if errors.name}
 							<p class="text-sm text-destructive">{errors.name}</p>
-						{/if}
-					</div>
-
-					<!-- Last Name -->
-					<div class="space-y-2">
-						<label for="lastName" class="text-sm font-medium">
-							Last Name <span class="text-destructive">*</span>
-						</label>
-						<Input
-							id="lastName"
-							bind:value={formData.lastName}
-							placeholder="Enter last name"
-							disabled={isSubmitting || isLoading}
-							class={errors.lastName ? 'border-destructive' : ''}
-							oninput={() => {
-								if (errors.lastName) validateForm();
-							}}
-						/>
-						{#if errors.lastName}
-							<p class="text-sm text-destructive">{errors.lastName}</p>
 						{/if}
 					</div>
 
@@ -453,32 +549,91 @@
 						{/if}
 					</div>
 
-					<!-- Phone -->
+					<!-- Country -->
+					<CountryAutocomplete
+						bind:value={countryValue}
+						label="Country"
+						placeholder="Select country"
+						disabled={isSubmitting || isLoading}
+					/>
+
+					<!-- City -->
 					<div class="space-y-2">
-						<label for="phone" class="text-sm font-medium">Phone</label>
+						<label for="city" class="text-sm font-medium">City</label>
 						<Input
-							id="phone"
-							type="tel"
-							bind:value={formData.phone}
-							placeholder="+1 234 567 8900"
+							id="city"
+							bind:value={formData.city}
+							placeholder="Enter city"
 							disabled={isSubmitting || isLoading}
-							class={errors.phone ? 'border-destructive' : ''}
-							oninput={() => {
-								if (errors.phone) validateForm();
-							}}
 						/>
+					</div>
+
+					<!-- Province -->
+					<div class="space-y-2">
+						<label for="province" class="text-sm font-medium">Province/State</label>
+						<Input
+							id="province"
+							bind:value={formData.province}
+							placeholder="Enter province or state"
+							disabled={isSubmitting || isLoading}
+						/>
+					</div>
+
+					<!-- Address -->
+					<div class="space-y-2">
+						<label for="address" class="text-sm font-medium">Address</label>
+						<Input
+							id="address"
+							bind:value={formData.address}
+							placeholder="Enter address"
+							disabled={isSubmitting || isLoading}
+						/>
+					</div>
+
+					<!-- Zip -->
+					<div class="space-y-2">
+						<label for="zip" class="text-sm font-medium">Zip Code</label>
+						<Input
+							id="zip"
+							bind:value={formData.zip}
+							placeholder="Enter zip code"
+							disabled={isSubmitting || isLoading}
+						/>
+					</div>
+
+					<!-- Phone Code and Number -->
+					<div class="space-y-2">
+						<label class="text-sm font-medium">Phone</label>
+						<div class="grid grid-cols-[140px_1fr] gap-2">
+								<PhoneCodeAutocomplete
+								bind:value={phoneCode}
+								placeholder="Code"
+								disabled={isSubmitting || isLoading}
+							/>
+							<Input
+								id="phone"
+								type="tel"
+								bind:value={formData.phone}
+								placeholder="234 567 8900"
+								disabled={isSubmitting || isLoading}
+								class={errors.phone ? 'border-destructive' : ''}
+								oninput={() => {
+									if (errors.phone) validateForm();
+								}}
+							/>
+						</div>
 						{#if errors.phone}
 							<p class="text-sm text-destructive">{errors.phone}</p>
 						{/if}
 					</div>
 
-					<!-- DNI -->
+					<!-- Description -->
 					<div class="space-y-2">
-						<label for="dni" class="text-sm font-medium">DNI</label>
+						<label for="description" class="text-sm font-medium">Description</label>
 						<Input
-							id="dni"
-							bind:value={formData.dni}
-							placeholder="Enter DNI/ID number"
+							id="description"
+							bind:value={formData.description}
+							placeholder="User description"
 							disabled={isSubmitting || isLoading}
 						/>
 					</div>
@@ -486,70 +641,118 @@
 
 				<!-- Right Column -->
 				<div class="space-y-4 sm:space-y-6">
-					<!-- Active Status -->
+					<!-- Status Toggles -->
 					<div class="flex items-center space-x-2">
 						<Checkbox
-							id="active"
-							checked={formData.active}
+							id="isBlocked"
+							checked={formData.isBlocked}
 							onCheckedChange={(checked) => {
-								formData.active = checked === true;
+								formData.isBlocked = checked === true;
 							}}
 							disabled={isSubmitting || isLoading}
 						/>
 						<label
-							for="active"
+							for="isBlocked"
 							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 						>
-							Active User
+							Blocked User
+						</label>
+					</div>
+
+					<div class="flex items-center space-x-2">
+						<Checkbox
+							id="twoFactorAuth"
+							checked={formData.twoFactorAuth}
+							onCheckedChange={(checked) => {
+								formData.twoFactorAuth = checked === true;
+							}}
+							disabled={isSubmitting || isLoading}
+						/>
+						<label
+							for="twoFactorAuth"
+							class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+						>
+							Two Factor Authentication
 						</label>
 					</div>
 
 					<!-- Language -->
-					<div class="space-y-2">
-						<label for="language" class="text-sm font-medium">Language</label>
-						<Input
-							id="language"
-							bind:value={formData.language}
-							placeholder="en, es, fr, etc."
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
+					<LanguageAutocomplete
+						bind:value={languageCode}
+						label="Language"
+						placeholder="Select a language"
+						disabled={isSubmitting || isLoading}
+					/>
 
-					<!-- Notification Preferences -->
+					<!-- Alarm Notifications -->
 					<div class="rounded-lg border p-4">
-						<h3 class="mb-4 text-sm font-semibold">Notification Preferences</h3>
+						<h3 class="mb-4 text-sm font-semibold">Alarm Notifications</h3>
 						<div class="space-y-4">
 							<div class="flex items-center space-x-2">
 								<Checkbox
-									id="notifyWhatsapp"
-									checked={formData.notifyWhatsapp}
+									id="allowAlarmsSentSms"
+									checked={formData.allowAlarmsSentSms}
 									onCheckedChange={(checked) => {
-										formData.notifyWhatsapp = checked === true;
+										formData.allowAlarmsSentSms = checked === true;
 									}}
 									disabled={isSubmitting || isLoading}
 								/>
 								<label
-									for="notifyWhatsapp"
+									for="allowAlarmsSentSms"
 									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 								>
-									Notify via WhatsApp
+									Alarms via SMS
 								</label>
 							</div>
 
 							<div class="flex items-center space-x-2">
 								<Checkbox
-									id="notifyEmail"
-									checked={formData.notifyEmail}
+									id="allowAlarmsSentEmail"
+									checked={formData.allowAlarmsSentEmail}
 									onCheckedChange={(checked) => {
-										formData.notifyEmail = checked === true;
+										formData.allowAlarmsSentEmail = checked === true;
 									}}
 									disabled={isSubmitting || isLoading}
 								/>
 								<label
-									for="notifyEmail"
+									for="allowAlarmsSentEmail"
 									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 								>
-									Notify via Email
+									Alarms via Email
+								</label>
+							</div>
+
+							<div class="flex items-center space-x-2">
+								<Checkbox
+									id="allowCommentAlarmsSentEmail"
+									checked={formData.allowCommentAlarmsSentEmail}
+									onCheckedChange={(checked) => {
+										formData.allowCommentAlarmsSentEmail = checked === true;
+									}}
+									disabled={isSubmitting || isLoading}
+								/>
+								<label
+									for="allowCommentAlarmsSentEmail"
+									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+								>
+									Comment Alarms via Email
+								</label>
+							</div>
+
+							<div class="flex items-center space-x-2">
+								<Checkbox
+									id="allowCommentAlarmsSentSms"
+									checked={formData.allowCommentAlarmsSentSms}
+									onCheckedChange={(checked) => {
+										formData.allowCommentAlarmsSentSms = checked === true;
+									}}
+									disabled={isSubmitting || isLoading}
+								/>
+								<label
+									for="allowCommentAlarmsSentSms"
+									class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+								>
+									Comment Alarms via SMS
 								</label>
 							</div>
 						</div>
