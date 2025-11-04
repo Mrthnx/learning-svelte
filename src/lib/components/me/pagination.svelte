@@ -49,28 +49,37 @@
 </script>
 
 {#if totalPages > 1}
-	<div class="flex items-center justify-between">
-		<p class="text-sm text-muted-foreground">
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<!-- Record count - Hidden on mobile, shown on desktop -->
+		<p class="hidden text-sm text-muted-foreground sm:block">
 			Showing {startRecord} to {endRecord} of {totalRecords} results
 		</p>
-		<div class="flex items-center gap-2">
+		
+		<!-- Mobile: Compact version -->
+		<p class="text-center text-xs text-muted-foreground sm:hidden">
+			Page {currentPage} of {totalPages}
+		</p>
+
+		<div class="flex items-center justify-center gap-1 sm:gap-2">
 			<Button
 				variant="outline"
 				size="sm"
 				onclick={() => onPageChange(currentPage - 1)}
 				disabled={currentPage === 1 || isLoading}
+				class="gap-1"
 			>
 				<ChevronLeft class="h-4 w-4" />
-				Previous
+				<span class="hidden sm:inline">Previous</span>
 			</Button>
 
-			<div class="flex items-center gap-1">
+			<!-- Page numbers - hidden on mobile, shown on tablet/desktop -->
+			<div class="hidden items-center gap-1 sm:flex">
 				{#if showFirstPage}
 					<Button variant="outline" size="sm" onclick={() => onPageChange(1)} disabled={isLoading}>
 						1
 					</Button>
 					{#if visiblePages[0] > 2}
-						<span class="px-2">...</span>
+						<span class="px-1 text-muted-foreground sm:px-2">...</span>
 					{/if}
 				{/if}
 
@@ -80,6 +89,7 @@
 						size="sm"
 						onclick={() => onPageChange(page)}
 						disabled={isLoading}
+						class="min-w-[2.5rem]"
 					>
 						{page}
 					</Button>
@@ -87,13 +97,14 @@
 
 				{#if showLastPage}
 					{#if visiblePages[visiblePages.length - 1] < totalPages - 1}
-						<span class="px-2">...</span>
+						<span class="px-1 text-muted-foreground sm:px-2">...</span>
 					{/if}
 					<Button
 						variant="outline"
 						size="sm"
 						onclick={() => onPageChange(totalPages)}
 						disabled={isLoading}
+						class="min-w-[2.5rem]"
 					>
 						{totalPages}
 					</Button>
@@ -105,8 +116,9 @@
 				size="sm"
 				onclick={() => onPageChange(currentPage + 1)}
 				disabled={currentPage === totalPages || isLoading}
+				class="gap-1"
 			>
-				Next
+				<span class="hidden sm:inline">Next</span>
 				<ChevronRight class="h-4 w-4" />
 			</Button>
 		</div>

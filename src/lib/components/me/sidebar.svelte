@@ -13,5 +13,5 @@
 <SidebarDesktop />
 
 <!-- Mobile: FAB + Drawer -->
-<FloatingAction />
+<FloatingAction bind:isdraweropen={isMobileDrawerOpen} />
 <SidebarMobile bind:isOpen={isMobileDrawerOpen} />
