@@ -242,7 +242,7 @@
 								<Select.Value placeholder="Select an area" />
 							</Select.Trigger>
 							<Select.Content>
-								{#each areas as area}
+								{#each areas as area (area.id)}
 									<Select.Item value={area.id?.toString() || ''}>
 										{area.code} - {area.description}
 									</Select.Item>

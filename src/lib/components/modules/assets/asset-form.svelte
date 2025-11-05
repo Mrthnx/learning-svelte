@@ -185,7 +185,7 @@
 								<Select.Value placeholder="Select a system" />
 							</Select.Trigger>
 							<Select.Content>
-								{#each systems as system}
+								{#each systems as system (system.id)}
 									<Select.Item value={system.id?.toString() || ''}>
 										{system.code} - {system.description}
 									</Select.Item>

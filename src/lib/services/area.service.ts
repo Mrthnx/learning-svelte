@@ -17,7 +17,7 @@ function normalizeArea(area: Area): Area {
 }
 
 export async function getAllAreas(params: PaginateRequest = {}): Promise<PaginateResponse<Area>> {
-	const { page = 1, pageSize = 10, filters = {} } = params;
+	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
 
 	const url = createApiUrl(API_ENDPOINTS.AREAS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Area>> = await api.getLoader(url);

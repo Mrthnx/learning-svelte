@@ -8,6 +8,7 @@
 	import { get } from '$lib/services/api';
 	import { authStore } from '$lib/store';
 	import { get as getStoreValue } from 'svelte/store';
+	import { logger } from '$lib/utils/logger';
 
 	let { children } = $props();
 
@@ -17,9 +18,9 @@
 			if (!$page.route.id?.startsWith('/auth') && token) {
 				try {
 					await get('ping');
-					console.log('Ping successful');
+					logger.debug('Ping successful');
 				} catch (error) {
-					console.error('Ping failed', error);
+					logger.error('Ping failed', error);
 				}
 			}
 		});

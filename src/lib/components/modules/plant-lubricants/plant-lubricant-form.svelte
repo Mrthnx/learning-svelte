@@ -305,7 +305,7 @@
 					}}
 				>
 					<option value="">Select a plant</option>
-					{#each plants as plant}
+					{#each plants as plant (plant.id)}
 						<option value={plant.id?.toString() || ''}>
 							{plant.code} - {plant.description}
 						</option>
@@ -427,7 +427,7 @@
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
-								{#each formData.excelData as row}
+								{#each formData.excelData as row (row.id)}
 									<Table.Row>
 										<Table.Cell class="font-medium">{row.date}</Table.Cell>
 										<Table.Cell>{row.details}</Table.Cell>

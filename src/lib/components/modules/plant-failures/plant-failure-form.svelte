@@ -146,7 +146,7 @@
 						<Select.Value placeholder="Select a plant" />
 					</Select.Trigger>
 					<Select.Content>
-						{#each plants as plant}
+						{#each plants as plant (plant.id)}
 							<Select.Item value={plant.id?.toString() || ''}>
 								{plant.code} - {plant.description}
 							</Select.Item>

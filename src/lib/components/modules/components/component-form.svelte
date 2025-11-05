@@ -164,7 +164,7 @@
 						<Select.Value placeholder="Select an asset" />
 					</Select.Trigger>
 					<Select.Content>
-						{#each assets as asset}
+						{#each assets as asset (asset.id)}
 							<Select.Item value={asset.id?.toString() || ''}>
 								{asset.code} - {asset.description}
 							</Select.Item>

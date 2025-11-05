@@ -1,5 +1,5 @@
 import { api } from './api';
-import { createApiUrl, API_ENDPOINTS, buildEndpoint } from '../shared';
+import { createApiUrl, API_ENDPOINTS, buildEndpoint, PAGINATION } from '../shared';
 import type {
 	Component,
 	PaginateRequest,
@@ -11,7 +11,7 @@ import type {
 export async function getAllComponents(
 	params: PaginateRequest = {}
 ): Promise<PaginateResponse<Component>> {
-	const { page = 1, pageSize = 10, filters = {} } = params;
+	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
 
 	const url = createApiUrl(API_ENDPOINTS.COMPONENTS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Component>> = await api.getLoader(url);

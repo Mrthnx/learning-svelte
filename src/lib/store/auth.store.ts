@@ -1,7 +1,9 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
 import type { User, MenuItem, SubMenuItem } from '$lib/types';
 import { transformMenuItems } from '$lib/utils/index';
+import { storage } from '$lib/utils/storage';
+import { logger } from '$lib/utils/logger';
+import { ROLE_LEVELS } from '$lib/shared';
 
 // Define la estructura de los datos de autenticación
 interface AuthState {
@@ -9,8 +11,8 @@ interface AuthState {
 	user: User | null;
 	token: string | null;
 	is2fa: boolean;
-	menu: any[];
-	submenus?: any[];
+	menu: MenuItem[];
+	submenus?: SubMenuItem[];
 }
 
 // La clave que usaremos en localStorage
@@ -30,20 +32,10 @@ const initialValue: AuthState = {
  * Esta función se asegura de ejecutarse solo en el navegador.
  */
 function getInitialState(): AuthState {
-	if (!browser) {
-		return initialValue;
-	}
-
-	const storedValue = localStorage.getItem(STORAGE_KEY);
+	const storedValue = storage.get<AuthState>(STORAGE_KEY);
 	if (storedValue) {
-		try {
-			return JSON.parse(storedValue);
-		} catch (e) {
-			console.error('Error parsing auth data from localStorage', e);
-			return initialValue;
-		}
+		return storedValue;
 	}
-
 	return initialValue;
 }
 
@@ -55,9 +47,7 @@ function createAuthStore() {
 
 	// Persiste en localStorage cada vez que el store cambia
 	subscribe((state) => {
-		if (browser) {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-		}
+		storage.set(STORAGE_KEY, state);
 	});
 
 	return {
@@ -93,16 +83,14 @@ function createAuthStore() {
 		// Método para cerrar sesión
 		logout: () => {
 			set(initialValue);
-			// Opcional: también puedes removerlo explícitamente
-			if (browser) {
-				localStorage.removeItem(STORAGE_KEY);
-			}
+			storage.remove(STORAGE_KEY);
 		},
 
 		isSuperAdmin: () => {
 			let isSuper = false;
 			const unsubscribe = subscribe((state) => {
-				isSuper = state.user?.role?.level === 1;
+				// Clean Code: Use named constant instead of magic number
+				isSuper = state.user?.role?.level === ROLE_LEVELS.SUPERADMIN;
 			});
 			unsubscribe();
 			return isSuper;

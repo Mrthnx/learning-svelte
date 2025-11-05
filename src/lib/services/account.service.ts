@@ -25,7 +25,7 @@ function normalizeAccount(account: Account): Account {
 export async function getAllAccounts(
 	params: PaginateRequest = {}
 ): Promise<PaginateResponse<Account>> {
-	const { page = 1, pageSize = 10, filters = {} } = params;
+	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
 
 	const url = createApiUrl(API_ENDPOINTS.ACCOUNTS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Account>> = await api.getLoader(url);

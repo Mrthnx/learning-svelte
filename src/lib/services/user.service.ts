@@ -1,5 +1,5 @@
 import { api } from './api';
-import { createApiUrl, API_ENDPOINTS, buildEndpoint } from '../shared';
+import { createApiUrl, API_ENDPOINTS, buildEndpoint, PAGINATION } from '../shared';
 import type {
 	User,
 	PaginateRequest,
@@ -9,7 +9,12 @@ import type {
 } from '$lib/types';
 
 export async function getAllUsers(params: PaginateRequest = {}): Promise<PaginateResponse<User>> {
-	const { page = 1, pageSize = 10, filters = {} } = params;
+	// Clean Code: Use named constants instead of magic numbers
+	const { 
+		page = PAGINATION.DEFAULT_PAGE, 
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE, 
+		filters = {} 
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.USERS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<User>> = await api.getLoader(url);

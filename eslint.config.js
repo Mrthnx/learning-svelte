@@ -27,9 +27,15 @@ export default defineConfig(
 			'no-undef': 'off',
 			'@typescript-eslint/no-floating-promises': 'off',
 			'svelte/no-navigation-without-resolve': 'off',
-			'@typescript-eslint/no-explicit-any': 'off',
-			'@typescript-eslint/ban-ts-comment': 'off',
-			'@typescript-eslint/no-unused-vars': 'off'
+			'@typescript-eslint/no-explicit-any': 'warn',
+			'@typescript-eslint/ban-ts-comment': 'warn',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern': '^_'
+				}
+			]
 		}
 	},
 	{

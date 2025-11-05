@@ -253,7 +253,7 @@
 								<Select.Value placeholder="Select an account" />
 							</Select.Trigger>
 							<Select.Content>
-								{#each accounts as account}
+								{#each accounts as account (account.id)}
 									<Select.Item value={account.id?.toString() || ''}>
 										{account.code} - {account.description}
 									</Select.Item>

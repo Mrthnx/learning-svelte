@@ -18,7 +18,7 @@
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { User } from '$lib/types';
 	import { type Role } from '$lib/services/role.service';
-	import { isRequired, isValidEmail, isValidPhone, validationMessages } from '$lib/shared';
+	import { isRequired, isValidEmail, isValidPhone, validationMessages, ROLE_LEVELS } from '$lib/shared';
 
 	interface Props {
 		user?: User;
@@ -80,7 +80,7 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let roles = $state<Role[]>(availableRoles);
+	let roles = $derived(availableRoles);
 	let countryValue = $state<number | null>(user?.country ?? null);
 	let phoneCode = $state<string | null>(user?.countryPhoneCode || null);
 	let languageCode = $state<string | null>(user?.languagePreference || 'en');
@@ -118,11 +118,11 @@
 	const selectedRole = $derived(roles.find((r) => r.id?.toString() === selectedRoleValue));
 	const roleLevel = $derived(selectedRole?.level ?? 0);
 
-	// Role levels: 1=SUPERADMIN, 3=ACCOUNT, 4=PLANT, 5=AREA, 6=SYSTEM
-	const showAccount = $derived(roleLevel >= 3 && roleLevel <= 6);
-	const showPlant = $derived(roleLevel >= 4 && roleLevel <= 6);
-	const showArea = $derived(roleLevel >= 5 && roleLevel <= 6);
-	const showSystem = $derived(roleLevel === 6);
+	// Clean Code: Use named constants instead of magic numbers
+	const showAccount = $derived(roleLevel >= ROLE_LEVELS.ACCOUNT && roleLevel <= ROLE_LEVELS.SYSTEM);
+	const showPlant = $derived(roleLevel >= ROLE_LEVELS.PLANT && roleLevel <= ROLE_LEVELS.SYSTEM);
+	const showArea = $derived(roleLevel >= ROLE_LEVELS.AREA && roleLevel <= ROLE_LEVELS.SYSTEM);
+	const showSystem = $derived(roleLevel === ROLE_LEVELS.SYSTEM);
 
 	const isDirty = $derived(
 		formData.code !== originalData.code ||

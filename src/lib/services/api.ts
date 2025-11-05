@@ -1,8 +1,9 @@
 import { PUBLIC_API_URL } from '$env/static/public';
 import { get as _get } from 'svelte/store';
 import { authStore, loadingStore, unauthorizedAlert } from '../store';
-
+import { logger } from '../utils/logger';
 import { browser } from '$app/environment';
+import { HTTP_STATUS } from '$lib/shared';
 
 const base = PUBLIC_API_URL;
 
@@ -18,7 +19,38 @@ export class ApiError extends Error {
 	}
 }
 
-async function send(method: string, path: string, data?: any, _token?: string) {
+/**
+ * Handle unauthorized (401) responses
+ * Clean Code: Extract duplicate logic to single function
+ */
+function handleUnauthorized(): never {
+	if (browser) {
+		logger.debug('Unauthorized request detected (401)');
+		if (!isUnauthorizedAlertShowing) {
+			isUnauthorizedAlertShowing = true;
+			unauthorizedAlert.show(
+				'Tu sesión ha expirado o no estás autorizado. Por favor, inicia sesión de nuevo.'
+			);
+		}
+	}
+	throw new ApiError('Unauthorized', HTTP_STATUS.UNAUTHORIZED);
+}
+
+/**
+ * Parse error response and extract message
+ * Clean Code: DRY - Reuse error parsing logic
+ */
+async function parseErrorResponse(res: Response, defaultMessage: string): Promise<string> {
+	try {
+		const json = await res.json();
+		return json.response?.description || json.message || defaultMessage;
+	} catch (error) {
+		logger.debug('Failed to parse error response as JSON', error);
+		return defaultMessage;
+	}
+}
+
+async function send(method: string, path: string, data?: unknown, _token?: string) {
 	const opts: RequestInit = { method, headers: {} };
 	const token = _token ?? _get(authStore).token;
 
@@ -29,35 +61,19 @@ async function send(method: string, path: string, data?: any, _token?: string) {
 
 	const res = await fetch(`${base}/${path}`, opts);
 
-	if (res.status === 401) {
-		if (browser) {
-			console.log('Entró al if de 401 (browser)');
-			if (!isUnauthorizedAlertShowing) {
-				isUnauthorizedAlertShowing = true;
-				unauthorizedAlert.show(
-					'Tu sesión ha expirado o no estás autorizado. Por favor, inicia sesión de nuevo.'
-				);
-			}
-		}
-		// En SSR solo lanzamos el error, sin mostrar alertas
-		throw new ApiError('Unauthorized', 401);
+	// Clean Code: Use extracted function for 401 handling
+	if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+		handleUnauthorized();
 	}
 
 	if (!res.ok) {
-		let message = `Request failed with status ${res.status}`;
-		try {
-			const json = await res.json();
-			message = json.response?.description || json.message || message;
-		} catch (e: any) {
-			// The response body was not JSON. Use the default message.
-			console.log(e);
-		}
+		const defaultMessage = `Request failed with status ${res.status}`;
+		const message = await parseErrorResponse(res, defaultMessage);
 		throw new ApiError(message, res.status);
 	}
 
-	// If we get here, res.ok is true
-	// 204 No Content and 201 Created don't have response body
-	if (res.status === 204 || res.status === 201) {
+	// Clean Code: Use named constants instead of magic numbers
+	if (res.status === HTTP_STATUS.NO_CONTENT || res.status === HTTP_STATUS.CREATED) {
 		return { success: true };
 	}
 
@@ -92,11 +108,11 @@ export async function delLoader(path: string) {
 	}
 }
 
-export function post(path: string, data: any) {
+export function post(path: string, data: unknown) {
 	return send('POST', path, data);
 }
 
-export async function postLoader(path: string, data: any) {
+export async function postLoader(path: string, data: unknown) {
 	loadingStore.set(true);
 	try {
 		const result = await send('POST', path, data);
@@ -106,11 +122,11 @@ export async function postLoader(path: string, data: any) {
 	}
 }
 
-export function put(path: string, data: any) {
+export function put(path: string, data: unknown) {
 	return send('PUT', path, data);
 }
 
-export async function putLoader(path: string, data: any) {
+export async function putLoader(path: string, data: unknown) {
 	loadingStore.set(true);
 	try {
 		const result = await send('PUT', path, data);
@@ -133,30 +149,19 @@ async function sendFormData(method: string, path: string, formData: FormData, _t
 
 	const res = await fetch(`${base}/${path}`, opts);
 
-	if (res.status === 401) {
-		if (browser) {
-			if (!isUnauthorizedAlertShowing) {
-				isUnauthorizedAlertShowing = true;
-				unauthorizedAlert.show(
-					'Tu sesión ha expirado o no estás autorizado. Por favor, inicia sesión de nuevo.'
-				);
-			}
-		}
-		throw new ApiError('Unauthorized', 401);
+	// Clean Code: Reuse extracted function
+	if (res.status === HTTP_STATUS.UNAUTHORIZED) {
+		handleUnauthorized();
 	}
 
 	if (!res.ok) {
-		let message = `Request failed with status ${res.status}`;
-		try {
-			const json = await res.json();
-			message = json.response?.description || json.message || message;
-		} catch (e: any) {
-			console.log(e);
-		}
+		const defaultMessage = `Request failed with status ${res.status}`;
+		const message = await parseErrorResponse(res, defaultMessage);
 		throw new ApiError(message, res.status);
 	}
 
-	if (res.status === 204 || res.status === 201) {
+	// Clean Code: Use named constants
+	if (res.status === HTTP_STATUS.NO_CONTENT || res.status === HTTP_STATUS.CREATED) {
 		return { success: true };
 	}
 
@@ -167,11 +172,11 @@ export function postFormData(path: string, formData: FormData) {
 	return sendFormData('POST', path, formData);
 }
 
-export function patch(path: string, data: any) {
+export function patch(path: string, data: unknown) {
 	return send('PATCH', path, data);
 }
 
-export async function patchLoader(path: string, data: any) {
+export async function patchLoader(path: string, data: unknown) {
 	loadingStore.set(true);
 	try {
 		const result = await send('PATCH', path, data);

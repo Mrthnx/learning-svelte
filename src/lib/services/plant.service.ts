@@ -17,7 +17,7 @@ function normalizePlant(plant: Plant): Plant {
 }
 
 export async function getAllPlants(params: PaginateRequest = {}): Promise<PaginateResponse<Plant>> {
-	const { page = 1, pageSize = 10, filters = {} } = params;
+	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
 
 	const url = createApiUrl(API_ENDPOINTS.PLANTS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Plant>> = await api.getLoader(url);
