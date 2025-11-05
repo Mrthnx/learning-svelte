@@ -33,36 +33,93 @@
 </script>
 
 {#if delayedShow}
+	<!-- Overlay with enhanced backdrop blur -->
 	<div
-		class="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent backdrop-blur-sm"
+		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-md transition-all duration-300"
 	>
+		<!-- Modal Card with glassmorphism effect -->
 		<div
-			class="glass-container relative w-full max-w-sm rounded-2xl border border-red-500/30 p-8 text-center shadow-xl"
+			class="relative w-full max-w-md animate-in fade-in zoom-in duration-300"
+			style="animation-delay: 50ms;"
 		>
-			<div class="mb-6 flex justify-center">
-				<svg
-					class="h-20 w-20 text-red-500"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="1.5"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="M12 9v3.75m-9.303 3.376c-.866 1.5.174 3.35 1.9 3.35h13.713c1.726 0 2.766-1.85 1.9-3.35L13.713 2.2c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-					/>
-				</svg>
-			</div>
-			<h2 class="mb-3 text-2xl font-bold text-red-400">Sesión Expirada</h2>
-			<p class="mb-8 text-gray-200">{message}</p>
-			<button
-				class="focus:ring-opacity-50 w-full rounded-full bg-gradient-to-r from-red-600 to-red-800 px-6 py-3 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:from-red-700 hover:to-red-900 focus:ring-4 focus:ring-red-500 focus:outline-none"
-				on:click={handleAccept}
+			<div
+				class="relative overflow-hidden rounded-2xl border border-destructive/20 bg-card/95 p-8 text-center shadow-2xl backdrop-blur-xl"
 			>
-				Volver a Iniciar Sesión
-			</button>
+				<!-- Gradient Background Effect -->
+				<div
+					class="pointer-events-none absolute inset-0 bg-gradient-to-br from-destructive/5 via-transparent to-destructive/5"
+				></div>
+
+				<!-- Content -->
+				<div class="relative z-10">
+					<!-- Icon with animation -->
+					<div class="mb-6 flex justify-center">
+						<div
+							class="rounded-full bg-destructive/10 p-4 ring-4 ring-destructive/20 animate-pulse"
+						>
+							<svg
+								class="h-16 w-16 text-destructive"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M12 9v3.75m-9.303 3.376c-.866 1.5.174 3.35 1.9 3.35h13.713c1.726 0 2.766-1.85 1.9-3.35L13.713 2.2c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+								/>
+							</svg>
+						</div>
+					</div>
+
+					<!-- Title -->
+					<h2
+						class="mb-3 text-2xl font-bold text-foreground animate-in fade-in slide-in-from-top-2 duration-500"
+						style="animation-delay: 100ms;"
+					>
+						Sesión Expirada
+					</h2>
+
+					<!-- Message -->
+					<p
+						class="mb-8 text-muted-foreground animate-in fade-in slide-in-from-bottom-2 duration-500"
+						style="animation-delay: 150ms;"
+					>
+						{message}
+					</p>
+
+					<!-- Action Button -->
+					<button
+						class="group relative w-full overflow-hidden rounded-lg bg-destructive px-6 py-3 text-base font-semibold text-destructive-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-destructive/50 active:scale-[0.98] animate-in fade-in zoom-in duration-500"
+						style="animation-delay: 200ms;"
+						on:click={handleAccept}
+					>
+						<!-- Button shine effect on hover -->
+						<div
+							class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+						></div>
+						<span class="relative flex items-center justify-center gap-2">
+							<svg
+								class="h-5 w-5"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+								/>
+							</svg>
+							Volver a Iniciar Sesión
+						</span>
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 {/if}
