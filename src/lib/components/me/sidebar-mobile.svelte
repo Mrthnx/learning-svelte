@@ -3,6 +3,7 @@
 	import { processLabelToIcon } from '$lib/shared';
 	import { cn } from '$lib/utils';
 	import { slide } from 'svelte/transition';
+	import { Shield } from 'lucide-svelte';
 
 	interface Props {
 		isOpen?: boolean;
@@ -143,6 +144,42 @@
 										</svg>
 									</a>
 								{/each}
+								
+								<!-- Superadmin Only: Role Permissions -->
+								{#if authStore.isSuperAdmin()}
+									<div class="border-t pt-2 mt-2">
+										<a
+											href="/database-setup/role-permissions"
+											onclick={closeDrawer}
+											class="group flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+										>
+											<div
+												class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary transition-colors group-hover:bg-primary/30"
+											>
+												<Shield class="h-5 w-5" />
+											</div>
+
+											<div class="ml-3 min-w-0 flex-1">
+												<span class="block truncate font-medium">Role Permissions</span>
+											</div>
+
+											<svg
+												class="h-5 w-5 flex-shrink-0 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary"
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke="currentColor"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M9 5l7 7-7 7"
+												/>
+											</svg>
+										</a>
+									</div>
+								{/if}
 							</div>
 						</div>
 					{:else}

@@ -8,16 +8,16 @@
 </script>
 
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { Toaster, toast } from 'svelte-sonner';
+import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
+import { page } from '$app/stores';
+import { toast } from 'svelte-sonner';
 	import { defaults, superForm } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { AnimatedBackground, Logo } from '$lib/components/me';
+	import { AnimatedBackground, Logo, PasswordInput } from '$lib/components/me';
 
 	import * as api from '$lib/services/api';
 	import { authStore, loadingStore, unauthorizedAlert } from '$lib/store';
@@ -160,9 +160,8 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="">Password</Form.Label>
-								<Input
+								<PasswordInput
 									{...props}
-									type="password"
 									bind:value={$formData.password}
 									placeholder="••••••••"
 								/>
@@ -179,4 +178,3 @@
 		</div>
 	</div>
 </div>
-<Toaster richColors position="top-center" />

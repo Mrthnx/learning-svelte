@@ -91,7 +91,7 @@
 		>
 			<div class="py-1">
 				<a
-					href="/me/profile"
+					href="/profile"
 					role="menuitem"
 					onclick={closeMenu}
 					class="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"

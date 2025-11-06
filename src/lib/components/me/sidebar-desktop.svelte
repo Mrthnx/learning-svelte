@@ -3,6 +3,7 @@
 	import { processLabelToIcon } from '$lib/shared';
 	import { cn } from '$lib/utils';
 	import Logo from './logo.svelte';
+	import { Shield } from 'lucide-svelte';
 
 	interface Props {
 		class?: string;
@@ -23,7 +24,7 @@
 			className
 		)}
 	>
-		<!-- Navigation Menu -->
+	<!-- Navigation Menu -->
 		<div class="flex-1 overflow-y-auto py-4">
 			<nav class="space-y-2 px-2">
 				{#each selectedSubmenus as submenu, i (i)}
@@ -61,6 +62,43 @@
 						{/if}
 					</a>
 				{/each}
+				
+				<!-- Superadmin Only: Role Permissions -->
+				{#if authStore.isSuperAdmin()}
+					<div class="border-t mt-2 pt-2">
+						<a
+							href="/database-setup/role-permissions"
+							class="group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+							title="Role Permissions"
+						>
+							<div
+								class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white transition-colors group-hover:bg-primary group-hover:text-secondary/80"
+							>
+								<Shield class="h-5 w-5" />
+							</div>
+
+							{#if isExpanded}
+								<span class="ml-3 truncate font-medium transition-opacity duration-200"
+									>Role Permissions</span
+								>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="ml-auto h-4 w-4 text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 5l7 7-7 7"
+									/>
+								</svg>
+							{/if}
+						</a>
+					</div>
+				{/if}
 			</nav>
 		</div>
 

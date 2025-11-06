@@ -74,7 +74,7 @@
 				</div>
 				<div class="mt-3 space-y-1 px-4">
 					<a
-						href="/me/profile"
+						href="/profile"
 						onclick={closeMenu}
 						class="block rounded-lg px-4 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
 						>My Profile</a

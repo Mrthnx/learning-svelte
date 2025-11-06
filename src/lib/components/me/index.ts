@@ -8,6 +8,7 @@ export { default as LoadingOverlay } from './loading-overlay.svelte';
 export { default as LocationMap } from './location-map.svelte';
 export { default as Logo } from './logo.svelte';
 export { default as PasswordRequirements } from './password-requirements.svelte';
+export { default as PasswordInput } from './password-input.svelte';
 export { default as UnauthorizedAlert } from './unauthorized-alert.svelte';
 export { default as Navbar } from './navbar.svelte';
 export { default as NavbarLinks } from './navbar-links.svelte';
