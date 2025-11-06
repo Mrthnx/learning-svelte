@@ -20,3 +20,7 @@ export { default as Sidebar } from './sidebar.svelte';
 export { default as Table } from './table.svelte';
 export { default as Pagination } from './pagination.svelte';
 export { default as PageHeader } from './page-header.svelte';
+export { default as CountryAutocomplete } from './country-autocomplete.svelte';
+export { default as LanguageAutocomplete } from './language-autocomplete.svelte';
+export { default as PhoneCodeAutocomplete } from './phonecode-autocomplete.svelte';
+export { default as TimezoneAutocomplete } from './timezone-autocomplete.svelte';

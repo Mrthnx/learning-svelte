@@ -46,7 +46,7 @@
 		variant="ghost"
 		size="sm"
 		class="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-		onclick={handleToggle}
+		on:click={handleToggle}
 		tabindex="-1"
 	>
 		{#if showPassword}
