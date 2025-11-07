@@ -1,5 +1,5 @@
 import { api } from './api';
-import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint } from '../shared';
+import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint, PAGINATION } from '../shared';
 import type {
 	Account,
 	PaginateRequest,

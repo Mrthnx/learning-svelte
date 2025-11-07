@@ -5,14 +5,46 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Search, Settings } from 'lucide-svelte';
+	import { Search, Settings, Filter } from 'lucide-svelte';
 	import { assetOutlookStore } from '$lib/store/asset-outlook.store';
+	import type { AssetFilter } from '$lib/services/get-assets';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import { AccountModalTable } from '$lib/components/modules/accounts';
 
-	let searchTerm = '';
-	let showColumnDropdown = false;
+	import { PlantModalTable } from '$lib/components/modules/plants';
+	import { AreaModalTable } from '$lib/components/modules/areas';
+	import { SystemModalTable } from '$lib/components/modules/systems';
+	import {
+		saveUserTechnologyPreferences,
+		getUserTechnologyPreferences
+	} from '$lib/services/user-technology';
+	import { authStore } from '$lib/store';
+
+	let searchTerm = $state('');
+	let showColumnDropdown = $state(false);
+	let showFiltersPanel = $state(false);
+	let columnDropdownRef: HTMLDivElement;
+
+	// Filtros del sistema
+	let filters: AssetFilter = $state({
+		code: '',
+		description: '',
+		componentCode: '',
+		componentDescription: '',
+		account: { id: undefined },
+		plant: { id: undefined },
+		area: { id: undefined },
+		system: { id: undefined }
+	});
+
+	// Variables para SearchInput
+	let accountSearch = $state({ id: null, description: '', readonly: false });
+	let plantSearch = $state({ id: null, description: '', readonly: false });
+	let areaSearch = $state({ id: null, description: '', readonly: false });
+	let systemSearch = $state({ id: null, description: '', readonly: false });
 
 	// Control de visibilidad de columnas (excepto Asset, Type, Component)
-	let columnVisibility: any = {
+	let columnVisibility = $state({
 		vib: true, // Vibration
 		trib: true, // Tribology
 		mce: true, // Motor Current
@@ -24,7 +56,7 @@
 		ueleak: true, // UE Leak
 		bal: true, // Balance
 		algn: true // Alignment
-	};
+	});
 
 	// Configuración de columnas para mostrar en checkboxes
 	const columnConfig = [
@@ -41,23 +73,70 @@
 		{ key: 'algn', label: 'Algn', tooltip: 'Alignment Analysis' }
 	];
 
+	// Función para cargar preferencias de columnas
+	async function loadColumnPreferences() {
+		try {
+			const userId = $authStore.user?.id;
+			if (!userId) {
+				console.warn('No user ID found, using default column preferences');
+				return;
+			}
+
+			const preferences = await getUserTechnologyPreferences(userId);
+			// Actualizar columnVisibility con las preferencias del usuario
+			columnVisibility.vib = preferences.vib;
+			columnVisibility.trib = preferences.trib;
+			columnVisibility.mce = preferences.mce;
+			columnVisibility.irrot = preferences.irrot;
+			columnVisibility.irelec = preferences.irelec;
+			columnVisibility.irstruc = preferences.irstruc;
+			columnVisibility.uerot = preferences.uerot;
+			columnVisibility.ueelec = preferences.ueelec;
+			columnVisibility.ueleak = preferences.ueleak;
+			columnVisibility.bal = preferences.bal;
+			columnVisibility.algn = preferences.algn;
+			console.log('Column preferences loaded successfully');
+		} catch (error) {
+			console.error('Error loading column preferences:', error);
+		}
+	}
+
+	// Función para cerrar dropdown cuando se hace click fuera
+	function handleClickOutside(event: MouseEvent) {
+		if (columnDropdownRef && !columnDropdownRef.contains(event.target as Node)) {
+			showColumnDropdown = false;
+		}
+	}
+
 	// cargar datos al montar
-	onMount(() => {
+	onMount(async () => {
 		assetOutlookStore.load();
+		await loadColumnPreferences();
+
+		// Agregar event listener para cerrar dropdown al hacer click fuera
+		document.addEventListener('click', handleClickOutside);
+
+		// Cleanup function
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
 	});
 
 	// Filtrado local sobre los items cargados
-	$: filteredAssets = ($assetOutlookStore.items || []).filter((asset) => {
-		if (!searchTerm) return true;
-		const q = searchTerm.toLowerCase();
-		return (
-			asset.code.toLowerCase().includes(q) ||
-			asset.description.toLowerCase().includes(q) ||
-			asset.components.some(
-				(comp) => comp.code.toLowerCase().includes(q) || comp.description.toLowerCase().includes(q)
-			)
-		);
-	});
+	const filteredAssets = $derived(
+		($assetOutlookStore.items || []).filter((asset) => {
+			if (!searchTerm) return true;
+			const q = searchTerm.toLowerCase();
+			return (
+				asset.code.toLowerCase().includes(q) ||
+				asset.description.toLowerCase().includes(q) ||
+				asset.components.some(
+					(comp) =>
+						comp.code.toLowerCase().includes(q) || comp.description.toLowerCase().includes(q)
+				)
+			);
+		})
+	);
 
 	function formatDateStr(
 		value?: string | null,
@@ -74,7 +153,6 @@
 	function getColorByAlarmCode(alarm: any) {
 		const code = alarm?.color;
 		if (!code) return 'text-muted-foreground';
-		console.log(code);
 		switch (String(code).toLowerCase()) {
 			case 'green':
 				return 'text-green-600 font-semibold';
@@ -86,11 +164,43 @@
 				return 'text-muted-foreground';
 		}
 	}
+
+	// Función para guardar preferencias de columnas
+	async function saveColumnPreferences() {
+		try {
+			const userId = $authStore.user?.id;
+			if (!userId) {
+				console.warn('No user ID found, cannot save column preferences');
+				return;
+			}
+
+			const preferences = {
+				component: true, // Siempre visible
+				type: true, // Siempre visible
+				vib: columnVisibility.vib,
+				trib: columnVisibility.trib,
+				mce: columnVisibility.mce,
+				irrot: columnVisibility.irrot,
+				irelec: columnVisibility.irelec,
+				irstruc: columnVisibility.irstruc,
+				uerot: columnVisibility.uerot,
+				ueelec: columnVisibility.ueelec,
+				ueleak: columnVisibility.ueleak,
+				bal: columnVisibility.bal,
+				algn: columnVisibility.algn
+			};
+
+			await saveUserTechnologyPreferences(userId, preferences);
+			console.log('Column preferences saved successfully');
+		} catch (error) {
+			console.error('Error saving column preferences:', error);
+		}
+	}
 </script>
 
-<head>
+<svelte:head>
 	<title>Asset Outlook</title>
-</head>
+</svelte:head>
 
 <div class="container mx-auto px-4 py-6">
 	<div class="mb-6">
@@ -110,54 +220,233 @@
 		<Card.Content>
 			<!-- Barra de búsqueda y controles -->
 			<div class="mb-6 flex items-center justify-between gap-4">
-				<div class="relative max-w-md flex-1">
-					<Search
-						class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground"
-					/>
-					<Input
-						bind:value={searchTerm}
-						placeholder="Search assets or components..."
-						class="pl-9"
-					/>
-				</div>
-
-				<!-- Dropdown compacto para visibilidad de columnas -->
-				<div class="relative">
+				<div class="flex items-center gap-2">
+					<!-- Botón de filtros -->
 					<Button
 						variant="outline"
 						size="sm"
 						class="flex items-center gap-2"
-						onclick={() => (showColumnDropdown = !showColumnDropdown)}
+						onclick={() => (showFiltersPanel = !showFiltersPanel)}
 					>
-						<Settings class="h-4 w-4" />
-						Columns
+						<Filter class="h-4 w-4" />
+						Filters
 					</Button>
 
-					{#if showColumnDropdown}
-						<div
-							class="absolute top-full right-0 z-50 mt-2 w-64 rounded-md border bg-popover p-3 shadow-lg"
+					<!-- Dropdown compacto para visibilidad de columnas -->
+					<div class="relative" bind:this={columnDropdownRef}>
+						<Button
+							variant="outline"
+							size="sm"
+							class="flex items-center gap-2"
+							onclick={() => (showColumnDropdown = !showColumnDropdown)}
 						>
-							<h3 class="mb-3 text-sm font-medium">Show/Hide Columns</h3>
-							<div class="max-h-60 space-y-2 overflow-y-auto">
-								{#each columnConfig as column}
-									<label
-										class="flex cursor-pointer items-center space-x-2 rounded p-1 hover:bg-accent"
-										title={column.tooltip}
-									>
-										<input
-											type="checkbox"
-											bind:checked={columnVisibility[column.key]}
-											class="rounded"
-										/>
-										<span class="text-sm">{column.label}</span>
-										<span class="ml-auto text-xs text-muted-foreground">{column.tooltip}</span>
-									</label>
-								{/each}
+							<Settings class="h-4 w-4" />
+							Columns
+						</Button>
+
+						{#if showColumnDropdown}
+							<div
+								class="absolute top-full right-0 z-50 mt-2 w-80 rounded-md border bg-popover p-4 shadow-lg"
+							>
+								<h3 class="mb-4 text-sm font-medium text-foreground">Show/Hide Columns</h3>
+								<div class="max-h-72 space-y-3 overflow-y-auto pr-2">
+									{#each columnConfig as column}
+										<label
+											class="flex cursor-pointer items-center space-x-2 rounded p-1 hover:bg-accent"
+											title={column.tooltip}
+										>
+											<input
+												type="checkbox"
+												bind:checked={columnVisibility[column.key]}
+												class="rounded"
+												onchange={saveColumnPreferences}
+											/>
+											<span class="text-sm">{column.label}</span>
+											<span class="ml-auto text-xs text-muted-foreground">{column.tooltip}</span>
+										</label>
+									{/each}
+								</div>
 							</div>
-						</div>
-					{/if}
+						{/if}
+					</div>
 				</div>
 			</div>
+
+			<!-- Panel de filtros -->
+			{#if showFiltersPanel}
+				<div class="mb-6 rounded-lg border bg-muted/30 p-4">
+					<h3 class="mb-4 text-sm font-medium text-foreground">Advanced Filters</h3>
+
+					<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+						<!-- Asset Code -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Asset Code</label>
+							<Input bind:value={filters.code} placeholder="e.g. PUMP-001" class="mt-1" />
+						</div>
+
+						<!-- Asset Description -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Asset Description</label>
+							<Input bind:value={filters.description} placeholder="e.g. Main Pump" class="mt-1" />
+						</div>
+
+						<!-- Component Code -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Component Code</label>
+							<Input bind:value={filters.componentCode} placeholder="e.g. MOTOR-001" class="mt-1" />
+						</div>
+
+						<!-- Component Description -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Component Description</label>
+							<Input
+								bind:value={filters.componentDescription}
+								placeholder="e.g. Electric Motor"
+								class="mt-1"
+							/>
+						</div>
+
+						<!-- Account -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Account</label>
+							<div class="mt-1">
+								<SearchInput
+									bind:value={accountSearch}
+									placeholder="Select account..."
+									width="w-full"
+									modalTitle="Select Account"
+									modalDescription="Choose an account from the list"
+									modalContent={AccountModalTable}
+									modalContentProps={{
+										onselect: (account) => {
+											accountSearch = {
+												id: account.id,
+												description: account.description || account.name || `Account ${account.id}`,
+												readonly: false
+											};
+										}
+									}}
+								/>
+							</div>
+						</div>
+
+						<!-- Plant -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Plant</label>
+							<div class="mt-1">
+								<SearchInput
+									bind:value={plantSearch}
+									placeholder="Select plant..."
+									width="w-full"
+									modalTitle="Select Plant"
+									modalDescription="Choose a plant from the list"
+									modalContent={PlantModalTable}
+									modalContentProps={{
+										onselect: (plant) => {
+											plantSearch = {
+												id: plant.id,
+												description: plant.description || plant.name || `Plant ${plant.id}`,
+												readonly: false
+											};
+										}
+									}}
+								/>
+							</div>
+						</div>
+
+						<!-- Area -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">Area</label>
+							<div class="mt-1">
+								<SearchInput
+									bind:value={areaSearch}
+									placeholder="Select area..."
+									width="w-full"
+									modalTitle="Select Area"
+									modalDescription="Choose an area from the list"
+									modalContent={AreaModalTable}
+									modalContentProps={{
+										onselect: (area) => {
+											areaSearch = {
+												id: area.id,
+												description: area.description || area.name || `Area ${area.id}`,
+												readonly: false
+											};
+										}
+									}}
+								/>
+							</div>
+						</div>
+
+						<!-- System -->
+						<div>
+							<label class="text-xs font-medium text-muted-foreground">System</label>
+							<div class="mt-1">
+								<SearchInput
+									bind:value={systemSearch}
+									placeholder="Select system..."
+									width="w-full"
+									modalTitle="Select System"
+									modalDescription="Choose a system from the list"
+									modalContent={SystemModalTable}
+									modalContentProps={{
+										onselect: (system) => {
+											systemSearch = {
+												id: system.id,
+												description: system.description || system.name || `System ${system.id}`,
+												readonly: false
+											};
+										}
+									}}
+								/>
+							</div>
+						</div>
+					</div>
+
+					<!-- Botones de acción -->
+					<div class="mt-4 flex items-center justify-end gap-3">
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => {
+								// Limpiar filtros de texto
+								filters = {
+									code: '',
+									description: '',
+									componentCode: '',
+									componentDescription: '',
+									account: { id: undefined },
+									plant: { id: undefined },
+									area: { id: undefined },
+									system: { id: undefined }
+								};
+								// Limpiar SearchInputs
+								accountSearch = { id: null, description: '', readonly: false };
+								plantSearch = { id: null, description: '', readonly: false };
+								areaSearch = { id: null, description: '', readonly: false };
+								systemSearch = { id: null, description: '', readonly: false };
+							}}
+						>
+							Clear All
+						</Button>
+						<Button
+							size="sm"
+							onclick={() => {
+								// Sincronizar SearchInputs con filters
+								filters.account.id = accountSearch.id;
+								filters.plant.id = plantSearch.id;
+								filters.area.id = areaSearch.id;
+								filters.system.id = systemSearch.id;
+								// Aplicar filtros
+								assetOutlookStore.setFilters(filters);
+								assetOutlookStore.load();
+							}}
+						>
+							Apply Filters
+						</Button>
+					</div>
+				</div>
+			{/if}
 
 			<!-- Tabla de componentes -->
 			<div class="rounded-md border">
@@ -271,9 +560,6 @@
 												<div class="font-medium">{component.code}</div>
 												<div class="text-sm text-muted-foreground">{component.description}</div>
 											</div>
-											{#if component.existSummary}
-												<Badge variant="secondary" class="h-5 text-xs">S</Badge>
-											{/if}
 										</div>
 									</Table.Cell>
 									<!-- Vibration Analysis -->
