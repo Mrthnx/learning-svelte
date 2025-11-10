@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-import { areaService } from '$lib/services/area.service';
-import type { Area } from '$lib/types';
+	import { areaService } from '$lib/services/area.service';
+	import type { Area } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import AreaTable from './area-table.svelte';
 	import { Search } from 'lucide-svelte';
-import { toast } from 'svelte-sonner';
-import { hierarchyStore } from '$lib/store/hierarchy.store';
-import { PAGINATION } from '$lib/shared';
+	import { toast } from 'svelte-sonner';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { PAGINATION } from '$lib/shared';
 
 	interface Props {
 		onselect?: (area: Area) => void;
@@ -25,31 +25,31 @@ import { PAGINATION } from '$lib/shared';
 		loadAreas();
 	});
 
-async function loadAreas() {
-	isLoading = true;
-	try {
-		// Obtener toda la jerarquía del hierarchy store para filtrar areas
-		const hierarchy = $hierarchyStore;
-		const filters: any = {};
-		
-		// Incluir toda la jerarquía hacia arriba: account y plant
-		if (hierarchy.account.id) {
-			filters['account'] = { id: hierarchy.account.id };
+	async function loadAreas() {
+		isLoading = true;
+		try {
+			// Obtener toda la jerarquía del hierarchy store para filtrar areas
+			const hierarchy = $hierarchyStore;
+			const filters: any = {};
+
+			// Incluir toda la jerarquía hacia arriba: account y plant
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+			if (hierarchy.plant.id) {
+				filters['plant'] = { id: hierarchy.plant.id };
+			}
+
+			const response = await areaService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			areas = response.rows;
+			filteredAreas = areas;
+		} catch (error) {
+			console.error('Error loading areas:', error);
+			toast.error('Failed to load areas');
+		} finally {
+			isLoading = false;
 		}
-		if (hierarchy.plant.id) {
-			filters['plant'] = { id: hierarchy.plant.id };
-		}
-		
-		const response = await areaService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
-		areas = response.rows;
-		filteredAreas = areas;
-	} catch (error) {
-		console.error('Error loading areas:', error);
-		toast.error('Failed to load areas');
-	} finally {
-		isLoading = false;
 	}
-}
 
 	function handleSearch() {
 		const term = searchTerm.toLowerCase().trim();

@@ -36,7 +36,9 @@ export interface ComponentSummaryResponse {
 	data: ComponentSummaryData[];
 }
 
-export const getComponentsWithSummary = async (componentIds: number[]): Promise<ComponentSummaryResponse> => {
+export const getComponentsWithSummary = async (
+	componentIds: number[]
+): Promise<ComponentSummaryResponse> => {
 	const response = await postLoader('component/get-with-flag-exist-summary', {
 		componentIds
 	});

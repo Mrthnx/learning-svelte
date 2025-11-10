@@ -17,7 +17,11 @@ function normalizeAsset(asset: Asset): Asset {
 }
 
 export async function getAllAssets(params: PaginateRequest = {}): Promise<PaginateResponse<Asset>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.ASSETS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Asset>> = await api.getLoader(url);

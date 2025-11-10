@@ -18,7 +18,14 @@
 		saveUserTechnologyPreferences,
 		getUserTechnologyPreferences
 	} from '$lib/services/user-technology';
-import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyStore } from '$lib/store';
+	import {
+		authStore,
+		accountStore,
+		plantStore,
+		areaStore,
+		systemStore,
+		hierarchyStore
+	} from '$lib/store';
 
 	let searchTerm = $state('');
 	let showColumnDropdown = $state(false);
@@ -113,14 +120,14 @@ import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyS
 		// Inicializar jerarquía desde el login
 		const userHierarchies = authStore.getUserHierarchies();
 		hierarchyStore.initFromLogin(userHierarchies);
-		
+
 		// Sincronizar SearchInputs con hierarchy store
 		const hierarchy = $hierarchyStore;
 		accountSearch = { ...hierarchy.account };
 		plantSearch = { ...hierarchy.plant };
 		areaSearch = { ...hierarchy.area };
 		systemSearch = { ...hierarchy.system };
-		
+
 		// Cargar assets con valores del hierarchy store automáticamente aplicados
 		assetOutlookStore.loadWithHierarchy();
 		await loadColumnPreferences();
@@ -340,7 +347,11 @@ import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyS
 												id: account.id,
 												description: account.description || account.name || `Account ${account.id}`
 											});
-											accountSearch = { id: account.id, description: account.description || account.name || `Account ${account.id}`, readonly: false };
+											accountSearch = {
+												id: account.id,
+												description: account.description || account.name || `Account ${account.id}`,
+												readonly: false
+											};
 										}
 									}}
 								/>
@@ -369,7 +380,11 @@ import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyS
 												id: plant.id,
 												description: plant.description || plant.name || `Plant ${plant.id}`
 											});
-											plantSearch = { id: plant.id, description: plant.description || plant.name || `Plant ${plant.id}`, readonly: false };
+											plantSearch = {
+												id: plant.id,
+												description: plant.description || plant.name || `Plant ${plant.id}`,
+												readonly: false
+											};
 										}
 									}}
 								/>
@@ -398,7 +413,11 @@ import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyS
 												id: area.id,
 												description: area.description || area.name || `Area ${area.id}`
 											});
-											areaSearch = { id: area.id, description: area.description || area.name || `Area ${area.id}`, readonly: false };
+											areaSearch = {
+												id: area.id,
+												description: area.description || area.name || `Area ${area.id}`,
+												readonly: false
+											};
 										}
 									}}
 								/>
@@ -427,7 +446,11 @@ import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyS
 												id: system.id,
 												description: system.description || system.name || `System ${system.id}`
 											});
-											systemSearch = { id: system.id, description: system.description || system.name || `System ${system.id}`, readonly: false };
+											systemSearch = {
+												id: system.id,
+												description: system.description || system.name || `System ${system.id}`,
+												readonly: false
+											};
 										}
 									}}
 								/>
@@ -440,7 +463,7 @@ import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyS
 						<Button
 							variant="outline"
 							size="sm"
-						onclick={() => {
+							onclick={() => {
 								// Limpiar filtros de texto
 								filters = {
 									code: '',

@@ -11,7 +11,11 @@ import type {
 export async function getAllPlantFailures(
 	params: PaginateRequest = {}
 ): Promise<PaginateResponse<PlantFailure>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.PLANT_FAILURES, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<PlantFailure>> = await api.getLoader(url);

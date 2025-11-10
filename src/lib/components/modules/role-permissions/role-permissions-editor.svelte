@@ -3,7 +3,17 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { ChevronRight, ChevronDown, Save, X, Shield, Eye, Edit, Trash2, Plus } from 'lucide-svelte';
+	import {
+		ChevronRight,
+		ChevronDown,
+		Save,
+		X,
+		Shield,
+		Eye,
+		Edit,
+		Trash2,
+		Plus
+	} from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 
 	interface Option {
@@ -122,7 +132,7 @@
 				</Card.Description>
 			</div>
 			{#if pendingChanges > 0}
-				<Badge variant="outline" class="bg-yellow-500/10 text-yellow-400 border-yellow-500/30">
+				<Badge variant="outline" class="border-yellow-500/30 bg-yellow-500/10 text-yellow-400">
 					{pendingChanges} pending change{pendingChanges !== 1 ? 's' : ''}
 				</Badge>
 			{/if}
@@ -135,14 +145,14 @@
 			<table class="w-full">
 				<thead class="sticky top-0 z-10 bg-muted/50 backdrop-blur">
 					<tr class="border-b">
-						<th class="text-left p-4 font-semibold text-sm w-[300px]">Option</th>
+						<th class="w-[300px] p-4 text-left text-sm font-semibold">Option</th>
 						{#each permissions as permission (permission.id)}
 							{@const PermIcon = getPermissionIcon(permission.name || permission.permission)}
 							{@const color = getPermissionColor(permission.name || permission.permission)}
-							<th class="text-center p-4 font-semibold text-sm min-w-[100px]">
+							<th class="min-w-[100px] p-4 text-center text-sm font-semibold">
 								<div class="flex flex-col items-center gap-1.5">
 									<svelte:component this={PermIcon} class="h-4 w-4 {color}" />
-									<span class="capitalize text-xs">{permission.name || permission.permission}</span>
+									<span class="text-xs capitalize">{permission.name || permission.permission}</span>
 								</div>
 							</th>
 						{/each}
@@ -156,14 +166,14 @@
 							.slice(0, index)
 							.filter((o) => o.children && o.children.some((c) => c.id === option.id)).length}
 
-						<tr class="border-b hover:bg-muted/30 transition-colors">
+						<tr class="border-b transition-colors hover:bg-muted/30">
 							<!-- Option Name Column -->
 							<td class="p-4" style="padding-left: {depth * 24 + 16}px">
 								<div class="flex items-center gap-2">
 									{#if isParent}
 										<button
 											onclick={() => toggleExpand(option.id)}
-											class="p-1 hover:bg-muted rounded transition-colors"
+											class="rounded p-1 transition-colors hover:bg-muted"
 										>
 											{#if isExpanded}
 												<ChevronDown class="h-4 w-4" />
@@ -175,11 +185,11 @@
 										<div class="w-6"></div>
 									{/if}
 									<div class="flex flex-col">
-										<span class="font-medium text-sm">
+										<span class="text-sm font-medium">
 											{option.label || option.name}
 										</span>
 										{#if option.uri}
-											<span class="text-xs text-muted-foreground font-mono">{option.uri}</span>
+											<span class="font-mono text-xs text-muted-foreground">{option.uri}</span>
 										{/if}
 									</div>
 									{#if isParent}
@@ -207,8 +217,8 @@
 								{/each}
 							{:else}
 								{#each permissions as permission (permission.id)}
-									<td class="p-4 text-center bg-muted/20">
-										<div class="text-muted-foreground text-xs">-</div>
+									<td class="bg-muted/20 p-4 text-center">
+										<div class="text-xs text-muted-foreground">-</div>
 									</td>
 								{/each}
 							{/if}
@@ -221,7 +231,8 @@
 
 	<Card.Footer class="flex justify-between border-t">
 		<div class="text-sm text-muted-foreground">
-			{flatOptions.filter((o) => !(o.children && o.children.length > 0)).length} options × {permissions.length} permissions
+			{flatOptions.filter((o) => !(o.children && o.children.length > 0)).length} options × {permissions.length}
+			permissions
 		</div>
 		<div class="flex gap-2">
 			<Button variant="outline" onclick={onCancel} disabled={isSaving}>

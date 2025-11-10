@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Table from '$lib/components/me/table.svelte';
 	import { Pencil, Trash2 } from 'lucide-svelte';
-import type { Component } from '$lib/types';
+	import type { Component } from '$lib/types';
 
 	interface Props {
 		components: Component[];

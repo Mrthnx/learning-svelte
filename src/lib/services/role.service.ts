@@ -10,7 +10,11 @@ import type {
 } from '$lib/types';
 
 export async function getAllRoles(params: PaginateRequest = {}): Promise<PaginateResponse<Role>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.ROLES, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Role>> = await api.getLoader(url);

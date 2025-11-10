@@ -20,7 +20,9 @@
 	// Validation checks
 	const hasMinLength = $derived(password.length >= 8);
 	const hasUpperAndLower = $derived(/[a-z]/.test(password) && /[A-Z]/.test(password));
-	const hasNumberAndSpecial = $derived(/\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password));
+	const hasNumberAndSpecial = $derived(
+		/\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)
+	);
 	const passwordsMatch = $derived(
 		showPasswordMatch && password && confirmPassword ? password === confirmPassword : true
 	);

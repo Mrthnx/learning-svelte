@@ -1,5 +1,11 @@
 import { api } from './api';
-import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint, PAGINATION } from '../shared';
+import {
+	createApiUrl,
+	normalizeCoordinate,
+	API_ENDPOINTS,
+	buildEndpoint,
+	PAGINATION
+} from '../shared';
 import type {
 	Area,
 	PaginateRequest,
@@ -17,7 +23,11 @@ function normalizeArea(area: Area): Area {
 }
 
 export async function getAllAreas(params: PaginateRequest = {}): Promise<PaginateResponse<Area>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.AREAS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Area>> = await api.getLoader(url);

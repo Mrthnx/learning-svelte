@@ -25,7 +25,7 @@ export const saveUserTechnologyPreferences = async (
 		...preferences,
 		id: userId
 	};
-	
+
 	await postLoader(`users/save-technology/${userId}`, body);
 };
 

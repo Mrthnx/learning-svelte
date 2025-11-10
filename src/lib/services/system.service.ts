@@ -1,5 +1,11 @@
 import { api } from './api';
-import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint, PAGINATION } from '../shared';
+import {
+	createApiUrl,
+	normalizeCoordinate,
+	API_ENDPOINTS,
+	buildEndpoint,
+	PAGINATION
+} from '../shared';
 import type {
 	System,
 	PaginateRequest,
@@ -19,7 +25,11 @@ function normalizeSystem(system: System): System {
 export async function getAllSystems(
 	params: PaginateRequest = {}
 ): Promise<PaginateResponse<System>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.SYSTEMS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<System>> = await api.getLoader(url);

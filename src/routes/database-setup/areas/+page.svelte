@@ -7,10 +7,10 @@
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
-import { toast } from 'svelte-sonner';
-import { areaService } from '$lib/services/area.service';
-import type { Area, PaginateResponse } from '$lib/types';
-import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { toast } from 'svelte-sonner';
+	import { areaService } from '$lib/services/area.service';
+	import type { Area, PaginateResponse } from '$lib/types';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	let areas: Area[] = $state([]);
 	let selectedAreas: Area[] = $state([]);
@@ -35,24 +35,24 @@ import { hierarchyStore } from '$lib/store/hierarchy.store';
 	onMount(() => {
 		loadAreas();
 	});
-async function loadAreas() {
-	isLoading = true;
-	try {
-		const hierarchy = $hierarchyStore;
-		const filters: any = {};
-		if (filterCode.trim()) filters.code = filterCode.trim();
-		if (filterDescription.trim()) filters.description = filterDescription.trim();
-		
-		// Aplicar filtros de jerarquía
-		if (hierarchy.account.id) {
-			filters['account'] = { id: hierarchy.account.id };
-		}
-		if (hierarchy.plant.id) {
-			filters['plant'] = { id: hierarchy.plant.id };
-		}
-		if (hierarchy.area.id) {
-			filters['area'] = { id: hierarchy.area.id };
-		}
+	async function loadAreas() {
+		isLoading = true;
+		try {
+			const hierarchy = $hierarchyStore;
+			const filters: any = {};
+			if (filterCode.trim()) filters.code = filterCode.trim();
+			if (filterDescription.trim()) filters.description = filterDescription.trim();
+
+			// Aplicar filtros de jerarquía
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+			if (hierarchy.plant.id) {
+				filters['plant'] = { id: hierarchy.plant.id };
+			}
+			if (hierarchy.area.id) {
+				filters['area'] = { id: hierarchy.area.id };
+			}
 
 			const response: PaginateResponse<Area> = await areaService.getAll({
 				page: currentPage,

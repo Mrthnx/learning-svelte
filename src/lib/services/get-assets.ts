@@ -29,4 +29,3 @@ export const getAssets = async (page: number, pageSize: number, filters: AssetFi
 	const response = await getLoader(`assets?${filterParams.toString()}`);
 	return response.data;
 };
-

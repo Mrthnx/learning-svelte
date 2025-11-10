@@ -39,7 +39,7 @@
 	>
 		<!-- Modal Card with glassmorphism effect -->
 		<div
-			class="relative w-full max-w-md animate-in fade-in zoom-in duration-300"
+			class="relative w-full max-w-md animate-in duration-300 fade-in zoom-in"
 			style="animation-delay: 50ms;"
 		>
 			<div
@@ -55,7 +55,7 @@
 					<!-- Icon with animation -->
 					<div class="mb-6 flex justify-center">
 						<div
-							class="rounded-full bg-destructive/10 p-4 ring-4 ring-destructive/20 animate-pulse"
+							class="animate-pulse rounded-full bg-destructive/10 p-4 ring-4 ring-destructive/20"
 						>
 							<svg
 								class="h-16 w-16 text-destructive"
@@ -76,7 +76,7 @@
 
 					<!-- Title -->
 					<h2
-						class="mb-3 text-2xl font-bold text-foreground animate-in fade-in slide-in-from-top-2 duration-500"
+						class="mb-3 animate-in text-2xl font-bold text-foreground duration-500 fade-in slide-in-from-top-2"
 						style="animation-delay: 100ms;"
 					>
 						Sesión Expirada
@@ -84,7 +84,7 @@
 
 					<!-- Message -->
 					<p
-						class="mb-8 text-muted-foreground animate-in fade-in slide-in-from-bottom-2 duration-500"
+						class="mb-8 animate-in text-muted-foreground duration-500 fade-in slide-in-from-bottom-2"
 						style="animation-delay: 150ms;"
 					>
 						{message}
@@ -92,7 +92,7 @@
 
 					<!-- Action Button -->
 					<button
-						class="group relative w-full overflow-hidden rounded-lg bg-destructive px-6 py-3 text-base font-semibold text-destructive-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-destructive/50 active:scale-[0.98] animate-in fade-in zoom-in duration-500"
+						class="group text-destructive-foreground relative w-full animate-in overflow-hidden rounded-lg bg-destructive px-6 py-3 text-base font-semibold shadow-lg transition-all duration-300 duration-500 fade-in zoom-in hover:scale-[1.02] hover:shadow-xl focus:ring-4 focus:ring-destructive/50 focus:outline-none active:scale-[0.98]"
 						style="animation-delay: 200ms;"
 						on:click={handleAccept}
 					>

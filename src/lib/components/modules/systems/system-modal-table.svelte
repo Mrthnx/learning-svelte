@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-import { systemService } from '$lib/services/system.service';
-import type { System } from '$lib/types';
+	import { systemService } from '$lib/services/system.service';
+	import type { System } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import SystemTable from './system-table.svelte';
 	import { Search } from 'lucide-svelte';
-import { toast } from 'svelte-sonner';
-import { hierarchyStore } from '$lib/store/hierarchy.store';
-import { PAGINATION } from '$lib/shared';
+	import { toast } from 'svelte-sonner';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { PAGINATION } from '$lib/shared';
 
 	interface Props {
 		onselect?: (system: System) => void;
@@ -25,34 +25,34 @@ import { PAGINATION } from '$lib/shared';
 		loadSystems();
 	});
 
-async function loadSystems() {
-	isLoading = true;
-	try {
-		// Obtener toda la jerarquía del hierarchy store para filtrar systems
-		const hierarchy = $hierarchyStore;
-		const filters: any = {};
-		
-		// Incluir toda la jerarquía hacia arriba: account, plant y area
-		if (hierarchy.account.id) {
-			filters['account'] = { id: hierarchy.account.id };
+	async function loadSystems() {
+		isLoading = true;
+		try {
+			// Obtener toda la jerarquía del hierarchy store para filtrar systems
+			const hierarchy = $hierarchyStore;
+			const filters: any = {};
+
+			// Incluir toda la jerarquía hacia arriba: account, plant y area
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+			if (hierarchy.plant.id) {
+				filters['plant'] = { id: hierarchy.plant.id };
+			}
+			if (hierarchy.area.id) {
+				filters['area'] = { id: hierarchy.area.id };
+			}
+
+			const response = await systemService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			systems = response.rows;
+			filteredSystems = systems;
+		} catch (error) {
+			console.error('Error loading systems:', error);
+			toast.error('Failed to load systems');
+		} finally {
+			isLoading = false;
 		}
-		if (hierarchy.plant.id) {
-			filters['plant'] = { id: hierarchy.plant.id };
-		}
-		if (hierarchy.area.id) {
-			filters['area'] = { id: hierarchy.area.id };
-		}
-		
-		const response = await systemService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
-		systems = response.rows;
-		filteredSystems = systems;
-	} catch (error) {
-		console.error('Error loading systems:', error);
-		toast.error('Failed to load systems');
-	} finally {
-		isLoading = false;
 	}
-}
 
 	function handleSearch() {
 		const term = searchTerm.toLowerCase().trim();

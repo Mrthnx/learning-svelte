@@ -11,7 +11,11 @@ import type {
 export async function getAllComponents(
 	params: PaginateRequest = {}
 ): Promise<PaginateResponse<Component>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.COMPONENTS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Component>> = await api.getLoader(url);

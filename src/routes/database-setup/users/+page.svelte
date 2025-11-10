@@ -9,8 +9,8 @@
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { api } from '$lib/services/api';
-import { userService } from '$lib/services/user.service';
-import type { User, PaginateResponse } from '$lib/types';
+	import { userService } from '$lib/services/user.service';
+	import type { User, PaginateResponse } from '$lib/types';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	let users: User[] = $state([]);
@@ -48,19 +48,19 @@ import type { User, PaginateResponse } from '$lib/types';
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
-		// Aplicar filtros de jerarquía
-		if (hierarchy.account.id) {
-			filters['account'] = { id: hierarchy.account.id };
-		}
-		if (hierarchy.plant.id) {
-			filters['plant'] = { id: hierarchy.plant.id };
-		}
-		if (hierarchy.area.id) {
-			filters['area'] = { id: hierarchy.area.id };
-		}
-		if (hierarchy.system.id) {
-			filters['system'] = { id: hierarchy.system.id };
-		}
+			// Aplicar filtros de jerarquía
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+			if (hierarchy.plant.id) {
+				filters['plant'] = { id: hierarchy.plant.id };
+			}
+			if (hierarchy.area.id) {
+				filters['area'] = { id: hierarchy.area.id };
+			}
+			if (hierarchy.system.id) {
+				filters['system'] = { id: hierarchy.system.id };
+			}
 
 			const response: PaginateResponse<User> = await userService.getAll({
 				page: currentPage,

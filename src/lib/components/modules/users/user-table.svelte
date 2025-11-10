@@ -2,7 +2,7 @@
 	import Table from '$lib/components/me/table.svelte';
 	import { Pencil, Trash2 } from 'lucide-svelte';
 	import { Badge } from '$lib/components/ui/badge';
-import type { User } from '$lib/types';
+	import type { User } from '$lib/types';
 
 	interface Props {
 		users: User[];

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-import { accountService } from '$lib/services/account.service';
-import type { Account } from '$lib/types';
+	import { accountService } from '$lib/services/account.service';
+	import type { Account } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import AccountTable from './account-table.svelte';

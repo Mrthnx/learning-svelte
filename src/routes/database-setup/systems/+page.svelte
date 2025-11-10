@@ -7,10 +7,10 @@
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
-import { toast } from 'svelte-sonner';
-import { systemService } from '$lib/services/system.service';
-import type { System, PaginateResponse } from '$lib/types';
-import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { toast } from 'svelte-sonner';
+	import { systemService } from '$lib/services/system.service';
+	import type { System, PaginateResponse } from '$lib/types';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	let systems: System[] = $state([]);
 	let selectedSystems: System[] = $state([]);
@@ -36,27 +36,27 @@ import { hierarchyStore } from '$lib/store/hierarchy.store';
 		loadSystems();
 	});
 
-async function loadSystems() {
-	isLoading = true;
-	try {
-		const hierarchy = $hierarchyStore;
-		const filters: any = {};
-		if (filterCode.trim()) filters.code = filterCode.trim();
-		if (filterDescription.trim()) filters.description = filterDescription.trim();
-		
-		// Aplicar filtros de jerarquía
-		if (hierarchy.account.id) {
-			filters['account'] = { id: hierarchy.account.id };
-		}
-		if (hierarchy.plant.id) {
-			filters['plant'] = { id: hierarchy.plant.id };
-		}
-		if (hierarchy.area.id) {
-			filters['area'] = { id: hierarchy.area.id };
-		}
-		if (hierarchy.system.id) {
-			filters['system'] = { id: hierarchy.system.id };
-		}
+	async function loadSystems() {
+		isLoading = true;
+		try {
+			const hierarchy = $hierarchyStore;
+			const filters: any = {};
+			if (filterCode.trim()) filters.code = filterCode.trim();
+			if (filterDescription.trim()) filters.description = filterDescription.trim();
+
+			// Aplicar filtros de jerarquía
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+			if (hierarchy.plant.id) {
+				filters['plant'] = { id: hierarchy.plant.id };
+			}
+			if (hierarchy.area.id) {
+				filters['area'] = { id: hierarchy.area.id };
+			}
+			if (hierarchy.system.id) {
+				filters['system'] = { id: hierarchy.system.id };
+			}
 
 			const response: PaginateResponse<System> = await systemService.getAll({
 				page: currentPage,

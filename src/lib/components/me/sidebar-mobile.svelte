@@ -144,10 +144,10 @@
 										</svg>
 									</a>
 								{/each}
-								
+
 								<!-- Superadmin Only: Role Permissions -->
 								{#if authStore.isSuperAdmin()}
-									<div class="border-t pt-2 mt-2">
+									<div class="mt-2 border-t pt-2">
 										<a
 											href="/database-setup/role-permissions"
 											onclick={closeDrawer}

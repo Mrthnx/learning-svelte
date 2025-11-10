@@ -18,7 +18,14 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Upload, Image as ImageIcon, FileText, Settings, ArrowLeft, Loader2 } from 'lucide-svelte';
+	import {
+		Upload,
+		Image as ImageIcon,
+		FileText,
+		Settings,
+		ArrowLeft,
+		Loader2
+	} from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/services/api';
 	import { authStore } from '$lib/store';
@@ -38,12 +45,12 @@
 
 	onMount(() => {
 		if (data.user) {
-			form.reset({ 
-				data: { 
+			form.reset({
+				data: {
 					nameCompany: data.user.nameCompany || '',
 					addressCompany: data.user.addressCompany || '',
-					imageCompany: data.user.imageCompany 
-				} as any 
+					imageCompany: data.user.imageCompany
+				} as any
 			});
 			logoPreview = data.user.imageCompany;
 		}
@@ -177,7 +184,7 @@
 									type="button"
 									variant="destructive"
 									size="sm"
-									class="absolute -right-2 -top-2"
+									class="absolute -top-2 -right-2"
 									onclick={removeLogo}
 								>
 									×
@@ -242,9 +249,7 @@
 								/>
 							{/snippet}
 						</Form.Control>
-						<Form.Description>
-							This name will appear in all generated reports
-						</Form.Description>
+						<Form.Description>This name will appear in all generated reports</Form.Description>
 						<Form.FieldErrors />
 					</Form.Field>
 
@@ -264,9 +269,7 @@
 								/>
 							{/snippet}
 						</Form.Control>
-						<Form.Description>
-							This address will appear in all generated reports
-						</Form.Description>
+						<Form.Description>This address will appear in all generated reports</Form.Description>
 						<Form.FieldErrors />
 					</Form.Field>
 				</div>
@@ -288,7 +291,9 @@
 							{/if}
 							<div class="flex-1">
 								<h2 class="text-xl font-bold">{$formData.nameCompany || 'Company Name'}</h2>
-								<p class="text-sm text-muted-foreground">{$formData.addressCompany || 'Company Address'}</p>
+								<p class="text-sm text-muted-foreground">
+									{$formData.addressCompany || 'Company Address'}
+								</p>
 							</div>
 						</div>
 

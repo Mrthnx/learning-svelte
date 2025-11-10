@@ -80,10 +80,5 @@
 		<div class="animate-pulse text-muted-foreground">Loading roles...</div>
 	</div>
 {:else}
-	<Table
-		data={roles}
-		{columns}
-		{actions}
-		emptyMessage="No roles found in the system."
-	/>
+	<Table data={roles} {columns} {actions} emptyMessage="No roles found in the system." />
 {/if}

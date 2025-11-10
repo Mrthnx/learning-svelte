@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-import { plantService } from '$lib/services/plant.service';
-import type { Plant } from '$lib/types';
+	import { plantService } from '$lib/services/plant.service';
+	import type { Plant } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import PlantTable from './plant-table.svelte';
 	import { Search } from 'lucide-svelte';
-import { toast } from 'svelte-sonner';
-import { hierarchyStore } from '$lib/store/hierarchy.store';
-import { PAGINATION } from '$lib/shared';
+	import { toast } from 'svelte-sonner';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { PAGINATION } from '$lib/shared';
 
 	interface Props {
 		onselect?: (plant: Plant) => void;
@@ -25,29 +25,29 @@ import { PAGINATION } from '$lib/shared';
 		loadPlants();
 	});
 
-async function loadPlants() {
-	isLoading = true;
-	try {
-		// Obtener toda la jerarquía del hierarchy store para filtrar plantas
-		const hierarchy = $hierarchyStore;
-		const filters: any = {};
-		
-		// Incluir toda la jerarquía hacia arriba: account
-		// (Para plants solo necesitamos account ya que es el nivel inmediato superior)
-		if (hierarchy.account.id) {
-			filters['account'] = { id: hierarchy.account.id };
+	async function loadPlants() {
+		isLoading = true;
+		try {
+			// Obtener toda la jerarquía del hierarchy store para filtrar plantas
+			const hierarchy = $hierarchyStore;
+			const filters: any = {};
+
+			// Incluir toda la jerarquía hacia arriba: account
+			// (Para plants solo necesitamos account ya que es el nivel inmediato superior)
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+
+			const response = await plantService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			plants = response.rows;
+			filteredPlants = plants;
+		} catch (error) {
+			console.error('Error loading plants:', error);
+			toast.error('Failed to load plants');
+		} finally {
+			isLoading = false;
 		}
-		
-		const response = await plantService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
-		plants = response.rows;
-		filteredPlants = plants;
-	} catch (error) {
-		console.error('Error loading plants:', error);
-		toast.error('Failed to load plants');
-	} finally {
-		isLoading = false;
 	}
-}
 
 	function handleSearch() {
 		const term = searchTerm.toLowerCase().trim();

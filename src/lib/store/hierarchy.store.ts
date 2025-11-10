@@ -67,15 +67,15 @@ function clearStorage(): void {
 function createHierarchyStore() {
 	// Inicializar con datos de localStorage si están disponibles
 	const { subscribe, set, update } = writable<HierarchyState>(loadFromStorage());
-	
+
 	// Función auxiliar para guardar estado automáticamente
 	const setAndSave = (state: HierarchyState) => {
 		set(state);
 		saveToStorage(state);
 	};
-	
+
 	const updateAndSave = (updater: (state: HierarchyState) => HierarchyState) => {
-		update(state => {
+		update((state) => {
 			const newState = updater(state);
 			saveToStorage(newState);
 			return newState;
@@ -84,7 +84,7 @@ function createHierarchyStore() {
 
 	return {
 		subscribe,
-		
+
 		// Inicializa la jerarquía desde los datos del login (readonly = true)
 		initFromLogin: (userHierarchy: {
 			account?: Account;
@@ -93,33 +93,33 @@ function createHierarchyStore() {
 			system?: System;
 		}) => {
 			const newState: HierarchyState = {
-			account: {
-				id: userHierarchy.account?.id || null,
-				description: userHierarchy.account?.description || '',
-				readonly: !!userHierarchy.account
-			},
-			plant: {
-				id: userHierarchy.plant?.id || null,
-				description: userHierarchy.plant?.description || '',
-				readonly: !!userHierarchy.plant
-			},
-			area: {
-				id: userHierarchy.area?.id || null,
-				description: userHierarchy.area?.description || '',
-				readonly: !!userHierarchy.area
-			},
-			system: {
-				id: userHierarchy.system?.id || null,
-				description: userHierarchy.system?.description || '',
-				readonly: !!userHierarchy.system
-			}
+				account: {
+					id: userHierarchy.account?.id || null,
+					description: userHierarchy.account?.description || '',
+					readonly: !!userHierarchy.account
+				},
+				plant: {
+					id: userHierarchy.plant?.id || null,
+					description: userHierarchy.plant?.description || '',
+					readonly: !!userHierarchy.plant
+				},
+				area: {
+					id: userHierarchy.area?.id || null,
+					description: userHierarchy.area?.description || '',
+					readonly: !!userHierarchy.area
+				},
+				system: {
+					id: userHierarchy.system?.id || null,
+					description: userHierarchy.system?.description || '',
+					readonly: !!userHierarchy.system
+				}
 			};
 			setAndSave(newState);
 		},
 
 		// Actualiza un campo específico (readonly = false cuando se modifica)
 		updateAccount: (account: { id: number; description: string }) => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				account: { ...account, readonly: false },
 				// Reset de campos dependientes cuando se cambia el account
@@ -130,7 +130,7 @@ function createHierarchyStore() {
 		},
 
 		updatePlant: (plant: { id: number; description: string }) => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				plant: { ...plant, readonly: false },
 				// Reset de campos dependientes cuando se cambia la plant
@@ -140,7 +140,7 @@ function createHierarchyStore() {
 		},
 
 		updateArea: (area: { id: number; description: string }) => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				area: { ...area, readonly: false },
 				// Reset de campos dependientes cuando se cambia el area
@@ -149,7 +149,7 @@ function createHierarchyStore() {
 		},
 
 		updateSystem: (system: { id: number; description: string }) => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				system: { ...system, readonly: false }
 			}));
@@ -157,7 +157,7 @@ function createHierarchyStore() {
 
 		// Limpia un campo específico
 		clearAccount: () => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				account: { id: null, description: '', readonly: false },
 				plant: { id: null, description: '', readonly: false },
@@ -167,7 +167,7 @@ function createHierarchyStore() {
 		},
 
 		clearPlant: () => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				plant: { id: null, description: '', readonly: false },
 				area: { id: null, description: '', readonly: false },
@@ -176,7 +176,7 @@ function createHierarchyStore() {
 		},
 
 		clearArea: () => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				area: { id: null, description: '', readonly: false },
 				system: { id: null, description: '', readonly: false }
@@ -184,7 +184,7 @@ function createHierarchyStore() {
 		},
 
 		clearSystem: () => {
-			updateAndSave(state => ({
+			updateAndSave((state) => ({
 				...state,
 				system: { id: null, description: '', readonly: false }
 			}));
@@ -194,7 +194,7 @@ function createHierarchyStore() {
 		reset: () => {
 			setAndSave(initialValue);
 		},
-		
+
 		// Limpia completamente el store y localStorage
 		clear: () => {
 			clearStorage();
@@ -206,7 +206,7 @@ function createHierarchyStore() {
 export const hierarchyStore = createHierarchyStore();
 
 // Derived stores para cada nivel de jerarquía
-export const accountStore = derived(hierarchyStore, $hierarchy => $hierarchy.account);
-export const plantStore = derived(hierarchyStore, $hierarchy => $hierarchy.plant);
-export const areaStore = derived(hierarchyStore, $hierarchy => $hierarchy.area);
-export const systemStore = derived(hierarchyStore, $hierarchy => $hierarchy.system);
+export const accountStore = derived(hierarchyStore, ($hierarchy) => $hierarchy.account);
+export const plantStore = derived(hierarchyStore, ($hierarchy) => $hierarchy.plant);
+export const areaStore = derived(hierarchyStore, ($hierarchy) => $hierarchy.area);
+export const systemStore = derived(hierarchyStore, ($hierarchy) => $hierarchy.system);

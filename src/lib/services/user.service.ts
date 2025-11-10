@@ -10,10 +10,10 @@ import type {
 
 export async function getAllUsers(params: PaginateRequest = {}): Promise<PaginateResponse<User>> {
 	// Clean Code: Use named constants instead of magic numbers
-	const { 
-		page = PAGINATION.DEFAULT_PAGE, 
-		pageSize = PAGINATION.DEFAULT_PAGE_SIZE, 
-		filters = {} 
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
 	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.USERS, page, pageSize, filters);

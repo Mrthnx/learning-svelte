@@ -59,7 +59,7 @@
 			currentAuth = state;
 		});
 		unsubscribe();
-		
+
 		if (currentAuth?.user?.company) {
 			companyId = currentAuth.user.company;
 		}
@@ -230,7 +230,7 @@
 
 <div class="container mx-auto space-y-6 p-6">
 	<!-- Header -->
-	<div class="flex items-center gap-4 mb-6">
+	<div class="mb-6 flex items-center gap-4">
 		<Button variant="ghost" size="icon" onclick={goBack}>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
@@ -251,7 +251,7 @@
 	{:else if optionsTree.length === 0}
 		<div class="flex flex-col items-center justify-center py-16 text-center">
 			<p class="text-muted-foreground">No menu options found in the system</p>
-			<p class="text-sm text-muted-foreground mt-2">Contact your system administrator</p>
+			<p class="mt-2 text-sm text-muted-foreground">Contact your system administrator</p>
 		</div>
 	{:else}
 		<RolePermissionsEditor
