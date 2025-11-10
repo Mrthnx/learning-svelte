@@ -36,7 +36,6 @@
 		id: component?.id ?? null,
 		code: component?.code ?? '',
 		description: component?.description ?? '',
-		order: component?.order ?? 0,
 		image: component?.image ?? '',
 		mawoi: component?.mawoi,
 		componentType: component?.componentType
@@ -57,7 +56,6 @@
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
 			formData.description !== originalData.description ||
-			formData.order !== originalData.order ||
 			formData.image !== originalData.image ||
 			formData.mawoi?.id !== originalData.mawoi?.id ||
 			imageFile !== null
@@ -220,18 +218,6 @@
 				{#if errors.description}
 					<p class="text-sm text-destructive">{errors.description}</p>
 				{/if}
-			</div>
-
-			<!-- Order -->
-			<div class="space-y-2">
-				<label for="order" class="text-sm font-medium">Order</label>
-				<Input
-					id="order"
-					type="number"
-					bind:value={formData.order}
-					placeholder="Display order"
-					disabled={isSubmitting || isLoading}
-				/>
 			</div>
 
 			<!-- Image Upload -->

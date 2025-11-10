@@ -37,7 +37,6 @@
 		id: asset?.id ?? null,
 		code: asset?.code ?? '',
 		description: asset?.description ?? '',
-		order: asset?.order ?? 0,
 		latitude: asset?.latitude,
 		longitude: asset?.longitude,
 		image: asset?.image ?? '',
@@ -60,7 +59,6 @@
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
 			formData.description !== originalData.description ||
-			formData.order !== originalData.order ||
 			formData.latitude !== originalData.latitude ||
 			formData.longitude !== originalData.longitude ||
 			formData.image !== originalData.image ||
@@ -261,18 +259,6 @@
 							type="number"
 							bind:value={formData.rpm}
 							placeholder="Revolutions per minute"
-							disabled={isSubmitting || isLoading}
-						/>
-					</div>
-
-					<!-- Order -->
-					<div class="space-y-2">
-						<label for="order" class="text-sm font-medium">Order</label>
-						<Input
-							id="order"
-							type="number"
-							bind:value={formData.order}
-							placeholder="Display order"
 							disabled={isSubmitting || isLoading}
 						/>
 					</div>

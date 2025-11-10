@@ -47,7 +47,6 @@
 		nameContactor: plant?.nameContactor ?? '',
 		telephoneContactor: plant?.telephoneContactor ?? '',
 		mailContactor: plant?.mailContactor ?? '',
-		order: plant?.order ?? 0,
 		latitude: plant?.latitude,
 		longitude: plant?.longitude,
 		image: plant?.image ?? '',
@@ -72,7 +71,6 @@
 			formData.nameContactor !== originalData.nameContactor ||
 			formData.telephoneContactor !== originalData.telephoneContactor ||
 			formData.mailContactor !== originalData.mailContactor ||
-			formData.order !== originalData.order ||
 			formData.latitude !== originalData.latitude ||
 			formData.longitude !== originalData.longitude ||
 			formData.image !== originalData.image ||
@@ -274,18 +272,6 @@
 						{#if errors.account}
 							<p class="text-sm text-destructive">{errors.account}</p>
 						{/if}
-					</div>
-
-					<!-- Order -->
-					<div class="space-y-2">
-						<label for="order" class="text-sm font-medium">Order</label>
-						<Input
-							id="order"
-							type="number"
-							bind:value={formData.order}
-							placeholder="Display order"
-							disabled={isSubmitting || isLoading}
-						/>
 					</div>
 
 					<!-- Contact Information Section -->
