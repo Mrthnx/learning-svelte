@@ -1,17 +1,18 @@
 <script lang="ts">
 	import Table from '$lib/components/me/table.svelte';
-	import { Pencil, Trash2 } from 'lucide-svelte';
+	import { Pencil, Trash2, ArrowRight } from 'lucide-svelte';
 	import type { Asset } from '$lib/types';
 
 	interface Props {
 		assets: Asset[];
 		onEdit: (asset: Asset) => void;
 		onDelete: (asset: Asset) => void;
+		onGoTo?: (asset: Asset) => void;
 		onSelectionChange?: (selected: Asset[]) => void;
 		selectable?: boolean;
 	}
 
-	let { assets, onEdit, onDelete, onSelectionChange, selectable = false }: Props = $props();
+	let { assets, onEdit, onDelete, onGoTo, onSelectionChange, selectable = false }: Props = $props();
 
 	const columns = [
 		{
@@ -72,6 +73,13 @@
 
 	const actions = [
 		{
+			label: 'Go to Components',
+			icon: ArrowRight,
+			onClick: onGoTo,
+			variant: 'default' as const,
+			show: !!onGoTo
+		},
+		{
 			label: 'Edit',
 			icon: Pencil,
 			onClick: onEdit,
@@ -83,7 +91,7 @@
 			onClick: onDelete,
 			variant: 'destructive' as const
 		}
-	];
+	].filter(action => action.show !== false);
 </script>
 
 <Table

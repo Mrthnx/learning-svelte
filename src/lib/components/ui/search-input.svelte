@@ -12,7 +12,7 @@
 		readonly?: boolean;
 	}
 
-	type HierarchyLevel = 'account' | 'plant' | 'area' | 'system';
+	type HierarchyLevel = 'account' | 'plant' | 'area' | 'system' | 'asset';
 
 	interface Props {
 		value?: SearchValue;
@@ -46,32 +46,33 @@
 
 	// Auto-initialize from hierarchy store if hierarchyLevel is provided and value is empty
 	onMount(() => {
-		if (hierarchyLevel && !value.id && !value.description) {
-			let unsubscribe: (() => void) | null = null;
-
-			unsubscribe = hierarchyStore.subscribe((hierarchy) => {
-				const hierarchyValue = hierarchy[hierarchyLevel];
-				if (hierarchyValue.id && hierarchyValue.description) {
-					value = {
-						id: hierarchyValue.id,
-						description: hierarchyValue.description,
-						readonly: hierarchyValue.readonly
-					};
-					// Unsubscribe after initialization to avoid continuous updates
-					if (unsubscribe) {
+		if (hierarchyLevel && hierarchyLevel !== 'asset' && !value.id && !value.description) {
+			try {
+				const unsubscribe = hierarchyStore.subscribe((hierarchy) => {
+					if (!hierarchy) {
 						unsubscribe();
-						unsubscribe = null;
+						return;
 					}
-				}
-			});
+					
+					const hierarchyValue = hierarchy[hierarchyLevel as keyof typeof hierarchy];
+					if (hierarchyValue && hierarchyValue.id && hierarchyValue.description) {
+						value = {
+							id: hierarchyValue.id,
+							description: hierarchyValue.description,
+							readonly: hierarchyValue.readonly || false
+						};
+						// Unsubscribe after initialization to avoid continuous updates
+						unsubscribe();
+					}
+				});
 
-			// Return cleanup function in case component is destroyed before subscription completes
-			return () => {
-				if (unsubscribe) {
-					unsubscribe();
-					unsubscribe = null;
-				}
-			};
+				// Return cleanup function in case component is destroyed before subscription completes
+				return () => {
+					unsubscribe?.();
+				};
+			} catch (error) {
+				console.warn('Error initializing search input from hierarchy store:', error);
+			}
 		}
 	});
 

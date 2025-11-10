@@ -76,7 +76,9 @@ function createHierarchyStore() {
 
 	const updateAndSave = (updater: (state: HierarchyState) => HierarchyState) => {
 		update((state) => {
-			const newState = updater(state);
+			// Asegurar que state nunca sea undefined
+			const currentState = state || initialValue;
+			const newState = updater(currentState);
 			saveToStorage(newState);
 			return newState;
 		});

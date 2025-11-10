@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Table from '$lib/components/me/table.svelte';
-	import { Pencil, Trash2 } from 'lucide-svelte';
+	import { Pencil, Trash2, ArrowRight } from 'lucide-svelte';
 	import type { System } from '$lib/types';
 
 	interface Props {
 		systems: System[];
 		onEdit: (system: System) => void;
 		onDelete: (system: System) => void;
+		onGoTo?: (system: System) => void;
 		onSelectionChange?: (selected: System[]) => void;
 		selectable?: boolean;
 		hideActions?: boolean;
@@ -18,6 +19,7 @@
 		systems,
 		onEdit,
 		onDelete,
+		onGoTo,
 		onSelectionChange,
 		selectable = false,
 		hideActions = false,
@@ -88,6 +90,13 @@
 
 	const actions = [
 		{
+			label: 'Go to Assets',
+			icon: ArrowRight,
+			onClick: onGoTo,
+			variant: 'default' as const,
+			show: !!onGoTo
+		},
+		{
 			label: 'Edit',
 			icon: Pencil,
 			onClick: onEdit,
@@ -99,7 +108,7 @@
 			onClick: onDelete,
 			variant: 'destructive' as const
 		}
-	];
+	].filter(action => action.show !== false);
 </script>
 
 <Table

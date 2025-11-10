@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Table from '$lib/components/me/table.svelte';
-	import { Pencil, Trash2, MapPin, Phone, Mail } from 'lucide-svelte';
+	import { Pencil, Trash2, MapPin, Phone, Mail, ArrowRight } from 'lucide-svelte';
 
 	interface Account {
 		id: number | null;
@@ -18,6 +18,7 @@
 		accounts: Account[];
 		onEdit: (account: Account) => void;
 		onDelete: (account: Account) => void;
+		onGoTo?: (account: Account) => void;
 		onSelectionChange?: (selected: Account[]) => void;
 		selectable?: boolean;
 		hideActions?: boolean;
@@ -29,6 +30,7 @@
 		accounts,
 		onEdit,
 		onDelete,
+		onGoTo,
 		onSelectionChange,
 		selectable = false,
 		hideActions = false,
@@ -95,6 +97,13 @@
 
 	const actions = [
 		{
+			label: 'Go to Plants',
+			icon: ArrowRight,
+			onClick: onGoTo,
+			variant: 'default' as const,
+			show: !!onGoTo
+		},
+		{
 			label: 'Edit',
 			icon: Pencil,
 			onClick: onEdit,
@@ -106,7 +115,7 @@
 			onClick: onDelete,
 			variant: 'destructive' as const
 		}
-	];
+	].filter(action => action.show !== false);
 </script>
 
 <Table

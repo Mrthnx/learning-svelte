@@ -11,6 +11,7 @@
 	import { accountService } from '$lib/services/account.service';
 	import type { Account, PaginateResponse } from '$lib/types';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { HierarchyNavigation } from '$lib/utils/hierarchy-navigation';
 
 	let accounts: Account[] = $state([]);
 	let selectedAccounts: Account[] = $state([]);
@@ -149,6 +150,10 @@
 	function handleSelectionChange(selected: Account[]) {
 		selectedAccounts = selected;
 	}
+
+	function handleGoTo(account: Account) {
+		HierarchyNavigation.goToPlants(account);
+	}
 </script>
 
 <div class="container mx-auto space-y-4 p-4 sm:space-y-6 sm:p-6">
@@ -235,6 +240,7 @@
 		{accounts}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
+		onGoTo={handleGoTo}
 		onSelectionChange={handleSelectionChange}
 		selectable={true}
 	/>

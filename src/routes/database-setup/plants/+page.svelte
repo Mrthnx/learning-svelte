@@ -13,6 +13,7 @@
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import AccountModalTable from '$lib/components/modules/accounts/account-modal-table.svelte';
+	import { HierarchyNavigation } from '$lib/utils/hierarchy-navigation';
 
 	let plants: Plant[] = $state([]);
 	let selectedPlants: Plant[] = $state([]);
@@ -163,6 +164,10 @@
 	function handleSelectionChange(selected: Plant[]) {
 		selectedPlants = selected;
 	}
+
+	function handleGoTo(plant: Plant) {
+		HierarchyNavigation.goToAreas(plant);
+	}
 </script>
 
 <div class="container mx-auto space-y-6 p-6">
@@ -291,6 +296,7 @@
 		{plants}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
+		onGoTo={handleGoTo}
 		onSelectionChange={handleSelectionChange}
 		selectable={true}
 	/>
