@@ -99,7 +99,6 @@
 		}
 	});
 
-
 	function validateForm(): boolean {
 		errors = {};
 

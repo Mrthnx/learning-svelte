@@ -5,10 +5,10 @@ export interface AssetFilter {
 	description?: string;
 	componentCode?: string;
 	componentDescription?: string;
-	account?: { id?: number };
-	plant?: { id?: number };
-	area?: { id?: number };
-	system?: { id?: number };
+	account?: { id?: number; description?: string; readonly?: string };
+	plant?: { id?: number; description?: string; readonly?: string };
+	area?: { id?: number; description?: string; readonly?: string };
+	system?: { id?: number; description?: string; readonly?: string };
 }
 
 export const getAssets = async (page: number, pageSize: number, filters: AssetFilter) => {

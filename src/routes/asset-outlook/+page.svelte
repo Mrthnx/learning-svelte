@@ -18,18 +18,11 @@
 		saveUserTechnologyPreferences,
 		getUserTechnologyPreferences
 	} from '$lib/services/user-technology';
-	import {
-		authStore,
-		accountStore,
-		plantStore,
-		areaStore,
-		systemStore,
-		hierarchyStore
-	} from '$lib/store';
+	import { authStore, hierarchyStore } from '$lib/store';
 
 	let searchTerm = $state('');
 	let showColumnDropdown = $state(false);
-	let showFiltersPanel = $state(false);
+	let showFiltersPanel = $state(true);
 	let columnDropdownRef: HTMLDivElement;
 
 	// Filtros del sistema
@@ -117,10 +110,6 @@
 
 	// cargar datos al montar
 	onMount(async () => {
-		// Inicializar jerarquía desde el login
-		const userHierarchies = authStore.getUserHierarchies();
-		hierarchyStore.initFromLogin(userHierarchies);
-
 		// Sincronizar SearchInputs con hierarchy store
 		const hierarchy = $hierarchyStore;
 		accountSearch = { ...hierarchy.account };
@@ -214,6 +203,17 @@
 		} catch (error) {
 			console.error('Error saving column preferences:', error);
 		}
+	}
+
+	function handleApplyFilters() {
+		// Sincronizar SearchInputs con filters usando variables de estado
+		filters.account.id = accountSearch.id;
+		filters.plant.id = plantSearch.id;
+		filters.area.id = areaSearch.id;
+		filters.system.id = systemSearch.id;
+		// Aplicar filtros
+		assetOutlookStore.setFilters(filters);
+		assetOutlookStore.load();
 	}
 </script>
 
@@ -339,19 +339,35 @@
 									hierarchyLevel="account"
 									onclear={() => {
 										hierarchyStore.clearAccount();
+										// Limpiar todos los hijos en cascada
+										hierarchyStore.clearPlant();
+										hierarchyStore.clearArea();
+										hierarchyStore.clearSystem();
 										accountSearch = { id: null, description: '', readonly: false };
+										plantSearch = { id: null, description: '', readonly: false };
+										areaSearch = { id: null, description: '', readonly: false };
+										systemSearch = { id: null, description: '', readonly: false };
+										handleApplyFilters();
 									}}
 									modalContentProps={{
-										onselect: (account) => {
+										onselect: (account: any) => {
 											hierarchyStore.updateAccount({
 												id: account.id,
 												description: account.description || account.name || `Account ${account.id}`
 											});
+											// Limpiar todos los hijos cuando se selecciona un account diferente
+											hierarchyStore.clearPlant();
+											hierarchyStore.clearArea();
+											hierarchyStore.clearSystem();
 											accountSearch = {
 												id: account.id,
 												description: account.description || account.name || `Account ${account.id}`,
 												readonly: false
 											};
+											plantSearch = { id: null, description: '', readonly: false };
+											areaSearch = { id: null, description: '', readonly: false };
+											systemSearch = { id: null, description: '', readonly: false };
+											handleApplyFilters();
 										}
 									}}
 								/>
@@ -372,7 +388,13 @@
 									hierarchyLevel="plant"
 									onclear={() => {
 										hierarchyStore.clearPlant();
+										// Limpiar hijos de plant (area y system)
+										hierarchyStore.clearArea();
+										hierarchyStore.clearSystem();
 										plantSearch = { id: null, description: '', readonly: false };
+										areaSearch = { id: null, description: '', readonly: false };
+										systemSearch = { id: null, description: '', readonly: false };
+										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (plant) => {
@@ -380,11 +402,17 @@
 												id: plant.id,
 												description: plant.description || plant.name || `Plant ${plant.id}`
 											});
+											// Limpiar hijos cuando se selecciona un plant diferente
+											hierarchyStore.clearArea();
+											hierarchyStore.clearSystem();
 											plantSearch = {
 												id: plant.id,
 												description: plant.description || plant.name || `Plant ${plant.id}`,
 												readonly: false
 											};
+											areaSearch = { id: null, description: '', readonly: false };
+											systemSearch = { id: null, description: '', readonly: false };
+											handleApplyFilters();
 										}
 									}}
 								/>
@@ -405,7 +433,11 @@
 									hierarchyLevel="area"
 									onclear={() => {
 										hierarchyStore.clearArea();
+										// Limpiar hijo de area (system)
+										hierarchyStore.clearSystem();
 										areaSearch = { id: null, description: '', readonly: false };
+										systemSearch = { id: null, description: '', readonly: false };
+										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (area) => {
@@ -413,11 +445,15 @@
 												id: area.id,
 												description: area.description || area.name || `Area ${area.id}`
 											});
+											// Limpiar hijo cuando se selecciona un area diferente
+											hierarchyStore.clearSystem();
 											areaSearch = {
 												id: area.id,
 												description: area.description || area.name || `Area ${area.id}`,
 												readonly: false
 											};
+											systemSearch = { id: null, description: '', readonly: false };
+											handleApplyFilters();
 										}
 									}}
 								/>
@@ -439,6 +475,7 @@
 									onclear={() => {
 										hierarchyStore.clearSystem();
 										systemSearch = { id: null, description: '', readonly: false };
+										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (system) => {
@@ -451,6 +488,7 @@
 												description: system.description || system.name || `System ${system.id}`,
 												readonly: false
 											};
+											handleApplyFilters();
 										}
 									}}
 								/>
@@ -490,21 +528,7 @@
 						>
 							Clear All
 						</Button>
-						<Button
-							size="sm"
-							onclick={() => {
-								// Sincronizar SearchInputs con filters usando variables de estado
-								filters.account.id = accountSearch.id;
-								filters.plant.id = plantSearch.id;
-								filters.area.id = areaSearch.id;
-								filters.system.id = systemSearch.id;
-								// Aplicar filtros
-								assetOutlookStore.setFilters(filters);
-								assetOutlookStore.load();
-							}}
-						>
-							Apply Filters
-						</Button>
+						<Button size="sm" onclick={() => handleApplyFilters()}>Apply Filters</Button>
 					</div>
 				</div>
 			{/if}

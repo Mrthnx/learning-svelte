@@ -27,7 +27,7 @@ export const API_ENDPOINTS = {
 	ASSETS: 'assets',
 
 	// Components
-	COMPONENTS: 'components',
+	COMPONENTS: 'component',
 
 	// Plant Failures
 	PLANT_FAILURES: 'plant-failures',

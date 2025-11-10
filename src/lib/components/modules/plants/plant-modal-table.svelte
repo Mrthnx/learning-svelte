@@ -116,6 +116,10 @@
 					onclear={() => {
 						// Clear hierarchy store
 						hierarchyStore.clearAccount();
+						// Limpiar todos los hijos en cascada
+						hierarchyStore.clearPlant();
+						hierarchyStore.clearArea();
+						hierarchyStore.clearSystem();
 						// Clear local state
 						accountSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
@@ -127,6 +131,10 @@
 								id: account.id,
 								description: account.description || account.name || `Account ${account.id}`
 							});
+							// Limpiar hijos cuando se selecciona un account diferente
+							hierarchyStore.clearPlant();
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
 							// Update local state
 							accountSearch = {
 								id: account.id,

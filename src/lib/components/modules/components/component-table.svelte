@@ -9,9 +9,11 @@
 		onDelete: (component: Component) => void;
 		onSelectionChange?: (selected: Component[]) => void;
 		selectable?: boolean;
+		hideActions?: boolean;
+		onRowClick?: (component: Component) => void;
 	}
 
-	let { components, onEdit, onDelete, onSelectionChange, selectable = false }: Props = $props();
+	let { components, onEdit, onDelete, onSelectionChange, selectable = false, hideActions = false, onRowClick }: Props = $props();
 
 	const columns = [
 		{
@@ -64,8 +66,9 @@
 <Table
 	data={components}
 	{columns}
-	{actions}
+	actions={hideActions ? [] : actions}
 	{selectable}
 	{onSelectionChange}
+	{onRowClick}
 	emptyMessage="No components found. Create your first component to get started."
 />

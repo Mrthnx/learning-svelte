@@ -17,47 +17,89 @@ export async function getAllComponents(
 		filters = {}
 	} = params;
 
-	const url = createApiUrl(API_ENDPOINTS.COMPONENTS, page, pageSize, filters);
-	const response: ApiResponse<PaginateData<Component>> = await api.getLoader(url);
+	try {
+		const url = createApiUrl(API_ENDPOINTS.COMPONENTS, page, pageSize, filters);
+		const response: ApiResponse<PaginateData<Component>> = await api.getLoader(url);
 
-	return {
-		rows: response.data.records || [],
-		page,
-		size: pageSize,
-		total: response.data.total || 0
-	};
+		return {
+			rows: response.data.records || [],
+			page,
+			size: pageSize,
+			total: response.data.total || 0
+		};
+	} catch (error: any) {
+		// If endpoint doesn't exist (404), return empty results instead of throwing
+		if (error.status === 404) {
+			console.warn('Components endpoint not implemented yet, returning empty results');
+			return {
+				rows: [],
+				page,
+				size: pageSize,
+				total: 0
+			};
+		}
+		throw error;
+	}
 }
 
 export async function getComponentById(id: number): Promise<Component> {
-	const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
-	const response: ApiResponse<Component> = await api.get(endpoint);
-	return response.data;
+	try {
+		const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
+		const response: ApiResponse<Component> = await api.get(endpoint);
+		return response.data;
+	} catch (error: any) {
+		if (error.status === 404) {
+			throw new Error('Component endpoint not implemented yet');
+		}
+		throw error;
+	}
 }
 
 export async function createComponent(
 	component: Omit<Component, 'id'>
 ): Promise<{ success: boolean }> {
-	const data = {
-		id: null,
-		...component
-	};
-	await api.post(API_ENDPOINTS.COMPONENTS, data);
-	return { success: true };
+	try {
+		const data = {
+			id: null,
+			...component
+		};
+		await api.post(API_ENDPOINTS.COMPONENTS, data);
+		return { success: true };
+	} catch (error: any) {
+		if (error.status === 404) {
+			throw new Error('Component endpoint not implemented yet');
+		}
+		throw error;
+	}
 }
 
 export async function updateComponent(
 	id: number,
 	component: Component
 ): Promise<{ success: boolean }> {
-	const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
-	await api.put(endpoint, component);
-	return { success: true };
+	try {
+		const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
+		await api.put(endpoint, component);
+		return { success: true };
+	} catch (error: any) {
+		if (error.status === 404) {
+			throw new Error('Component endpoint not implemented yet');
+		}
+		throw error;
+	}
 }
 
 export async function deleteComponent(id: number): Promise<{ success: boolean }> {
-	const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
-	await api.del(endpoint);
-	return { success: true };
+	try {
+		const endpoint = buildEndpoint(API_ENDPOINTS.COMPONENTS, id);
+		await api.del(endpoint);
+		return { success: true };
+	} catch (error: any) {
+		if (error.status === 404) {
+			throw new Error('Component endpoint not implemented yet');
+		}
+		throw error;
+	}
 }
 
 export const componentService = {

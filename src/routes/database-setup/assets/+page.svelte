@@ -9,6 +9,12 @@
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { assetService, type Asset, type PaginateResponse } from '$lib/services/asset.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import { AccountModalTable } from '$lib/components/modules/accounts';
+	import { PlantModalTable } from '$lib/components/modules/plants';
+	import { AreaModalTable } from '$lib/components/modules/areas';
+	import { SystemModalTable } from '$lib/components/modules/systems';
 
 	let assets: Asset[] = $state([]);
 	let selectedAssets: Asset[] = $state([]);
@@ -16,6 +22,12 @@
 	let filterDescription = $state('');
 	let isLoading = $state(false);
 	let isDeleting = $state(false);
+
+	// SearchInput states for hierarchy filters
+	let accountSearch = $state({ id: null, description: '', readonly: false });
+	let plantSearch = $state({ id: null, description: '', readonly: false });
+	let areaSearch = $state({ id: null, description: '', readonly: false });
+	let systemSearch = $state({ id: null, description: '', readonly: false });
 
 	// Pagination
 	let currentPage = $state(1);
@@ -40,6 +52,21 @@
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
+
+			// Add hierarchy filters
+			const hierarchy = $hierarchyStore;
+			if (hierarchy.account.id || accountSearch.id) {
+				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
+			}
+			if (hierarchy.plant.id || plantSearch.id) {
+				filters['plant'] = { id: hierarchy.plant.id || plantSearch.id };
+			}
+			if (hierarchy.area.id || areaSearch.id) {
+				filters['area'] = { id: hierarchy.area.id || areaSearch.id };
+			}
+			if (hierarchy.system.id || systemSearch.id) {
+				filters['system'] = { id: hierarchy.system.id || systemSearch.id };
+			}
 
 			const response: PaginateResponse<Asset> = await assetService.getAll({
 				page: currentPage,
@@ -158,7 +185,169 @@
 
 	<!-- Search and Actions -->
 	<div class="flex flex-col gap-4">
-		<!-- Filters -->
+		<!-- Hierarchy Filters -->
+		<div class="rounded-lg border bg-card p-4 shadow-sm">
+			<h3 class="mb-3 text-sm font-medium text-foreground">Hierarchy Filters</h3>
+			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<!-- Account Filter -->
+				<div class="space-y-2">
+					<label class="text-sm font-medium">Account</label>
+					<SearchInput
+						bind:value={accountSearch}
+						placeholder="Select account..."
+						width="w-full"
+						modalTitle="Select Account"
+						modalDescription="Choose an account to filter assets"
+						modalContent={AccountModalTable}
+						hierarchyLevel="account"
+						onclear={() => {
+							hierarchyStore.clearAccount();
+							hierarchyStore.clearPlant();
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
+							accountSearch = { id: null, description: '', readonly: false };
+							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
+							systemSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (account) => {
+								hierarchyStore.updateAccount({
+									id: account.id,
+									description: account.description || account.name || `Account ${account.id}`
+								});
+								hierarchyStore.clearPlant();
+								hierarchyStore.clearArea();
+								hierarchyStore.clearSystem();
+								accountSearch = {
+									id: account.id,
+									description: account.description || account.name || `Account ${account.id}`,
+									readonly: false
+								};
+								plantSearch = { id: null, description: '', readonly: false };
+								areaSearch = { id: null, description: '', readonly: false };
+								systemSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+
+				<!-- Plant Filter -->
+				<div class="space-y-2">
+					<label class="text-sm font-medium">Plant</label>
+					<SearchInput
+						bind:value={plantSearch}
+						placeholder="Select plant..."
+						width="w-full"
+						modalTitle="Select Plant"
+						modalDescription="Choose a plant to filter assets"
+						modalContent={PlantModalTable}
+						hierarchyLevel="plant"
+						onclear={() => {
+							hierarchyStore.clearPlant();
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
+							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
+							systemSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (plant) => {
+								hierarchyStore.updatePlant({
+									id: plant.id,
+									description: plant.description || plant.name || `Plant ${plant.id}`
+								});
+								hierarchyStore.clearArea();
+								hierarchyStore.clearSystem();
+								plantSearch = {
+									id: plant.id,
+									description: plant.description || plant.name || `Plant ${plant.id}`,
+									readonly: false
+								};
+								areaSearch = { id: null, description: '', readonly: false };
+								systemSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+
+				<!-- Area Filter -->
+				<div class="space-y-2">
+					<label class="text-sm font-medium">Area</label>
+					<SearchInput
+						bind:value={areaSearch}
+						placeholder="Select area..."
+						width="w-full"
+						modalTitle="Select Area"
+						modalDescription="Choose an area to filter assets"
+						modalContent={AreaModalTable}
+						hierarchyLevel="area"
+						onclear={() => {
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
+							areaSearch = { id: null, description: '', readonly: false };
+							systemSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (area) => {
+								hierarchyStore.updateArea({
+									id: area.id,
+									description: area.description || area.name || `Area ${area.id}`
+								});
+								hierarchyStore.clearSystem();
+								areaSearch = {
+									id: area.id,
+									description: area.description || area.name || `Area ${area.id}`,
+									readonly: false
+								};
+								systemSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+
+				<!-- System Filter -->
+				<div class="space-y-2">
+					<label class="text-sm font-medium">System</label>
+					<SearchInput
+						bind:value={systemSearch}
+						placeholder="Select system..."
+						width="w-full"
+						modalTitle="Select System"
+						modalDescription="Choose a system to filter assets"
+						modalContent={SystemModalTable}
+						hierarchyLevel="system"
+						onclear={() => {
+							hierarchyStore.clearSystem();
+							systemSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (system) => {
+								hierarchyStore.updateSystem({
+									id: system.id,
+									description: system.description || system.name || `System ${system.id}`
+								});
+								systemSearch = {
+									id: system.id,
+									description: system.description || system.name || `System ${system.id}`,
+									readonly: false
+								};
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+			</div>
+		</div>
+
+		<!-- Text Filters -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			<div class="space-y-2">
 				<label for="filter-code" class="text-sm font-medium">Filter by Code</label>

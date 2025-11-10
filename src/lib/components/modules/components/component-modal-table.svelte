@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { assetService } from '$lib/services/asset.service';
-	import type { Asset } from '$lib/types';
+	import { componentService } from '$lib/services/component.service';
+	import type { Component } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
-	import AssetTable from './asset-table.svelte';
+	import ComponentTable from './component-table.svelte';
 	import { Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
@@ -14,15 +14,16 @@
 	import PlantModalTable from '../plants/plant-modal-table.svelte';
 	import AreaModalTable from '../areas/area-modal-table.svelte';
 	import SystemModalTable from '../systems/system-modal-table.svelte';
+	import AssetModalTable from '../assets/asset-modal-table.svelte';
 
 	interface Props {
-		onselect?: (asset: Asset) => void;
+		onselect?: (component: Component) => void;
 	}
 
 	let { onselect }: Props = $props();
 
-	let assets = $state<Asset[]>([]);
-	let filteredAssets = $state<Asset[]>([]);
+	let components = $state<Component[]>([]);
+	let filteredComponents = $state<Component[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
 
@@ -31,22 +32,23 @@
 	let plantSearch = $state({ id: null, description: '', readonly: false });
 	let areaSearch = $state({ id: null, description: '', readonly: false });
 	let systemSearch = $state({ id: null, description: '', readonly: false });
+	let assetSearch = $state({ id: null, description: '', readonly: false });
 
 	onMount(() => {
-		loadAssets();
+		loadComponents();
 	});
 
-	async function loadAssets() {
+	async function loadComponents() {
 		isLoading = true;
 		// Clear previous data to avoid showing stale results
-		assets = [];
-		filteredAssets = [];
+		components = [];
+		filteredComponents = [];
 		try {
-			// Obtener toda la jerarquía del hierarchy store para filtrar assets
+			// Obtener toda la jerarquía del hierarchy store para filtrar components
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 
-			// Incluir toda la jerarquía hacia arriba: account, plant, area y system
+			// Incluir toda la jerarquía hacia arriba: account, plant, area, system y asset
 			if (hierarchy.account.id || accountSearch.id) {
 				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
 			}
@@ -59,41 +61,46 @@
 			if (hierarchy.system.id || systemSearch.id) {
 				filters['system'] = { id: hierarchy.system.id || systemSearch.id };
 			}
+			if (assetSearch.id) {
+				filters['asset'] = { id: assetSearch.id };
+			}
 
-			const response = await assetService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
-			assets = response.rows;
-			filteredAssets = assets;
+			const response = await componentService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			components = response.rows;
+			filteredComponents = components;
 		} catch (error) {
-			console.error('Error loading assets:', error);
-			toast.error('Failed to load assets');
+			console.error('Error loading components:', error);
+			toast.error('Failed to load components');
 			// Ensure data is cleared on error
-			assets = [];
-			filteredAssets = [];
+			components = [];
+			filteredComponents = [];
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	// Function to reload assets when hierarchy filters change
+	// Function to reload components when hierarchy filters change
 	function handleHierarchyChange() {
-		loadAssets();
+		loadComponents();
 	}
 
 	function handleSearch() {
 		const term = searchTerm.toLowerCase().trim();
 		if (!term) {
-			filteredAssets = assets;
+			filteredComponents = components;
 			return;
 		}
 
-		filteredAssets = assets.filter(
-			(asset) =>
-				asset.code?.toLowerCase().includes(term) || asset.description?.toLowerCase().includes(term)
+		filteredComponents = components.filter(
+			(component) =>
+				component.code?.toLowerCase().includes(term) ||
+				component.description?.toLowerCase().includes(term) ||
+				component.mawoi?.code?.toLowerCase().includes(term)
 		);
 	}
 
-	function handleRowClick(asset: Asset) {
-		onselect?.(asset);
+	function handleRowClick(component: Component) {
+		onselect?.(component);
 	}
 
 	// Dummy functions for table props (not used in modal)
@@ -108,10 +115,10 @@
 			<div class="rounded-full bg-primary/10 p-1">
 				<Search class="h-3 w-3 text-primary" />
 			</div>
-			<h3 class="text-xs font-medium text-foreground">Filter Assets</h3>
+			<h3 class="text-xs font-medium text-foreground">Filter Components</h3>
 		</div>
 
-		<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 			<!-- Account Filter -->
 			<div class="space-y-1.5">
 				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
@@ -122,17 +129,22 @@
 					placeholder="Select account..."
 					width="w-full"
 					modalTitle="Select Account"
-					modalDescription="Choose an account to filter assets"
+					modalDescription="Choose an account to filter components"
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
 						// Clear hierarchy store (also clears plant, area, system)
 						hierarchyStore.clearAccount();
+						// Limpiar todos los hijos en cascada
+						hierarchyStore.clearPlant();
+						hierarchyStore.clearArea();
+						hierarchyStore.clearSystem();
 						// Clear local state for all dependent levels
 						accountSearch = { id: null, description: '', readonly: false };
 						plantSearch = { id: null, description: '', readonly: false };
 						areaSearch = { id: null, description: '', readonly: false };
 						systemSearch = { id: null, description: '', readonly: false };
+						assetSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
@@ -155,6 +167,7 @@
 							plantSearch = { id: null, description: '', readonly: false };
 							areaSearch = { id: null, description: '', readonly: false };
 							systemSearch = { id: null, description: '', readonly: false };
+							assetSearch = { id: null, description: '', readonly: false };
 							handleHierarchyChange();
 						}
 					}}
@@ -171,16 +184,20 @@
 					placeholder="Select plant..."
 					width="w-full"
 					modalTitle="Select Plant"
-					modalDescription="Choose a plant to filter assets"
+					modalDescription="Choose a plant to filter components"
 					modalContent={PlantModalTable}
 					hierarchyLevel="plant"
 					onclear={() => {
 						// Clear hierarchy store (also clears area, system)
 						hierarchyStore.clearPlant();
+						// Limpiar hijos de plant (area y system)
+						hierarchyStore.clearArea();
+						hierarchyStore.clearSystem();
 						// Clear local state for all dependent levels
 						plantSearch = { id: null, description: '', readonly: false };
 						areaSearch = { id: null, description: '', readonly: false };
 						systemSearch = { id: null, description: '', readonly: false };
+						assetSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
@@ -201,6 +218,7 @@
 							};
 							areaSearch = { id: null, description: '', readonly: false };
 							systemSearch = { id: null, description: '', readonly: false };
+							assetSearch = { id: null, description: '', readonly: false };
 							handleHierarchyChange();
 						}
 					}}
@@ -216,15 +234,18 @@
 					placeholder="Select area..."
 					width="w-full"
 					modalTitle="Select Area"
-					modalDescription="Choose an area to filter assets"
+					modalDescription="Choose an area to filter components"
 					modalContent={AreaModalTable}
 					hierarchyLevel="area"
 					onclear={() => {
 						// Clear hierarchy store (also clears system)
 						hierarchyStore.clearArea();
+						// Limpiar hijo de area (system)
+						hierarchyStore.clearSystem();
 						// Clear local state for all dependent levels
 						areaSearch = { id: null, description: '', readonly: false };
 						systemSearch = { id: null, description: '', readonly: false };
+						assetSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
@@ -243,6 +264,7 @@
 								readonly: false
 							};
 							systemSearch = { id: null, description: '', readonly: false };
+							assetSearch = { id: null, description: '', readonly: false };
 							handleHierarchyChange();
 						}
 					}}
@@ -259,7 +281,7 @@
 					placeholder="Select system..."
 					width="w-full"
 					modalTitle="Select System"
-					modalDescription="Choose a system to filter assets"
+					modalDescription="Choose a system to filter components"
 					modalContent={SystemModalTable}
 					hierarchyLevel="system"
 					onclear={() => {
@@ -267,6 +289,7 @@
 						hierarchyStore.clearSystem();
 						// Clear local state
 						systemSearch = { id: null, description: '', readonly: false };
+						assetSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
@@ -282,6 +305,39 @@
 								description: system.description || system.name || `System ${system.id}`,
 								readonly: false
 							};
+							assetSearch = { id: null, description: '', readonly: false };
+							handleHierarchyChange();
+						}
+					}}
+				/>
+			</div>
+
+			<!-- Asset Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+					>Asset</label
+				>
+				<SearchInput
+					bind:value={assetSearch}
+					placeholder="Select asset..."
+					width="w-full"
+					modalTitle="Select Asset"
+					modalDescription="Choose an asset to filter components"
+					modalContent={AssetModalTable}
+					hierarchyLevel="asset"
+					onclear={() => {
+						// Clear local state
+						assetSearch = { id: null, description: '', readonly: false };
+						handleHierarchyChange();
+					}}
+					modalContentProps={{
+						onselect: (asset) => {
+							// Update local state (asset is not stored in hierarchy store)
+							assetSearch = {
+								id: asset.id,
+								description: asset.description || asset.name || `Asset ${asset.id}`,
+								readonly: false
+							};
 							handleHierarchyChange();
 						}
 					}}
@@ -293,7 +349,7 @@
 		<div class="mt-3 flex gap-2">
 			<Input
 				bind:value={searchTerm}
-				placeholder="Search by code, description..."
+				placeholder="Search by code, description, asset..."
 				class="flex-1"
 				oninput={handleSearch}
 			/>
@@ -311,8 +367,8 @@
 		</div>
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
-			<AssetTable
-				assets={filteredAssets}
+			<ComponentTable
+				components={filteredComponents}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}

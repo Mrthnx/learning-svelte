@@ -137,12 +137,18 @@
 								id: account.id,
 								description: account.description || account.name || `Account ${account.id}`
 							});
+							// Limpiar todos los hijos cuando se selecciona un account diferente
+							hierarchyStore.clearPlant();
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
 							// Update local state
 							accountSearch = {
 								id: account.id,
 								description: account.description || account.name || `Account ${account.id}`,
 								readonly: false
 							};
+							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
 							handleHierarchyChange();
 						}
 					}}
@@ -177,12 +183,16 @@
 								id: plant.id,
 								description: plant.description || plant.name || `Plant ${plant.id}`
 							});
+							// Limpiar hijos cuando se selecciona un plant diferente
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
 							// Update local state
 							plantSearch = {
 								id: plant.id,
 								description: plant.description || plant.name || `Plant ${plant.id}`,
 								readonly: false
 							};
+							areaSearch = { id: null, description: '', readonly: false };
 							handleHierarchyChange();
 						}
 					}}
@@ -204,6 +214,8 @@
 					onclear={() => {
 						// Clear hierarchy store
 						hierarchyStore.clearArea();
+						// Limpiar hijo de area (system)
+						hierarchyStore.clearSystem();
 						// Clear local state
 						areaSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
@@ -215,6 +227,8 @@
 								id: area.id,
 								description: area.description || area.name || `Area ${area.id}`
 							});
+							// Limpiar hijo cuando se selecciona un area diferente
+							hierarchyStore.clearSystem();
 							// Update local state
 							areaSearch = {
 								id: area.id,

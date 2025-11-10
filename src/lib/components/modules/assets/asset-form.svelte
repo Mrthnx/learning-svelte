@@ -87,7 +87,6 @@
 		}
 	});
 
-
 	function validateForm(): boolean {
 		errors = {};
 

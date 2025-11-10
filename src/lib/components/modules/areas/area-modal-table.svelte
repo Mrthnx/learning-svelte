@@ -130,12 +130,17 @@
 								id: account.id,
 								description: account.description || account.name || `Account ${account.id}`
 							});
+							// Limpiar todos los hijos cuando se selecciona un account diferente
+							hierarchyStore.clearPlant();
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
 							// Update local state
 							accountSearch = {
 								id: account.id,
 								description: account.description || account.name || `Account ${account.id}`,
 								readonly: false
 							};
+							plantSearch = { id: null, description: '', readonly: false };
 							handleHierarchyChange();
 						}
 					}}
@@ -158,6 +163,9 @@
 					onclear={() => {
 						// Clear hierarchy store
 						hierarchyStore.clearPlant();
+						// Limpiar hijos de plant (area y system)
+						hierarchyStore.clearArea();
+						hierarchyStore.clearSystem();
 						// Clear local state
 						plantSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
@@ -169,6 +177,9 @@
 								id: plant.id,
 								description: plant.description || plant.name || `Plant ${plant.id}`
 							});
+							// Limpiar hijos cuando se selecciona un plant diferente
+							hierarchyStore.clearArea();
+							hierarchyStore.clearSystem();
 							// Update local state
 							plantSearch = {
 								id: plant.id,

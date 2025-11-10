@@ -73,7 +73,6 @@
 		}
 	});
 
-
 	function validateForm(): boolean {
 		errors = {};
 
