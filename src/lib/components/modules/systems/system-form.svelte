@@ -3,14 +3,16 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Select from '$lib/components/ui/select';
 	import { Save, X, MapPin } from 'lucide-svelte';
 	import LocationMap from '$lib/components/me/location-map.svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AreaModalTable from '../areas/area-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { System, Area } from '$lib/types';
-	import { areaService } from '$lib/services/area.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { onMount } from 'svelte';
 	import {
 		isRequired,
 		isValidEmail,
@@ -56,10 +58,13 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let areas: Area[] = $state([]);
-	let selectedArea = $state<{ value: string; label: string } | undefined>(
-		system?.area ? { value: system.area.id!.toString(), label: system.area.code || '' } : undefined
-	);
+
+	// SearchInput values
+	let areaSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: system?.area?.id ?? null,
+		description: system?.area?.description || '',
+		readonly: false
+	});
 
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
@@ -79,19 +84,22 @@
 		useUnsavedChanges(() => isDirty);
 	}
 
-	$effect(() => {
-		loadAreas();
+	// Auto-initialize hierarchy values from store when creating (not editing)
+	onMount(() => {
+		if (!isEdit) {
+			const hierarchy = $hierarchyStore;
+
+			// Auto-set area if available and not already set
+			if (hierarchy.area.id && !areaSearchValue.id) {
+				areaSearchValue = {
+					id: hierarchy.area.id,
+					description: hierarchy.area.description,
+					readonly: false
+				};
+			}
+		}
 	});
 
-	async function loadAreas() {
-		try {
-			const response = await areaService.getAll({ pageSize: 100 });
-			areas = response.rows;
-		} catch (error) {
-			console.error('Error loading areas:', error);
-			toast.error('Failed to load areas');
-		}
-	}
 
 	function validateForm(): boolean {
 		errors = {};
@@ -104,7 +112,7 @@
 			errors.description = validationMessages.required('Description');
 		}
 
-		if (!selectedArea?.value) {
+		if (!areaSearchValue.id) {
 			errors.area = validationMessages.required('Area');
 		}
 
@@ -134,12 +142,11 @@
 			return;
 		}
 
-		const selectedAreaData = areas.find((a) => a.id?.toString() === selectedArea?.value);
-		if (selectedAreaData) {
+		// Set area from SearchInput
+		if (areaSearchValue.id) {
 			formData.area = {
-				id: selectedAreaData.id!,
-				code: selectedAreaData.code,
-				description: selectedAreaData.description
+				id: areaSearchValue.id,
+				description: areaSearchValue.description
 			};
 		}
 
@@ -176,8 +183,19 @@
 		toast.error(event.detail.message);
 	}
 
-	function handleAreaSelect(value: { value: string; label: string } | undefined) {
-		selectedArea = value;
+	function handleAreaSelect(area: Area) {
+		areaSearchValue = {
+			id: area.id!,
+			description: area.description || '',
+			readonly: false
+		};
+		// Update hierarchy store with the selected area
+		hierarchyStore.updateArea(area);
+	}
+
+	function handleAreaClear() {
+		areaSearchValue = { id: null, description: '', readonly: false };
+		hierarchyStore.clearArea();
 	}
 </script>
 
@@ -237,18 +255,17 @@
 						<label for="area" class="text-sm font-medium">
 							Area <span class="text-destructive">*</span>
 						</label>
-						<Select.Root onSelectedChange={handleAreaSelect} selected={selectedArea}>
-							<Select.Trigger class={errors.area ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select an area" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each areas as area (area.id)}
-									<Select.Item value={area.id?.toString() || ''}>
-										{area.code} - {area.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
+						<SearchInput
+							bind:value={areaSearchValue}
+							placeholder="Select an area"
+							modalTitle="Select Area"
+							modalDescription="Choose an area from the list below"
+							modalContent={AreaModalTable}
+							modalContentProps={{ onselect: handleAreaSelect }}
+							onclear={handleAreaClear}
+							hierarchyLevel="area"
+							width="w-full"
+						/>
 						{#if errors.area}
 							<p class="text-sm text-destructive">{errors.area}</p>
 						{/if}

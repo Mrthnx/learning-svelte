@@ -18,6 +18,8 @@
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { User } from '$lib/types';
 	import { type Role } from '$lib/services/role.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { onMount } from 'svelte';
 	import {
 		isRequired,
 		isValidEmail,
@@ -156,6 +158,49 @@
 	if (enableUnsavedWarning) {
 		useUnsavedChanges(() => isDirty);
 	}
+
+	// Auto-initialize hierarchy values from store when creating (not editing)
+	onMount(() => {
+		if (!isEdit) {
+			const hierarchy = $hierarchyStore;
+
+			// Auto-set account if available and not already set
+			if (hierarchy.account.id && !accountSearchValue.id) {
+				accountSearchValue = {
+					id: hierarchy.account.id,
+					description: hierarchy.account.description,
+					readonly: false
+				};
+			}
+
+			// Auto-set plant if available and not already set
+			if (hierarchy.plant.id && !plantSearchValue.id) {
+				plantSearchValue = {
+					id: hierarchy.plant.id,
+					description: hierarchy.plant.description,
+					readonly: false
+				};
+			}
+
+			// Auto-set area if available and not already set
+			if (hierarchy.area.id && !areaSearchValue.id) {
+				areaSearchValue = {
+					id: hierarchy.area.id,
+					description: hierarchy.area.description,
+					readonly: false
+				};
+			}
+
+			// Auto-set system if available and not already set
+			if (hierarchy.system.id && !systemSearchValue.id) {
+				systemSearchValue = {
+					id: hierarchy.system.id,
+					description: hierarchy.system.description,
+					readonly: false
+				};
+			}
+		}
+	});
 
 	// Update roles when availableRoles prop changes
 	$effect(() => {

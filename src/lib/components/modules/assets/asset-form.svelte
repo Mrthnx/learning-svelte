@@ -3,14 +3,16 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Select from '$lib/components/ui/select';
 	import { Save, X, MapPin } from 'lucide-svelte';
 	import LocationMap from '$lib/components/me/location-map.svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import SystemModalTable from '../systems/system-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { Asset, System } from '$lib/types';
-	import { systemService } from '$lib/services/system.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { onMount } from 'svelte';
 	import { isRequired, isValidLatitude, isValidLongitude, validationMessages } from '$lib/shared';
 
 	interface Props {
@@ -47,12 +49,13 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let systems: System[] = $state([]);
-	let selectedSystem = $state<{ value: string; label: string } | undefined>(
-		asset?.system
-			? { value: asset.system.id!.toString(), label: asset.system.code || '' }
-			: undefined
-	);
+
+	// SearchInput values
+	let systemSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: asset?.system?.id ?? null,
+		description: asset?.system?.description || '',
+		readonly: false
+	});
 
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
@@ -70,19 +73,22 @@
 		useUnsavedChanges(() => isDirty);
 	}
 
-	$effect(() => {
-		loadSystems();
+	// Auto-initialize hierarchy values from store when creating (not editing)
+	onMount(() => {
+		if (!isEdit) {
+			const hierarchy = $hierarchyStore;
+
+			// Auto-set system if available and not already set
+			if (hierarchy.system.id && !systemSearchValue.id) {
+				systemSearchValue = {
+					id: hierarchy.system.id,
+					description: hierarchy.system.description,
+					readonly: false
+				};
+			}
+		}
 	});
 
-	async function loadSystems() {
-		try {
-			const response = await systemService.getAll({ pageSize: 100 });
-			systems = response.rows;
-		} catch (error) {
-			console.error('Error loading systems:', error);
-			toast.error('Failed to load systems');
-		}
-	}
 
 	function validateForm(): boolean {
 		errors = {};
@@ -95,7 +101,7 @@
 			errors.description = validationMessages.required('Description');
 		}
 
-		if (!selectedSystem?.value) {
+		if (!systemSearchValue.id) {
 			errors.system = validationMessages.required('System');
 		}
 
@@ -117,12 +123,11 @@
 			return;
 		}
 
-		const selectedSystemData = systems.find((sys) => sys.id?.toString() === selectedSystem?.value);
-		if (selectedSystemData) {
+		// Set system from SearchInput
+		if (systemSearchValue.id) {
 			formData.system = {
-				id: selectedSystemData.id!,
-				code: selectedSystemData.code,
-				description: selectedSystemData.description
+				id: systemSearchValue.id,
+				description: systemSearchValue.description
 			};
 		}
 
@@ -159,8 +164,19 @@
 		toast.error(event.detail.message);
 	}
 
-	function handleSystemSelect(value: { value: string; label: string } | undefined) {
-		selectedSystem = value;
+	function handleSystemSelect(system: System) {
+		systemSearchValue = {
+			id: system.id!,
+			description: system.description || '',
+			readonly: false
+		};
+		// Update hierarchy store with the selected system
+		hierarchyStore.updateSystem(system);
+	}
+
+	function handleSystemClear() {
+		systemSearchValue = { id: null, description: '', readonly: false };
+		hierarchyStore.clearSystem();
 	}
 </script>
 
@@ -180,18 +196,17 @@
 						<label for="system" class="text-sm font-medium">
 							System <span class="text-destructive">*</span>
 						</label>
-						<Select.Root onSelectedChange={handleSystemSelect} selected={selectedSystem}>
-							<Select.Trigger class={errors.system ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select a system" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each systems as system (system.id)}
-									<Select.Item value={system.id?.toString() || ''}>
-										{system.code} - {system.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
+						<SearchInput
+							bind:value={systemSearchValue}
+							placeholder="Select a system"
+							modalTitle="Select System"
+							modalDescription="Choose a system from the list below"
+							modalContent={SystemModalTable}
+							modalContentProps={{ onselect: handleSystemSelect }}
+							onclear={handleSystemClear}
+							hierarchyLevel="system"
+							width="w-full"
+						/>
 						{#if errors.system}
 							<p class="text-sm text-destructive">{errors.system}</p>
 						{/if}

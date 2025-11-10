@@ -3,13 +3,15 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Select from '$lib/components/ui/select';
 	import { Save, X } from 'lucide-svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AssetModalTable from '../assets/asset-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { Component, Asset } from '$lib/types';
-	import { assetService } from '$lib/services/asset.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { onMount } from 'svelte';
 	import { isRequired, validationMessages } from '$lib/shared';
 
 	interface Props {
@@ -44,12 +46,13 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let assets: Asset[] = $state([]);
-	let selectedAsset = $state<{ value: string; label: string } | undefined>(
-		component?.mawoi
-			? { value: component.mawoi.id!.toString(), label: component.mawoi.code || '' }
-			: undefined
-	);
+
+	// SearchInput values
+	let assetSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: component?.mawoi?.id ?? null,
+		description: component?.mawoi?.description || '',
+		readonly: false
+	});
 
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
@@ -64,19 +67,14 @@
 		useUnsavedChanges(() => isDirty);
 	}
 
-	$effect(() => {
-		loadAssets();
+	// Auto-initialize with asset based on system hierarchy when creating (not editing)
+	onMount(() => {
+		if (!isEdit) {
+			// For components, we don't auto-initialize asset since it's at the component level
+			// But we could consider if the hierarchy store had specific asset info
+		}
 	});
 
-	async function loadAssets() {
-		try {
-			const response = await assetService.getAll({ pageSize: 100 });
-			assets = response.rows;
-		} catch (error) {
-			console.error('Error loading assets:', error);
-			toast.error('Failed to load assets');
-		}
-	}
 
 	function validateForm(): boolean {
 		errors = {};
@@ -89,7 +87,7 @@
 			errors.description = validationMessages.required('Description');
 		}
 
-		if (!selectedAsset?.value) {
+		if (!assetSearchValue.id) {
 			errors.mawoi = validationMessages.required('Asset (Mawoi)');
 		}
 
@@ -103,12 +101,11 @@
 			return;
 		}
 
-		const selectedAssetData = assets.find((a) => a.id?.toString() === selectedAsset?.value);
-		if (selectedAssetData) {
+		// Set asset from SearchInput
+		if (assetSearchValue.id) {
 			formData.mawoi = {
-				id: selectedAssetData.id!,
-				code: selectedAssetData.code,
-				description: selectedAssetData.description
+				id: assetSearchValue.id,
+				description: assetSearchValue.description
 			};
 		}
 
@@ -140,8 +137,18 @@
 		toast.error(event.detail.message);
 	}
 
-	function handleAssetSelect(value: { value: string; label: string } | undefined) {
-		selectedAsset = value;
+	function handleAssetSelect(asset: Asset) {
+		assetSearchValue = {
+			id: asset.id!,
+			description: asset.description || '',
+			readonly: false
+		};
+		// Note: We don't update hierarchy store for asset selection in components
+		// since components are at the bottom of the hierarchy
+	}
+
+	function handleAssetClear() {
+		assetSearchValue = { id: null, description: '', readonly: false };
 	}
 </script>
 
@@ -159,18 +166,16 @@
 				<label for="mawoi" class="text-sm font-medium">
 					Asset (Mawoi) <span class="text-destructive">*</span>
 				</label>
-				<Select.Root onSelectedChange={handleAssetSelect} selected={selectedAsset}>
-					<Select.Trigger class={errors.mawoi ? 'border-destructive' : ''}>
-						<Select.Value placeholder="Select an asset" />
-					</Select.Trigger>
-					<Select.Content>
-						{#each assets as asset (asset.id)}
-							<Select.Item value={asset.id?.toString() || ''}>
-								{asset.code} - {asset.description}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
+				<SearchInput
+					bind:value={assetSearchValue}
+					placeholder="Select an asset"
+					modalTitle="Select Asset"
+					modalDescription="Choose an asset from the list below"
+					modalContent={AssetModalTable}
+					modalContentProps={{ onselect: handleAssetSelect }}
+					onclear={handleAssetClear}
+					width="w-full"
+				/>
 				{#if errors.mawoi}
 					<p class="text-sm text-destructive">{errors.mawoi}</p>
 				{/if}

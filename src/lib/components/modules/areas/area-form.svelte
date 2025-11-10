@@ -3,14 +3,16 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Select from '$lib/components/ui/select';
 	import { Save, X, MapPin } from 'lucide-svelte';
 	import LocationMap from '$lib/components/me/location-map.svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import PlantModalTable from '../plants/plant-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { Area, Plant } from '$lib/types';
-	import { plantService } from '$lib/services/plant.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { onMount } from 'svelte';
 	import {
 		isRequired,
 		isValidEmail,
@@ -56,10 +58,13 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let plants: Plant[] = $state([]);
-	let selectedPlant = $state<{ value: string; label: string } | undefined>(
-		area?.plant ? { value: area.plant.id!.toString(), label: area.plant.code || '' } : undefined
-	);
+
+	// SearchInput values
+	let plantSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: area?.plant?.id ?? null,
+		description: area?.plant?.description || '',
+		readonly: false
+	});
 
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
@@ -79,19 +84,22 @@
 		useUnsavedChanges(() => isDirty);
 	}
 
-	$effect(() => {
-		loadPlants();
+	// Auto-initialize hierarchy values from store when creating (not editing)
+	onMount(() => {
+		if (!isEdit) {
+			const hierarchy = $hierarchyStore;
+
+			// Auto-set plant if available and not already set
+			if (hierarchy.plant.id && !plantSearchValue.id) {
+				plantSearchValue = {
+					id: hierarchy.plant.id,
+					description: hierarchy.plant.description,
+					readonly: false
+				};
+			}
+		}
 	});
 
-	async function loadPlants() {
-		try {
-			const response = await plantService.getAll({ pageSize: 100 });
-			plants = response.rows;
-		} catch (error) {
-			console.error('Error loading plants:', error);
-			toast.error('Failed to load plants');
-		}
-	}
 
 	function validateForm(): boolean {
 		errors = {};
@@ -104,7 +112,7 @@
 			errors.description = validationMessages.required('Description');
 		}
 
-		if (!selectedPlant?.value) {
+		if (!plantSearchValue.id) {
 			errors.plant = validationMessages.required('Plant');
 		}
 
@@ -134,12 +142,11 @@
 			return;
 		}
 
-		const selectedPlantData = plants.find((p) => p.id?.toString() === selectedPlant?.value);
-		if (selectedPlantData) {
+		// Set plant from SearchInput
+		if (plantSearchValue.id) {
 			formData.plant = {
-				id: selectedPlantData.id!,
-				code: selectedPlantData.code,
-				description: selectedPlantData.description
+				id: plantSearchValue.id,
+				description: plantSearchValue.description
 			};
 		}
 
@@ -176,8 +183,19 @@
 		toast.error(event.detail.message);
 	}
 
-	function handlePlantSelect(value: { value: string; label: string } | undefined) {
-		selectedPlant = value;
+	function handlePlantSelect(plant: Plant) {
+		plantSearchValue = {
+			id: plant.id!,
+			description: plant.description || '',
+			readonly: false
+		};
+		// Update hierarchy store with the selected plant
+		hierarchyStore.updatePlant(plant);
+	}
+
+	function handlePlantClear() {
+		plantSearchValue = { id: null, description: '', readonly: false };
+		hierarchyStore.clearPlant();
 	}
 </script>
 
@@ -237,18 +255,17 @@
 						<label for="plant" class="text-sm font-medium">
 							Plant <span class="text-destructive">*</span>
 						</label>
-						<Select.Root onSelectedChange={handlePlantSelect} selected={selectedPlant}>
-							<Select.Trigger class={errors.plant ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select a plant" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each plants as plant (plant.id)}
-									<Select.Item value={plant.id?.toString() || ''}>
-										{plant.code} - {plant.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
+						<SearchInput
+							bind:value={plantSearchValue}
+							placeholder="Select a plant"
+							modalTitle="Select Plant"
+							modalDescription="Choose a plant from the list below"
+							modalContent={PlantModalTable}
+							modalContentProps={{ onselect: handlePlantSelect }}
+							onclear={handlePlantClear}
+							hierarchyLevel="plant"
+							width="w-full"
+						/>
 						{#if errors.plant}
 							<p class="text-sm text-destructive">{errors.plant}</p>
 						{/if}

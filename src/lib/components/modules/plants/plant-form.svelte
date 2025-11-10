@@ -3,14 +3,16 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import * as Select from '$lib/components/ui/select';
 	import { Save, X, MapPin } from 'lucide-svelte';
 	import LocationMap from '$lib/components/me/location-map.svelte';
 	import FileUpload from '$lib/components/me/file-upload.svelte';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AccountModalTable from '../accounts/account-modal-table.svelte';
 	import { toast } from 'svelte-sonner';
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { Plant, Account } from '$lib/types';
-	import { accountService } from '$lib/services/account.service';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { onMount } from 'svelte';
 	import {
 		isRequired,
 		isValidEmail,
@@ -56,12 +58,13 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 	let imageFile: File | null = $state(null);
-	let accounts: Account[] = $state([]);
-	let selectedAccount = $state<{ value: string; label: string } | undefined>(
-		plant?.account
-			? { value: plant.account.id!.toString(), label: plant.account.code || '' }
-			: undefined
-	);
+
+	// SearchInput values
+	let accountSearchValue = $state<{ id: number | null; description: string; readonly?: boolean }>({
+		id: plant?.account?.id ?? null,
+		description: plant?.account?.description || '',
+		readonly: false
+	});
 
 	const isDirty = $derived(
 		formData.code !== originalData.code ||
@@ -82,20 +85,22 @@
 		useUnsavedChanges(() => isDirty);
 	}
 
-	// Load accounts on mount
-	$effect(() => {
-		loadAccounts();
+	// Auto-initialize hierarchy values from store when creating (not editing)
+	onMount(() => {
+		if (!isEdit) {
+			const hierarchy = $hierarchyStore;
+
+			// Auto-set account if available and not already set
+			if (hierarchy.account.id && !accountSearchValue.id) {
+				accountSearchValue = {
+					id: hierarchy.account.id,
+					description: hierarchy.account.description,
+					readonly: false
+				};
+			}
+		}
 	});
 
-	async function loadAccounts() {
-		try {
-			const response = await accountService.getAll({ pageSize: 100 });
-			accounts = response.rows;
-		} catch (error) {
-			console.error('Error loading accounts:', error);
-			toast.error('Failed to load accounts');
-		}
-	}
 
 	function validateForm(): boolean {
 		errors = {};
@@ -108,7 +113,7 @@
 			errors.description = validationMessages.required('Description');
 		}
 
-		if (!selectedAccount?.value) {
+		if (!accountSearchValue.id) {
 			errors.account = validationMessages.required('Account');
 		}
 
@@ -138,15 +143,11 @@
 			return;
 		}
 
-		// Set account from selection
-		const selectedAccountData = accounts.find(
-			(acc) => acc.id?.toString() === selectedAccount?.value
-		);
-		if (selectedAccountData) {
+		// Set account from SearchInput
+		if (accountSearchValue.id) {
 			formData.account = {
-				id: selectedAccountData.id!,
-				code: selectedAccountData.code,
-				description: selectedAccountData.description
+				id: accountSearchValue.id,
+				description: accountSearchValue.description
 			};
 		}
 
@@ -185,8 +186,19 @@
 		toast.error(event.detail.message);
 	}
 
-	function handleAccountSelect(value: { value: string; label: string } | undefined) {
-		selectedAccount = value;
+	function handleAccountSelect(account: Account) {
+		accountSearchValue = {
+			id: account.id!,
+			description: account.description || '',
+			readonly: false
+		};
+		// Update hierarchy store with the selected account
+		hierarchyStore.updateAccount(account);
+	}
+
+	function handleAccountClear() {
+		accountSearchValue = { id: null, description: '', readonly: false };
+		hierarchyStore.clearAccount();
 	}
 </script>
 
@@ -248,18 +260,17 @@
 						<label for="account" class="text-sm font-medium">
 							Account <span class="text-destructive">*</span>
 						</label>
-						<Select.Root onSelectedChange={handleAccountSelect} selected={selectedAccount}>
-							<Select.Trigger class={errors.account ? 'border-destructive' : ''}>
-								<Select.Value placeholder="Select an account" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each accounts as account (account.id)}
-									<Select.Item value={account.id?.toString() || ''}>
-										{account.code} - {account.description}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
+						<SearchInput
+							bind:value={accountSearchValue}
+							placeholder="Select an account"
+							modalTitle="Select Account"
+							modalDescription="Choose an account from the list below"
+							modalContent={AccountModalTable}
+							modalContentProps={{ onselect: handleAccountSelect }}
+							onclear={handleAccountClear}
+							hierarchyLevel="account"
+							width="w-full"
+						/>
 						{#if errors.account}
 							<p class="text-sm text-destructive">{errors.account}</p>
 						{/if}
