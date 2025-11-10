@@ -29,13 +29,7 @@ export default defineConfig(
 			'svelte/no-navigation-without-resolve': 'off',
 			'@typescript-eslint/no-explicit-any': 'warn',
 			'@typescript-eslint/ban-ts-comment': 'warn',
-			'@typescript-eslint/no-unused-vars': [
-				'warn',
-				{
-					argsIgnorePattern: '^_',
-					varsIgnorePattern': '^_'
-				}
-			]
+			'@typescript-eslint/no-unused-vars': ['warn']
 		}
 	},
 	{

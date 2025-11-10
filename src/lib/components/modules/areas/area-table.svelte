@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Table from '$lib/components/me/table.svelte';
 	import { Pencil, Trash2 } from 'lucide-svelte';
-	import type { Area } from '$lib/services/area.service';
+import type { Area } from '$lib/types';
 
 	interface Props {
 		areas: Area[];

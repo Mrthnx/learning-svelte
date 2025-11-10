@@ -18,7 +18,7 @@
 		saveUserTechnologyPreferences,
 		getUserTechnologyPreferences
 	} from '$lib/services/user-technology';
-	import { authStore } from '$lib/store';
+import { authStore, accountStore, plantStore, areaStore, systemStore, hierarchyStore } from '$lib/store';
 
 	let searchTerm = $state('');
 	let showColumnDropdown = $state(false);
@@ -37,7 +37,7 @@
 		system: { id: undefined }
 	});
 
-	// Variables para SearchInput
+	// Variables para SearchInput - inicializadas con valores del hierarchy store
 	let accountSearch = $state({ id: null, description: '', readonly: false });
 	let plantSearch = $state({ id: null, description: '', readonly: false });
 	let areaSearch = $state({ id: null, description: '', readonly: false });
@@ -110,7 +110,19 @@
 
 	// cargar datos al montar
 	onMount(async () => {
-		assetOutlookStore.load();
+		// Inicializar jerarquía desde el login
+		const userHierarchies = authStore.getUserHierarchies();
+		hierarchyStore.initFromLogin(userHierarchies);
+		
+		// Sincronizar SearchInputs con hierarchy store
+		const hierarchy = $hierarchyStore;
+		accountSearch = { ...hierarchy.account };
+		plantSearch = { ...hierarchy.plant };
+		areaSearch = { ...hierarchy.area };
+		systemSearch = { ...hierarchy.system };
+		
+		// Cargar assets con valores del hierarchy store automáticamente aplicados
+		assetOutlookStore.loadWithHierarchy();
 		await loadColumnPreferences();
 
 		// Agregar event listener para cerrar dropdown al hacer click fuera
@@ -317,13 +329,18 @@
 									modalTitle="Select Account"
 									modalDescription="Choose an account from the list"
 									modalContent={AccountModalTable}
+									hierarchyLevel="account"
+									onclear={() => {
+										hierarchyStore.clearAccount();
+										accountSearch = { id: null, description: '', readonly: false };
+									}}
 									modalContentProps={{
 										onselect: (account) => {
-											accountSearch = {
+											hierarchyStore.updateAccount({
 												id: account.id,
-												description: account.description || account.name || `Account ${account.id}`,
-												readonly: false
-											};
+												description: account.description || account.name || `Account ${account.id}`
+											});
+											accountSearch = { id: account.id, description: account.description || account.name || `Account ${account.id}`, readonly: false };
 										}
 									}}
 								/>
@@ -341,13 +358,18 @@
 									modalTitle="Select Plant"
 									modalDescription="Choose a plant from the list"
 									modalContent={PlantModalTable}
+									hierarchyLevel="plant"
+									onclear={() => {
+										hierarchyStore.clearPlant();
+										plantSearch = { id: null, description: '', readonly: false };
+									}}
 									modalContentProps={{
 										onselect: (plant) => {
-											plantSearch = {
+											hierarchyStore.updatePlant({
 												id: plant.id,
-												description: plant.description || plant.name || `Plant ${plant.id}`,
-												readonly: false
-											};
+												description: plant.description || plant.name || `Plant ${plant.id}`
+											});
+											plantSearch = { id: plant.id, description: plant.description || plant.name || `Plant ${plant.id}`, readonly: false };
 										}
 									}}
 								/>
@@ -365,13 +387,18 @@
 									modalTitle="Select Area"
 									modalDescription="Choose an area from the list"
 									modalContent={AreaModalTable}
+									hierarchyLevel="area"
+									onclear={() => {
+										hierarchyStore.clearArea();
+										areaSearch = { id: null, description: '', readonly: false };
+									}}
 									modalContentProps={{
 										onselect: (area) => {
-											areaSearch = {
+											hierarchyStore.updateArea({
 												id: area.id,
-												description: area.description || area.name || `Area ${area.id}`,
-												readonly: false
-											};
+												description: area.description || area.name || `Area ${area.id}`
+											});
+											areaSearch = { id: area.id, description: area.description || area.name || `Area ${area.id}`, readonly: false };
 										}
 									}}
 								/>
@@ -389,13 +416,18 @@
 									modalTitle="Select System"
 									modalDescription="Choose a system from the list"
 									modalContent={SystemModalTable}
+									hierarchyLevel="system"
+									onclear={() => {
+										hierarchyStore.clearSystem();
+										systemSearch = { id: null, description: '', readonly: false };
+									}}
 									modalContentProps={{
 										onselect: (system) => {
-											systemSearch = {
+											hierarchyStore.updateSystem({
 												id: system.id,
-												description: system.description || system.name || `System ${system.id}`,
-												readonly: false
-											};
+												description: system.description || system.name || `System ${system.id}`
+											});
+											systemSearch = { id: system.id, description: system.description || system.name || `System ${system.id}`, readonly: false };
 										}
 									}}
 								/>
@@ -408,7 +440,7 @@
 						<Button
 							variant="outline"
 							size="sm"
-							onclick={() => {
+						onclick={() => {
 								// Limpiar filtros de texto
 								filters = {
 									code: '',
@@ -420,11 +452,17 @@
 									area: { id: undefined },
 									system: { id: undefined }
 								};
-								// Limpiar SearchInputs
-								accountSearch = { id: null, description: '', readonly: false };
-								plantSearch = { id: null, description: '', readonly: false };
-								areaSearch = { id: null, description: '', readonly: false };
-								systemSearch = { id: null, description: '', readonly: false };
+								// Reinicializar jerarquía desde el login
+								const userHierarchies = authStore.getUserHierarchies();
+								hierarchyStore.initFromLogin(userHierarchies);
+								// Sincronizar SearchInputs con hierarchy store actualizado
+								const hierarchy = $hierarchyStore;
+								accountSearch = { ...hierarchy.account };
+								plantSearch = { ...hierarchy.plant };
+								areaSearch = { ...hierarchy.area };
+								systemSearch = { ...hierarchy.system };
+								// Recargar con jerarquía
+								assetOutlookStore.loadWithHierarchy();
 							}}
 						>
 							Clear All
@@ -432,7 +470,7 @@
 						<Button
 							size="sm"
 							onclick={() => {
-								// Sincronizar SearchInputs con filters
+								// Sincronizar SearchInputs con filters usando variables de estado
 								filters.account.id = accountSearch.id;
 								filters.plant.id = plantSearch.id;
 								filters.area.id = areaSearch.id;

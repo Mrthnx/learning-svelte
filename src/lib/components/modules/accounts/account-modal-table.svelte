@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { accountService, type Account } from '$lib/services/account.service';
+import { accountService } from '$lib/services/account.service';
+import type { Account } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import AccountTable from './account-table.svelte';
 	import { Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { PAGINATION } from '$lib/shared';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	interface Props {
 		onselect?: (account: Account) => void;
@@ -25,7 +28,16 @@
 	async function loadAccounts() {
 		isLoading = true;
 		try {
-			const response = await accountService.getAll({ pageSize: 1000 });
+			// Obtener account del hierarchy store para excluirla de la lista
+			const hierarchy = $hierarchyStore;
+			const filters: any = {};
+
+			// Si hay account en hierarchy, excluirla de los resultados
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
+
+			const response = await accountService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			accounts = response.rows;
 			filteredAccounts = accounts;
 		} catch (error) {

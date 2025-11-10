@@ -2,6 +2,7 @@ import { writable, get } from 'svelte/store';
 import type { AssetFilter } from '$lib/services/get-assets';
 import { getAssets } from '$lib/services/get-assets';
 import { getComponentsWithSummary } from '$lib/services/component-summary';
+import { hierarchyStore } from './hierarchy.store';
 
 export interface AlarmData {
   id: number;
@@ -70,6 +71,27 @@ export interface AssetOutlookState {
   search: string;
 }
 
+// Función auxiliar para combinar filtros con valores del hierarchy store
+const enhanceFiltersWithHierarchy = (filters: AssetFilter): AssetFilter => {
+  const hierarchy = get(hierarchyStore);
+  return {
+    ...filters,
+    // Usar filtro manual si existe, sino usar valor del hierarchy
+    account: {
+      id: filters.account?.id ?? (hierarchy.account.id || undefined)
+    },
+    plant: {
+      id: filters.plant?.id ?? (hierarchy.plant.id || undefined)
+    },
+    area: {
+      id: filters.area?.id ?? (hierarchy.area.id || undefined)
+    },
+    system: {
+      id: filters.system?.id ?? (hierarchy.system.id || undefined)
+    }
+  };
+};
+
 const createStore = () => {
   const { subscribe, set, update } = writable<AssetOutlookState>({
     items: [],
@@ -90,11 +112,33 @@ const createStore = () => {
     setFilters: (filters: AssetFilter) => update((s) => ({ ...s, filters })),
     resetError: () => update((s) => ({ ...s, error: null })),
 
+    // Función especial para carga inicial que siempre incluye hierarchy
+    async loadWithHierarchy() {
+      // Primero actualizar los filtros con los valores del hierarchy store
+      const hierarchy = get(hierarchyStore);
+      const baseFilters = {
+        account: { id: hierarchy.account.id || undefined },
+        plant: { id: hierarchy.plant.id || undefined },
+        area: { id: hierarchy.area.id || undefined },
+        system: { id: hierarchy.system.id || undefined }
+      };
+      
+      // Actualizar el estado con estos filtros base
+      update((s) => ({ ...s, filters: { ...s.filters, ...baseFilters } }));
+      
+      // Luego cargar normalmente
+      await this.load();
+    },
+
     async load() {
       update((s) => ({ ...s, loading: true, error: null }));
       try {
         const state = get({ subscribe });
-        const data = await getAssets(state.page, state.pageSize, state.filters);
+        
+        // Combinar filtros del usuario con valores del hierarchy store
+        const enhancedFilters = enhanceFiltersWithHierarchy(state.filters);
+        
+        const data = await getAssets(state.page, state.pageSize, enhancedFilters);
         
         // Map response to table rows
         const rows: AssetRow[] = (data.records || []).map((asset: any) => ({

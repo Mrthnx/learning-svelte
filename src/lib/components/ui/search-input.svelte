@@ -3,12 +3,16 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Search, X } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	interface SearchValue {
 		id: number | null;
 		description: string;
 		readonly?: boolean;
 	}
+
+	type HierarchyLevel = 'account' | 'plant' | 'area' | 'system';
 
 	interface Props {
 		value?: SearchValue;
@@ -21,6 +25,7 @@
 		onclear?: () => void;
 		onopenmodal?: () => void;
 		onclosemodal?: () => void;
+		hierarchyLevel?: HierarchyLevel; // New prop to identify which hierarchy level this input represents
 	}
 
 	let {
@@ -33,10 +38,32 @@
 		modalContentProps = {},
 		onclear,
 		onopenmodal,
-		onclosemodal
+		onclosemodal,
+		hierarchyLevel
 	}: Props = $props();
 
 	let isModalOpen = $state(false);
+
+	// Auto-initialize from hierarchy store if hierarchyLevel is provided and value is empty
+	onMount(() => {
+		if (hierarchyLevel && (!value.id && !value.description)) {
+			const unsubscribe = hierarchyStore.subscribe((hierarchy) => {
+				const hierarchyValue = hierarchy[hierarchyLevel];
+				if (hierarchyValue.id && hierarchyValue.description) {
+					value = {
+						id: hierarchyValue.id,
+						description: hierarchyValue.description,
+						readonly: hierarchyValue.readonly
+					};
+					// Unsubscribe after initialization to avoid continuous updates
+					unsubscribe();
+				}
+			});
+			
+			// Return cleanup function in case component is destroyed before subscription completes
+			return unsubscribe;
+		}
+	});
 
 	function clearSearch() {
 		value = { id: null, description: '', readonly: false };

@@ -18,7 +18,13 @@
 	import { useUnsavedChanges } from '$lib/composables';
 	import type { User } from '$lib/types';
 	import { type Role } from '$lib/services/role.service';
-	import { isRequired, isValidEmail, isValidPhone, validationMessages, ROLE_LEVELS } from '$lib/shared';
+	import {
+		isRequired,
+		isValidEmail,
+		isValidPhone,
+		validationMessages,
+		ROLE_LEVELS
+	} from '$lib/shared';
 
 	interface Props {
 		user?: User;
@@ -204,7 +210,7 @@
 				description: accountSearchValue.description
 			};
 		} else {
-			formData.account = undefined;
+			formData.account = null;
 		}
 
 		if (showPlant && plantSearchValue.id) {
@@ -213,7 +219,7 @@
 				description: plantSearchValue.description
 			};
 		} else {
-			formData.plant = undefined;
+			formData.plant = null;
 		}
 
 		if (showArea && areaSearchValue.id) {
@@ -222,7 +228,7 @@
 				description: areaSearchValue.description
 			};
 		} else {
-			formData.area = undefined;
+			formData.area = null;
 		}
 
 		if (showSystem && systemSearchValue.id) {
@@ -231,7 +237,7 @@
 				description: systemSearchValue.description
 			};
 		} else {
-			formData.system = undefined;
+			formData.system = null;
 		}
 
 		// Update from autocompletes
@@ -251,8 +257,8 @@
 			if (selectedRoleData) {
 				formData.role = {
 					id: selectedRoleData.id!,
-					code: selectedRoleData.code,
-					description: selectedRoleData.description
+					name: selectedRoleData.name,
+					level: selectedRoleData.level
 				};
 			}
 		}

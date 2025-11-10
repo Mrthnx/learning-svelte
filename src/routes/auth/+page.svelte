@@ -8,10 +8,10 @@
 </script>
 
 <script lang="ts">
-import { onMount } from 'svelte';
-import { goto } from '$app/navigation';
-import { page } from '$app/stores';
-import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { toast } from 'svelte-sonner';
 	import { defaults, superForm } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 
@@ -20,7 +20,7 @@ import { toast } from 'svelte-sonner';
 	import { AnimatedBackground, Logo, PasswordInput } from '$lib/components/me';
 
 	import * as api from '$lib/services/api';
-	import { authStore, loadingStore, unauthorizedAlert } from '$lib/store';
+	import { authStore, loadingStore, unauthorizedAlert, hierarchyStore } from '$lib/store';
 
 	import { encryptText } from '$lib/shared';
 
@@ -116,6 +116,12 @@ import { toast } from 'svelte-sonner';
 		});
 
 		authStore.login(loginResponse.user, loginResponse.token, loginResponse.menu);
+		hierarchyStore.initFromLogin({
+			account: loginResponse.user.account,
+			plant: loginResponse.user.plant,
+			area: loginResponse.user.area,
+			system: loginResponse.user.system
+		});
 		goto('/dashboard');
 	}
 </script>
@@ -160,11 +166,7 @@ import { toast } from 'svelte-sonner';
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label class="">Password</Form.Label>
-								<PasswordInput
-									{...props}
-									bind:value={$formData.password}
-									placeholder="••••••••"
-								/>
+								<PasswordInput {...props} bind:value={$formData.password} placeholder="••••••••" />
 							{/snippet}
 						</Form.Control>
 						<Form.FieldErrors />

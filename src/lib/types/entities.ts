@@ -1,3 +1,11 @@
+export interface Account {
+	id?: number | null;
+	code?: string;
+	description?: string;
+	latitude?: number;
+	longitude?: number;
+}
+
 export interface User {
 	id?: number | null;
 	code?: string;
@@ -39,22 +47,22 @@ export interface User {
 		id?: number;
 		code?: string;
 		description?: string;
-	};
+	} | null;
 	plant?: {
 		id?: number;
 		code?: string;
 		description?: string;
-	};
+	} | null;
 	area?: {
 		id?: number;
 		code?: string;
 		description?: string;
-	};
+	} | null;
 	system?: {
 		id?: number;
 		code?: string;
 		description?: string;
-	};
+	} | null;
 }
 
 export interface Plant {

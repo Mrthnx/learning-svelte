@@ -1,5 +1,11 @@
 import { api } from './api';
-import { createApiUrl, normalizeCoordinate, API_ENDPOINTS, buildEndpoint, PAGINATION } from '../shared';
+import {
+	createApiUrl,
+	normalizeCoordinate,
+	API_ENDPOINTS,
+	buildEndpoint,
+	PAGINATION
+} from '../shared';
 import type {
 	Account,
 	PaginateRequest,
@@ -25,7 +31,11 @@ function normalizeAccount(account: Account): Account {
 export async function getAllAccounts(
 	params: PaginateRequest = {}
 ): Promise<PaginateResponse<Account>> {
-	const { page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE, filters = {} } = params;
+	const {
+		page = PAGINATION.DEFAULT_PAGE,
+		pageSize = PAGINATION.DEFAULT_PAGE_SIZE,
+		filters = {}
+	} = params;
 
 	const url = createApiUrl(API_ENDPOINTS.ACCOUNTS, page, pageSize, filters);
 	const response: ApiResponse<PaginateData<Account>> = await api.getLoader(url);

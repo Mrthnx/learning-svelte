@@ -7,8 +7,10 @@
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
-	import { toast } from 'svelte-sonner';
-	import { plantService, type Plant, type PaginateResponse } from '$lib/services/plant.service';
+import { toast } from 'svelte-sonner';
+import { plantService } from '$lib/services/plant.service';
+import type { Plant, PaginateResponse } from '$lib/types';
+import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	let plants: Plant[] = $state([]);
 	let selectedPlants: Plant[] = $state([]);
@@ -34,12 +36,21 @@
 		loadPlants();
 	});
 
-	async function loadPlants() {
-		isLoading = true;
-		try {
-			const filters: any = {};
-			if (filterCode.trim()) filters.code = filterCode.trim();
-			if (filterDescription.trim()) filters.description = filterDescription.trim();
+async function loadPlants() {
+	isLoading = true;
+	try {
+		const hierarchy = $hierarchyStore;
+		const filters: any = {};
+		if (filterCode.trim()) filters.code = filterCode.trim();
+		if (filterDescription.trim()) filters.description = filterDescription.trim();
+		
+		// Aplicar filtros de jerarquía
+		if (hierarchy.account.id) {
+			filters['account'] = { id: hierarchy.account.id };
+		}
+		if (hierarchy.plant.id) {
+			filters['plant'] = { id: hierarchy.plant.id };
+		}
 
 			const response: PaginateResponse<Plant> = await plantService.getAll({
 				page: currentPage,

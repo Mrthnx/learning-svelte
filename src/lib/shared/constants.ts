@@ -407,40 +407,40 @@ export const LANGUAGES: ILanguageState[] = [
  * Clean Code: Extract magic numbers to named constants
  */
 export const ROLE_LEVELS = {
-SUPERADMIN: 1,
-ACCOUNT: 3,
-PLANT: 4,
-AREA: 5,
-SYSTEM: 6
+	SUPERADMIN: 1,
+	ACCOUNT: 3,
+	PLANT: 4,
+	AREA: 5,
+	SYSTEM: 6
 } as const;
 
 /**
  * Pagination defaults
  */
 export const PAGINATION = {
-DEFAULT_PAGE: 1,
-DEFAULT_PAGE_SIZE: 10,
-MAX_PAGE_SIZE: 100
+	DEFAULT_PAGE: 1,
+	DEFAULT_PAGE_SIZE: 10,
+	MAX_PAGE_SIZE: 10
 } as const;
 
 /**
  * Storage size limits (in bytes)
  */
 export const STORAGE_LIMITS = {
-MAX_SIZE_BYTES: 5_000_000, // 5MB
-WARNING_SIZE_BYTES: 4_000_000 // 4MB
+	MAX_SIZE_BYTES: 5_000_000, // 5MB
+	WARNING_SIZE_BYTES: 4_000_000 // 4MB
 } as const;
 
 /**
  * HTTP Status Codes
  */
 export const HTTP_STATUS = {
-OK: 200,
-CREATED: 201,
-NO_CONTENT: 204,
-BAD_REQUEST: 400,
-UNAUTHORIZED: 401,
-FORBIDDEN: 403,
-NOT_FOUND: 404,
-INTERNAL_SERVER_ERROR: 500
+	OK: 200,
+	CREATED: 201,
+	NO_CONTENT: 204,
+	BAD_REQUEST: 400,
+	UNAUTHORIZED: 401,
+	FORBIDDEN: 403,
+	NOT_FOUND: 404,
+	INTERNAL_SERVER_ERROR: 500
 } as const;

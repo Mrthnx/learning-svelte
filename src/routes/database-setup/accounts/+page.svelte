@@ -8,11 +8,9 @@
 	import { Pagination, PageHeader } from '$lib/components/me';
 	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import {
-		accountService,
-		type Account,
-		type PaginateResponse
-	} from '$lib/services/account.service';
+	import { accountService } from '$lib/services/account.service';
+	import type { Account, PaginateResponse } from '$lib/types';
+	import { hierarchyStore } from '$lib/store/hierarchy.store';
 
 	let accounts: Account[] = $state([]);
 	let selectedAccounts: Account[] = $state([]);
@@ -41,9 +39,15 @@
 	async function loadAccounts() {
 		isLoading = true;
 		try {
+			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
+
+			// Aplicar filtros de jerarquía
+			if (hierarchy.account.id) {
+				filters['account'] = { id: hierarchy.account.id };
+			}
 
 			const response: PaginateResponse<Account> = await accountService.getAll({
 				page: currentPage,
