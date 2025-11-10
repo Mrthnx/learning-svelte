@@ -14,6 +14,7 @@
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import AccountModalTable from '$lib/components/modules/accounts/account-modal-table.svelte';
 	import PlantModalTable from '$lib/components/modules/plants/plant-modal-table.svelte';
+	import { HierarchyNavigation } from '$lib/utils/hierarchy-navigation';
 
 	let areas: Area[] = $state([]);
 	let selectedAreas: Area[] = $state([]);
@@ -164,6 +165,10 @@
 
 	function handleSelectionChange(selected: Area[]) {
 		selectedAreas = selected;
+	}
+
+	function handleGoTo(area: Area) {
+		HierarchyNavigation.goToSystems(area.id, area.description || area.name || area.code || `Area ${area.id}`);
 	}
 </script>
 
@@ -333,6 +338,7 @@
 		{areas}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
+		onGoTo={handleGoTo}
 		onSelectionChange={handleSelectionChange}
 		selectable={true}
 	/>

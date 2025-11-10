@@ -15,6 +15,7 @@
 	import AccountModalTable from '$lib/components/modules/accounts/account-modal-table.svelte';
 	import PlantModalTable from '$lib/components/modules/plants/plant-modal-table.svelte';
 	import AreaModalTable from '$lib/components/modules/areas/area-modal-table.svelte';
+	import { HierarchyNavigation } from '$lib/utils/hierarchy-navigation';
 
 	let systems: System[] = $state([]);
 	let selectedSystems: System[] = $state([]);
@@ -172,6 +173,10 @@
 
 	function handleSelectionChange(selected: System[]) {
 		selectedSystems = selected;
+	}
+
+	function handleGoTo(system: System) {
+		HierarchyNavigation.goToAssets(system.id, system.description || system.name || system.code || `System ${system.id}`);
 	}
 </script>
 
@@ -382,6 +387,7 @@
 		{systems}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
+		onGoTo={handleGoTo}
 		onSelectionChange={handleSelectionChange}
 		selectable={true}
 	/>

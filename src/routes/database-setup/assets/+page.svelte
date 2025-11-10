@@ -15,6 +15,7 @@
 	import { PlantModalTable } from '$lib/components/modules/plants';
 	import { AreaModalTable } from '$lib/components/modules/areas';
 	import { SystemModalTable } from '$lib/components/modules/systems';
+	import { HierarchyNavigation } from '$lib/utils/hierarchy-navigation';
 
 	let assets: Asset[] = $state([]);
 	let selectedAssets: Asset[] = $state([]);
@@ -167,6 +168,10 @@
 
 	function handleSelectionChange(selected: Asset[]) {
 		selectedAssets = selected;
+	}
+
+	function handleGoTo(asset: Asset) {
+		HierarchyNavigation.goToComponents(asset.id, asset.description || asset.name || asset.code || `Asset ${asset.id}`);
 	}
 </script>
 
@@ -397,6 +402,7 @@
 		{assets}
 		onEdit={handleEdit}
 		onDelete={handleDelete}
+		onGoTo={handleGoTo}
 		onSelectionChange={handleSelectionChange}
 		selectable={true}
 	/>
