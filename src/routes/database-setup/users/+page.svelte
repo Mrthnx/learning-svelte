@@ -51,9 +51,12 @@
 		loadUsers();
 	});
 
-	async function loadUsers() {
-		isLoading = true;
-		try {
+async function loadUsers() {
+	isLoading = true;
+	// Clear previous data to avoid showing stale results
+	users = [];
+	totalRecords = 0;
+	try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -81,10 +84,13 @@
 
 			users = response.rows;
 			totalRecords = response.total;
-		} catch (error: any) {
-			console.error('Error loading users:', error);
-			toast.error(error.message || 'Failed to load users');
-		} finally {
+	} catch (error: any) {
+		console.error('Error loading users:', error);
+		toast.error(error.message || 'Failed to load users');
+		// Ensure data is cleared on error
+		users = [];
+		totalRecords = 0;
+	} finally {
 			isLoading = false;
 		}
 	}
@@ -234,10 +240,13 @@
 						modalContent={AccountModalTable}
 						hierarchyLevel="account"
 						onclear={() => {
-							// Clear hierarchy store
+							// Clear hierarchy store (also clears plant, area, system)
 							hierarchyStore.clearAccount();
-							// Clear local state
+							// Clear local state for all dependent levels
 							accountSearch = { id: null, description: '', readonly: false };
+							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
+							systemSearch = { id: null, description: '', readonly: false };
 							handleSearch();
 						}}
 						modalContentProps={{
@@ -273,10 +282,12 @@
 						modalContent={PlantModalTable}
 						hierarchyLevel="plant"
 						onclear={() => {
-							// Clear hierarchy store
+							// Clear hierarchy store (also clears area, system)
 							hierarchyStore.clearPlant();
-							// Clear local state
+							// Clear local state for all dependent levels
 							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
+							systemSearch = { id: null, description: '', readonly: false };
 							handleSearch();
 						}}
 						modalContentProps={{
@@ -312,10 +323,11 @@
 						modalContent={AreaModalTable}
 						hierarchyLevel="area"
 						onclear={() => {
-							// Clear hierarchy store
+							// Clear hierarchy store (also clears system)
 							hierarchyStore.clearArea();
-							// Clear local state
+							// Clear local state for all dependent levels
 							areaSearch = { id: null, description: '', readonly: false };
+							systemSearch = { id: null, description: '', readonly: false };
 							handleSearch();
 						}}
 						modalContentProps={{

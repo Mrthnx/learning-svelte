@@ -42,9 +42,12 @@
 	onMount(() => {
 		loadAreas();
 	});
-	async function loadAreas() {
-		isLoading = true;
-		try {
+async function loadAreas() {
+	isLoading = true;
+	// Clear previous data to avoid showing stale results
+	areas = [];
+	totalRecords = 0;
+	try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -69,10 +72,13 @@
 
 			areas = response.rows;
 			totalRecords = response.total;
-		} catch (error: any) {
-			console.error('Error loading areas:', error);
-			toast.error(error.message || 'Failed to load areas');
-		} finally {
+	} catch (error: any) {
+		console.error('Error loading areas:', error);
+		toast.error(error.message || 'Failed to load areas');
+		// Ensure data is cleared on error
+		areas = [];
+		totalRecords = 0;
+	} finally {
 			isLoading = false;
 		}
 	}
@@ -200,10 +206,11 @@
 						modalContent={AccountModalTable}
 						hierarchyLevel="account"
 						onclear={() => {
-							// Clear hierarchy store
+							// Clear hierarchy store (also clears plant, area, system)
 							hierarchyStore.clearAccount();
-							// Clear local state
+							// Clear local state for all dependent levels
 							accountSearch = { id: null, description: '', readonly: false };
+							plantSearch = { id: null, description: '', readonly: false };
 							handleSearch();
 						}}
 						modalContentProps={{

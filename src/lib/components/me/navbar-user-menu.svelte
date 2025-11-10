@@ -62,7 +62,7 @@
 		aria-label="Menú de usuario"
 		aria-expanded={isUserMenuOpen}
 		aria-haspopup="true"
-		class="rounded-full bg-muted p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background focus:outline-none"
+		class="flex items-center gap-2 rounded-full bg-muted p-2 pr-3 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background focus:outline-none"
 	>
 		<svg
 			class="h-8 w-8"
@@ -78,6 +78,9 @@
 				d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
 			/>
 		</svg>
+		<span class="hidden text-sm font-medium text-white sm:block">
+			{$authStore.user?.name || 'User'}
+		</span>
 	</button>
 
 	{#if isUserMenuOpen}

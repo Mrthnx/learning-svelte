@@ -32,9 +32,12 @@
 		loadAreas();
 	});
 
-	async function loadAreas() {
-		isLoading = true;
-		try {
+async function loadAreas() {
+	isLoading = true;
+	// Clear previous data to avoid showing stale results
+	areas = [];
+	filteredAreas = [];
+	try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar areas
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
@@ -50,10 +53,13 @@
 			const response = await areaService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			areas = response.rows;
 			filteredAreas = areas;
-		} catch (error) {
-			console.error('Error loading areas:', error);
-			toast.error('Failed to load areas');
-		} finally {
+	} catch (error) {
+		console.error('Error loading areas:', error);
+		toast.error('Failed to load areas');
+		// Ensure data is cleared on error
+		areas = [];
+		filteredAreas = [];
+	} finally {
 			isLoading = false;
 		}
 	}
@@ -110,10 +116,11 @@
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
-						// Clear hierarchy store
+						// Clear hierarchy store (also clears plant, area, system)
 						hierarchyStore.clearAccount();
-						// Clear local state
+						// Clear local state for all dependent levels
 						accountSearch = { id: null, description: '', readonly: false };
+						plantSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{

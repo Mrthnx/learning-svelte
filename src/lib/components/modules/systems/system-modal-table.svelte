@@ -34,9 +34,12 @@
 		loadSystems();
 	});
 
-	async function loadSystems() {
-		isLoading = true;
-		try {
+async function loadSystems() {
+	isLoading = true;
+	// Clear previous data to avoid showing stale results
+	systems = [];
+	filteredSystems = [];
+	try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar systems
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
@@ -55,10 +58,13 @@
 			const response = await systemService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			systems = response.rows;
 			filteredSystems = systems;
-		} catch (error) {
-			console.error('Error loading systems:', error);
-			toast.error('Failed to load systems');
-		} finally {
+	} catch (error) {
+		console.error('Error loading systems:', error);
+		toast.error('Failed to load systems');
+		// Ensure data is cleared on error
+		systems = [];
+		filteredSystems = [];
+	} finally {
 			isLoading = false;
 		}
 	}
@@ -116,10 +122,12 @@
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
-						// Clear hierarchy store
+						// Clear hierarchy store (also clears plant, area, system)
 						hierarchyStore.clearAccount();
-						// Clear local state
+						// Clear local state for all dependent levels
 						accountSearch = { id: null, description: '', readonly: false };
+						plantSearch = { id: null, description: '', readonly: false };
+						areaSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
@@ -155,10 +163,11 @@
 					modalContent={PlantModalTable}
 					hierarchyLevel="plant"
 					onclear={() => {
-						// Clear hierarchy store
+						// Clear hierarchy store (also clears area, system)
 						hierarchyStore.clearPlant();
-						// Clear local state
+						// Clear local state for all dependent levels
 						plantSearch = { id: null, description: '', readonly: false };
+						areaSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{

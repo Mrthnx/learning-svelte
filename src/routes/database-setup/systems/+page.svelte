@@ -45,9 +45,12 @@
 		loadSystems();
 	});
 
-	async function loadSystems() {
-		isLoading = true;
-		try {
+async function loadSystems() {
+	isLoading = true;
+	// Clear previous data to avoid showing stale results
+	systems = [];
+	totalRecords = 0;
+	try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -75,10 +78,13 @@
 
 			systems = response.rows;
 			totalRecords = response.total;
-		} catch (error: any) {
-			console.error('Error loading systems:', error);
-			toast.error(error.message || 'Failed to load systems');
-		} finally {
+	} catch (error: any) {
+		console.error('Error loading systems:', error);
+		toast.error(error.message || 'Failed to load systems');
+		// Ensure data is cleared on error
+		systems = [];
+		totalRecords = 0;
+	} finally {
 			isLoading = false;
 		}
 	}
@@ -208,10 +214,12 @@
 						modalContent={AccountModalTable}
 						hierarchyLevel="account"
 						onclear={() => {
-							// Clear hierarchy store
+							// Clear hierarchy store (also clears plant, area, system)
 							hierarchyStore.clearAccount();
-							// Clear local state
+							// Clear local state for all dependent levels
 							accountSearch = { id: null, description: '', readonly: false };
+							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
 							handleSearch();
 						}}
 						modalContentProps={{
@@ -247,10 +255,11 @@
 						modalContent={PlantModalTable}
 						hierarchyLevel="plant"
 						onclear={() => {
-							// Clear hierarchy store
+							// Clear hierarchy store (also clears area, system)
 							hierarchyStore.clearPlant();
-							// Clear local state
+							// Clear local state for all dependent levels
 							plantSearch = { id: null, description: '', readonly: false };
+							areaSearch = { id: null, description: '', readonly: false };
 							handleSearch();
 						}}
 						modalContentProps={{
