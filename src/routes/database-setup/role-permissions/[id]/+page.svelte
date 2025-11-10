@@ -40,7 +40,7 @@
 	let rolePermissions: RolePermissionDetail[] = $state([]);
 	let loading = $state(true);
 	let saving = $state(false);
-	let companyId: number = 1; // Get from authStore
+	let companyId: number = 2; // Get from authStore
 
 	// Track changes
 	let pendingChanges: Map<
@@ -258,7 +258,7 @@
 			{optionsTree}
 			{permissions}
 			{rolePermissions}
-			{onPermissionChange}
+			onPermissionChange={handlePermissionChange}
 			onSave={saveChanges}
 			onCancel={handleCancel}
 			pendingChanges={pendingChanges.size}
