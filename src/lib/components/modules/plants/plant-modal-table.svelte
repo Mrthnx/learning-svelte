@@ -30,12 +30,12 @@
 		loadPlants();
 	});
 
-async function loadPlants() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	plants = [];
-	filteredPlants = [];
-	try {
+	async function loadPlants() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		plants = [];
+		filteredPlants = [];
+		try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar plantas
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
@@ -49,13 +49,13 @@ async function loadPlants() {
 			const response = await plantService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			plants = response.rows;
 			filteredPlants = plants;
-	} catch (error) {
-		console.error('Error loading plants:', error);
-		toast.error('Failed to load plants');
-		// Ensure data is cleared on error
-		plants = [];
-		filteredPlants = [];
-	} finally {
+		} catch (error) {
+			console.error('Error loading plants:', error);
+			toast.error('Failed to load plants');
+			// Ensure data is cleared on error
+			plants = [];
+			filteredPlants = [];
+		} finally {
 			isLoading = false;
 		}
 	}

@@ -42,12 +42,12 @@
 	onMount(() => {
 		loadAreas();
 	});
-async function loadAreas() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	areas = [];
-	totalRecords = 0;
-	try {
+	async function loadAreas() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		areas = [];
+		totalRecords = 0;
+		try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -72,13 +72,13 @@ async function loadAreas() {
 
 			areas = response.rows;
 			totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading areas:', error);
-		toast.error(error.message || 'Failed to load areas');
-		// Ensure data is cleared on error
-		areas = [];
-		totalRecords = 0;
-	} finally {
+		} catch (error: any) {
+			console.error('Error loading areas:', error);
+			toast.error(error.message || 'Failed to load areas');
+			// Ensure data is cleared on error
+			areas = [];
+			totalRecords = 0;
+		} finally {
 			isLoading = false;
 		}
 	}

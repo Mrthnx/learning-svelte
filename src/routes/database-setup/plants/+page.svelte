@@ -41,12 +41,12 @@
 		loadPlants();
 	});
 
-async function loadPlants() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	plants = [];
-	totalRecords = 0;
-	try {
+	async function loadPlants() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		plants = [];
+		totalRecords = 0;
+		try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -68,13 +68,13 @@ async function loadPlants() {
 
 			plants = response.rows;
 			totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading plants:', error);
-		toast.error(error.message || 'Failed to load plants');
-		// Ensure data is cleared on error
-		plants = [];
-		totalRecords = 0;
-	} finally {
+		} catch (error: any) {
+			console.error('Error loading plants:', error);
+			toast.error(error.message || 'Failed to load plants');
+			// Ensure data is cleared on error
+			plants = [];
+			totalRecords = 0;
+		} finally {
 			isLoading = false;
 		}
 	}

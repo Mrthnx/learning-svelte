@@ -32,12 +32,12 @@
 		loadAreas();
 	});
 
-async function loadAreas() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	areas = [];
-	filteredAreas = [];
-	try {
+	async function loadAreas() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		areas = [];
+		filteredAreas = [];
+		try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar areas
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
@@ -53,13 +53,13 @@ async function loadAreas() {
 			const response = await areaService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			areas = response.rows;
 			filteredAreas = areas;
-	} catch (error) {
-		console.error('Error loading areas:', error);
-		toast.error('Failed to load areas');
-		// Ensure data is cleared on error
-		areas = [];
-		filteredAreas = [];
-	} finally {
+		} catch (error) {
+			console.error('Error loading areas:', error);
+			toast.error('Failed to load areas');
+			// Ensure data is cleared on error
+			areas = [];
+			filteredAreas = [];
+		} finally {
 			isLoading = false;
 		}
 	}

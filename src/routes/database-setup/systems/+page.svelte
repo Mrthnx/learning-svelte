@@ -45,12 +45,12 @@
 		loadSystems();
 	});
 
-async function loadSystems() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	systems = [];
-	totalRecords = 0;
-	try {
+	async function loadSystems() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		systems = [];
+		totalRecords = 0;
+		try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -78,13 +78,13 @@ async function loadSystems() {
 
 			systems = response.rows;
 			totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading systems:', error);
-		toast.error(error.message || 'Failed to load systems');
-		// Ensure data is cleared on error
-		systems = [];
-		totalRecords = 0;
-	} finally {
+		} catch (error: any) {
+			console.error('Error loading systems:', error);
+			toast.error(error.message || 'Failed to load systems');
+			// Ensure data is cleared on error
+			systems = [];
+			totalRecords = 0;
+		} finally {
 			isLoading = false;
 		}
 	}

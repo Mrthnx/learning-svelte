@@ -25,12 +25,12 @@
 		loadAccounts();
 	});
 
-async function loadAccounts() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	accounts = [];
-	filteredAccounts = [];
-	try {
+	async function loadAccounts() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		accounts = [];
+		filteredAccounts = [];
+		try {
 			// Obtener account del hierarchy store para excluirla de la lista
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
@@ -43,13 +43,13 @@ async function loadAccounts() {
 			const response = await accountService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			accounts = response.rows;
 			filteredAccounts = accounts;
-	} catch (error) {
-		console.error('Error loading accounts:', error);
-		toast.error('Failed to load accounts');
-		// Ensure data is cleared on error
-		accounts = [];
-		filteredAccounts = [];
-	} finally {
+		} catch (error) {
+			console.error('Error loading accounts:', error);
+			toast.error('Failed to load accounts');
+			// Ensure data is cleared on error
+			accounts = [];
+			filteredAccounts = [];
+		} finally {
 			isLoading = false;
 		}
 	}

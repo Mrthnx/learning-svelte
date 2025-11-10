@@ -51,12 +51,12 @@
 		loadUsers();
 	});
 
-async function loadUsers() {
-	isLoading = true;
-	// Clear previous data to avoid showing stale results
-	users = [];
-	totalRecords = 0;
-	try {
+	async function loadUsers() {
+		isLoading = true;
+		// Clear previous data to avoid showing stale results
+		users = [];
+		totalRecords = 0;
+		try {
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 			if (filterCode.trim()) filters.code = filterCode.trim();
@@ -84,13 +84,13 @@ async function loadUsers() {
 
 			users = response.rows;
 			totalRecords = response.total;
-	} catch (error: any) {
-		console.error('Error loading users:', error);
-		toast.error(error.message || 'Failed to load users');
-		// Ensure data is cleared on error
-		users = [];
-		totalRecords = 0;
-	} finally {
+		} catch (error: any) {
+			console.error('Error loading users:', error);
+			toast.error(error.message || 'Failed to load users');
+			// Ensure data is cleared on error
+			users = [];
+			totalRecords = 0;
+		} finally {
 			isLoading = false;
 		}
 	}
