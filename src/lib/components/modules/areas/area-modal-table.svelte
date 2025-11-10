@@ -86,25 +86,44 @@
 </script>
 
 <div class="space-y-4">
-	<!-- Hierarchy Filters -->
-	<div class="grid grid-cols-1 gap-4 rounded-lg border bg-muted/30 p-4 md:grid-cols-2">
-		<div>
-			<label class="text-xs font-medium text-muted-foreground">Account</label>
-			<div class="mt-1">
+	<!-- Unified Filters Section -->
+	<div class="rounded-lg border bg-card p-3 shadow-sm">
+		<div class="mb-3 flex items-center gap-2">
+			<div class="rounded-full bg-primary/10 p-1">
+				<Search class="h-3 w-3 text-primary" />
+			</div>
+			<h3 class="text-xs font-medium text-foreground">Filter Areas</h3>
+		</div>
+
+		<div class="grid gap-3 sm:grid-cols-3">
+			<!-- Account Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+					>Account</label
+				>
 				<SearchInput
 					bind:value={accountSearch}
-					placeholder="Filter by account..."
+					placeholder="Select account..."
 					width="w-full"
 					modalTitle="Select Account"
 					modalDescription="Choose an account to filter areas"
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
+						// Clear hierarchy store
+						hierarchyStore.clearAccount();
+						// Clear local state
 						accountSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
 						onselect: (account) => {
+							// Update hierarchy store (editable and persisted)
+							hierarchyStore.updateAccount({
+								id: account.id,
+								description: account.description || account.name || `Account ${account.id}`
+							});
+							// Update local state
 							accountSearch = {
 								id: account.id,
 								description: account.description || account.name || `Account ${account.id}`,
@@ -115,24 +134,35 @@
 					}}
 				/>
 			</div>
-		</div>
-		<div>
-			<label class="text-xs font-medium text-muted-foreground">Plant</label>
-			<div class="mt-1">
+
+			<!-- Plant Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+					>Plant</label
+				>
 				<SearchInput
 					bind:value={plantSearch}
-					placeholder="Filter by plant..."
+					placeholder="Select plant..."
 					width="w-full"
 					modalTitle="Select Plant"
 					modalDescription="Choose a plant to filter areas"
 					modalContent={PlantModalTable}
 					hierarchyLevel="plant"
 					onclear={() => {
+						// Clear hierarchy store
+						hierarchyStore.clearPlant();
+						// Clear local state
 						plantSearch = { id: null, description: '', readonly: false };
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
 						onselect: (plant) => {
+							// Update hierarchy store (editable and persisted)
+							hierarchyStore.updatePlant({
+								id: plant.id,
+								description: plant.description || plant.name || `Plant ${plant.id}`
+							});
+							// Update local state
 							plantSearch = {
 								id: plant.id,
 								description: plant.description || plant.name || `Plant ${plant.id}`,
@@ -143,20 +173,25 @@
 					}}
 				/>
 			</div>
-		</div>
-	</div>
 
-	<!-- Search by text -->
-	<div class="flex gap-2">
-		<Input
-			bind:value={searchTerm}
-			placeholder="Search by code or description..."
-			class="flex-1"
-			oninput={handleSearch}
-		/>
-		<Button variant="outline" size="icon" onclick={handleSearch}>
-			<Search class="h-4 w-4" />
-		</Button>
+			<!-- Search Text -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+					>Search Text</label
+				>
+				<div class="flex gap-2">
+					<Input
+						bind:value={searchTerm}
+						placeholder="Search by code, description..."
+						class="flex-1 text-sm"
+						oninput={handleSearch}
+					/>
+					<Button variant="outline" size="sm" onclick={handleSearch}>
+						<Search class="h-3 w-3" />
+					</Button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	{#if isLoading}

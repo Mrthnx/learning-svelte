@@ -6,7 +6,7 @@
 	import { SystemTable } from '$lib/components/modules/systems';
 	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Pagination } from '$lib/components/me';
-	import { Plus, Trash2, RefreshCw } from 'lucide-svelte';
+	import { Plus, Trash2, RefreshCw, Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { systemService } from '$lib/services/system.service';
 	import type { System, PaginateResponse } from '$lib/types';
@@ -184,120 +184,168 @@
 
 	<!-- Search and Actions -->
 	<div class="flex flex-col gap-4">
-		<!-- Hierarchy Filters -->
-		<div class="mb-4 rounded-lg border bg-muted/30 p-4">
-			<h3 class="mb-3 text-sm font-medium text-foreground">Hierarchy Filters</h3>
-			<div class="grid gap-4 md:grid-cols-3">
-				<div>
-					<label class="text-xs font-medium text-muted-foreground">Account</label>
-					<div class="mt-1">
-						<SearchInput
-							bind:value={accountSearch}
-							placeholder="Filter by account..."
-							width="w-full"
-							modalTitle="Select Account"
-							modalDescription="Choose an account to filter systems"
-							modalContent={AccountModalTable}
-							hierarchyLevel="account"
-							onclear={() => {
-								accountSearch = { id: null, description: '', readonly: false };
-								handleSearch();
-							}}
-							modalContentProps={{
-								onselect: (account) => {
-									accountSearch = {
-										id: account.id,
-										description: account.description || account.name || `Account ${account.id}`,
-										readonly: false
-									};
-									handleSearch();
-								}
-							}}
-						/>
-					</div>
+		<!-- Unified Filters Section -->
+		<div class="rounded-lg border bg-card p-4 shadow-sm">
+			<div class="mb-4 flex items-center gap-2">
+				<div class="rounded-full bg-primary/10 p-1.5">
+					<Search class="h-4 w-4 text-primary" />
 				</div>
-				<div>
-					<label class="text-xs font-medium text-muted-foreground">Plant</label>
-					<div class="mt-1">
-						<SearchInput
-							bind:value={plantSearch}
-							placeholder="Filter by plant..."
-							width="w-full"
-							modalTitle="Select Plant"
-							modalDescription="Choose a plant to filter systems"
-							modalContent={PlantModalTable}
-							hierarchyLevel="plant"
-							onclear={() => {
-								plantSearch = { id: null, description: '', readonly: false };
-								handleSearch();
-							}}
-							modalContentProps={{
-								onselect: (plant) => {
-									plantSearch = {
-										id: plant.id,
-										description: plant.description || plant.name || `Plant ${plant.id}`,
-										readonly: false
-									};
-									handleSearch();
-								}
-							}}
-						/>
-					</div>
-				</div>
-				<div>
-					<label class="text-xs font-medium text-muted-foreground">Area</label>
-					<div class="mt-1">
-						<SearchInput
-							bind:value={areaSearch}
-							placeholder="Filter by area..."
-							width="w-full"
-							modalTitle="Select Area"
-							modalDescription="Choose an area to filter systems"
-							modalContent={AreaModalTable}
-							hierarchyLevel="area"
-							onclear={() => {
-								areaSearch = { id: null, description: '', readonly: false };
-								handleSearch();
-							}}
-							modalContentProps={{
-								onselect: (area) => {
-									areaSearch = {
-										id: area.id,
-										description: area.description || area.name || `Area ${area.id}`,
-										readonly: false
-									};
-									handleSearch();
-								}
-							}}
-						/>
-					</div>
-				</div>
+				<h3 class="text-sm font-semibold text-foreground">Search & Filter Systems</h3>
 			</div>
-		</div>
 
-		<!-- Filters -->
-		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			<div class="space-y-2">
-				<label for="filter-code" class="text-sm font-medium">Filter by Code</label>
-				<Input
-					id="filter-code"
-					type="text"
-					placeholder="Enter code and press Enter..."
-					bind:value={filterCode}
-					onkeypress={handleKeyPress}
-					disabled={isLoading}
-				/>
-			</div>
-			<div class="space-y-2">
-				<label for="filter-description" class="text-sm font-medium">Filter by Description</label>
-				<Input
-					id="filter-description"
-					type="text"
-					placeholder="Enter description and press Enter..."
-					bind:value={filterDescription}
-					onkeypress={handleKeyPress}
-					disabled={isLoading}
-				/>
+			<div class="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+				<!-- Account Filter -->
+				<div class="space-y-2">
+					<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+						>Account</label
+					>
+					<SearchInput
+						bind:value={accountSearch}
+						placeholder="Select account..."
+						width="w-full"
+						modalTitle="Select Account"
+						modalDescription="Choose an account to filter systems"
+						modalContent={AccountModalTable}
+						hierarchyLevel="account"
+						onclear={() => {
+							// Clear hierarchy store
+							hierarchyStore.clearAccount();
+							// Clear local state
+							accountSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (account) => {
+								// Update hierarchy store (editable and persisted)
+								hierarchyStore.updateAccount({
+									id: account.id,
+									description: account.description || account.name || `Account ${account.id}`
+								});
+								// Update local state
+								accountSearch = {
+									id: account.id,
+									description: account.description || account.name || `Account ${account.id}`,
+									readonly: false
+								};
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+
+				<!-- Plant Filter -->
+				<div class="space-y-2">
+					<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+						>Plant</label
+					>
+					<SearchInput
+						bind:value={plantSearch}
+						placeholder="Select plant..."
+						width="w-full"
+						modalTitle="Select Plant"
+						modalDescription="Choose a plant to filter systems"
+						modalContent={PlantModalTable}
+						hierarchyLevel="plant"
+						onclear={() => {
+							// Clear hierarchy store
+							hierarchyStore.clearPlant();
+							// Clear local state
+							plantSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (plant) => {
+								// Update hierarchy store (editable and persisted)
+								hierarchyStore.updatePlant({
+									id: plant.id,
+									description: plant.description || plant.name || `Plant ${plant.id}`
+								});
+								// Update local state
+								plantSearch = {
+									id: plant.id,
+									description: plant.description || plant.name || `Plant ${plant.id}`,
+									readonly: false
+								};
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+
+				<!-- Area Filter -->
+				<div class="space-y-2">
+					<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+						>Area</label
+					>
+					<SearchInput
+						bind:value={areaSearch}
+						placeholder="Select area..."
+						width="w-full"
+						modalTitle="Select Area"
+						modalDescription="Choose an area to filter systems"
+						modalContent={AreaModalTable}
+						hierarchyLevel="area"
+						onclear={() => {
+							// Clear hierarchy store
+							hierarchyStore.clearArea();
+							// Clear local state
+							areaSearch = { id: null, description: '', readonly: false };
+							handleSearch();
+						}}
+						modalContentProps={{
+							onselect: (area) => {
+								// Update hierarchy store (editable and persisted)
+								hierarchyStore.updateArea({
+									id: area.id,
+									description: area.description || area.name || `Area ${area.id}`
+								});
+								// Update local state
+								areaSearch = {
+									id: area.id,
+									description: area.description || area.name || `Area ${area.id}`,
+									readonly: false
+								};
+								handleSearch();
+							}
+						}}
+					/>
+				</div>
+
+				<!-- Code Filter -->
+				<div class="space-y-2">
+					<label
+						for="filter-code"
+						class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+						>System Code</label
+					>
+					<Input
+						id="filter-code"
+						type="text"
+						placeholder="Enter system code..."
+						bind:value={filterCode}
+						onkeypress={handleKeyPress}
+						disabled={isLoading}
+						class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+					/>
+				</div>
+
+				<!-- Description Filter -->
+				<div class="space-y-2">
+					<label
+						for="filter-description"
+						class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+						>Description</label
+					>
+					<Input
+						id="filter-description"
+						type="text"
+						placeholder="Enter description..."
+						bind:value={filterDescription}
+						onkeypress={handleKeyPress}
+						disabled={isLoading}
+						class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+					/>
+				</div>
 			</div>
 		</div>
 
