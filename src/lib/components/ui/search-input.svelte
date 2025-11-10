@@ -47,7 +47,9 @@
 	// Auto-initialize from hierarchy store if hierarchyLevel is provided and value is empty
 	onMount(() => {
 		if (hierarchyLevel && !value.id && !value.description) {
-			const unsubscribe = hierarchyStore.subscribe((hierarchy) => {
+			let unsubscribe: (() => void) | null = null;
+
+			unsubscribe = hierarchyStore.subscribe((hierarchy) => {
 				const hierarchyValue = hierarchy[hierarchyLevel];
 				if (hierarchyValue.id && hierarchyValue.description) {
 					value = {
@@ -56,12 +58,20 @@
 						readonly: hierarchyValue.readonly
 					};
 					// Unsubscribe after initialization to avoid continuous updates
-					unsubscribe();
+					if (unsubscribe) {
+						unsubscribe();
+						unsubscribe = null;
+					}
 				}
 			});
 
 			// Return cleanup function in case component is destroyed before subscription completes
-			return unsubscribe;
+			return () => {
+				if (unsubscribe) {
+					unsubscribe();
+					unsubscribe = null;
+				}
+			};
 		}
 	});
 

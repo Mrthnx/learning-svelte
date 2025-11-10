@@ -9,6 +9,9 @@
 	import { toast } from 'svelte-sonner';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
 	import { PAGINATION } from '$lib/shared';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AccountModalTable from '../accounts/account-modal-table.svelte';
+	import PlantModalTable from '../plants/plant-modal-table.svelte';
 
 	interface Props {
 		onselect?: (area: Area) => void;
@@ -20,6 +23,10 @@
 	let filteredAreas = $state<Area[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
+
+	// SearchInput states for hierarchy filters
+	let accountSearch = $state({ id: null, description: '', readonly: false });
+	let plantSearch = $state({ id: null, description: '', readonly: false });
 
 	onMount(() => {
 		loadAreas();
@@ -33,11 +40,11 @@
 			const filters: any = {};
 
 			// Incluir toda la jerarquía hacia arriba: account y plant
-			if (hierarchy.account.id) {
-				filters['account'] = { id: hierarchy.account.id };
+			if (hierarchy.account.id || accountSearch.id) {
+				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
 			}
-			if (hierarchy.plant.id) {
-				filters['plant'] = { id: hierarchy.plant.id };
+			if (hierarchy.plant.id || plantSearch.id) {
+				filters['plant'] = { id: hierarchy.plant.id || plantSearch.id };
 			}
 
 			const response = await areaService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
@@ -49,6 +56,11 @@
 		} finally {
 			isLoading = false;
 		}
+	}
+
+	// Function to reload areas when hierarchy filters change
+	function handleHierarchyChange() {
+		loadAreas();
 	}
 
 	function handleSearch() {
@@ -74,6 +86,67 @@
 </script>
 
 <div class="space-y-4">
+	<!-- Hierarchy Filters -->
+	<div class="grid grid-cols-1 gap-4 rounded-lg border bg-muted/30 p-4 md:grid-cols-2">
+		<div>
+			<label class="text-xs font-medium text-muted-foreground">Account</label>
+			<div class="mt-1">
+				<SearchInput
+					bind:value={accountSearch}
+					placeholder="Filter by account..."
+					width="w-full"
+					modalTitle="Select Account"
+					modalDescription="Choose an account to filter areas"
+					modalContent={AccountModalTable}
+					hierarchyLevel="account"
+					onclear={() => {
+						accountSearch = { id: null, description: '', readonly: false };
+						handleHierarchyChange();
+					}}
+					modalContentProps={{
+						onselect: (account) => {
+							accountSearch = {
+								id: account.id,
+								description: account.description || account.name || `Account ${account.id}`,
+								readonly: false
+							};
+							handleHierarchyChange();
+						}
+					}}
+				/>
+			</div>
+		</div>
+		<div>
+			<label class="text-xs font-medium text-muted-foreground">Plant</label>
+			<div class="mt-1">
+				<SearchInput
+					bind:value={plantSearch}
+					placeholder="Filter by plant..."
+					width="w-full"
+					modalTitle="Select Plant"
+					modalDescription="Choose a plant to filter areas"
+					modalContent={PlantModalTable}
+					hierarchyLevel="plant"
+					onclear={() => {
+						plantSearch = { id: null, description: '', readonly: false };
+						handleHierarchyChange();
+					}}
+					modalContentProps={{
+						onselect: (plant) => {
+							plantSearch = {
+								id: plant.id,
+								description: plant.description || plant.name || `Plant ${plant.id}`,
+								readonly: false
+							};
+							handleHierarchyChange();
+						}
+					}}
+				/>
+			</div>
+		</div>
+	</div>
+
+	<!-- Search by text -->
 	<div class="flex gap-2">
 		<Input
 			bind:value={searchTerm}

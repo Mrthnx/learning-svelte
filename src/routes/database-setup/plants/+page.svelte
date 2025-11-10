@@ -11,6 +11,8 @@
 	import { plantService } from '$lib/services/plant.service';
 	import type { Plant, PaginateResponse } from '$lib/types';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AccountModalTable from '$lib/components/modules/accounts/account-modal-table.svelte';
 
 	let plants: Plant[] = $state([]);
 	let selectedPlants: Plant[] = $state([]);
@@ -18,6 +20,9 @@
 	let filterDescription = $state('');
 	let isLoading = $state(false);
 	let isDeleting = $state(false);
+
+	// SearchInput states for hierarchy filters
+	let accountSearch = $state({ id: null, description: '', readonly: false });
 
 	// Pagination
 	let currentPage = $state(1);
@@ -45,8 +50,8 @@
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
 			// Aplicar filtros de jerarquía
-			if (hierarchy.account.id) {
-				filters['account'] = { id: hierarchy.account.id };
+			if (hierarchy.account.id || accountSearch.id) {
+				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
 			}
 			if (hierarchy.plant.id) {
 				filters['plant'] = { id: hierarchy.plant.id };
@@ -169,6 +174,41 @@
 
 	<!-- Search and Actions -->
 	<div class="flex flex-col gap-4">
+		<!-- Hierarchy Filters -->
+		<div class="mb-4 rounded-lg border bg-muted/30 p-4">
+			<h3 class="mb-3 text-sm font-medium text-foreground">Hierarchy Filters</h3>
+			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+				<div>
+					<label class="text-xs font-medium text-muted-foreground">Account</label>
+					<div class="mt-1">
+						<SearchInput
+							bind:value={accountSearch}
+							placeholder="Filter by account..."
+							width="w-full"
+							modalTitle="Select Account"
+							modalDescription="Choose an account to filter plants"
+							modalContent={AccountModalTable}
+							hierarchyLevel="account"
+							onclear={() => {
+								accountSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}}
+							modalContentProps={{
+								onselect: (account) => {
+									accountSearch = {
+										id: account.id,
+										description: account.description || account.name || `Account ${account.id}`,
+										readonly: false
+									};
+									handleSearch();
+								}
+							}}
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Filters -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			<div class="space-y-2">

@@ -12,6 +12,11 @@
 	import { userService } from '$lib/services/user.service';
 	import type { User, PaginateResponse } from '$lib/types';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import SearchInput from '$lib/components/ui/search-input.svelte';
+	import AccountModalTable from '$lib/components/modules/accounts/account-modal-table.svelte';
+	import PlantModalTable from '$lib/components/modules/plants/plant-modal-table.svelte';
+	import AreaModalTable from '$lib/components/modules/areas/area-modal-table.svelte';
+	import SystemModalTable from '$lib/components/modules/systems/system-modal-table.svelte';
 
 	let users: User[] = $state([]);
 	let selectedUsers: User[] = $state([]);
@@ -19,6 +24,12 @@
 	let filterDescription = $state('');
 	let isLoading = $state(false);
 	let isDeleting = $state(false);
+
+	// SearchInput states for hierarchy filters
+	let accountSearch = $state({ id: null, description: '', readonly: false });
+	let plantSearch = $state({ id: null, description: '', readonly: false });
+	let areaSearch = $state({ id: null, description: '', readonly: false });
+	let systemSearch = $state({ id: null, description: '', readonly: false });
 
 	// Pagination
 	let currentPage = $state(1);
@@ -49,17 +60,17 @@
 			if (filterDescription.trim()) filters.description = filterDescription.trim();
 
 			// Aplicar filtros de jerarquía
-			if (hierarchy.account.id) {
-				filters['account'] = { id: hierarchy.account.id };
+			if (hierarchy.account.id || accountSearch.id) {
+				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
 			}
-			if (hierarchy.plant.id) {
-				filters['plant'] = { id: hierarchy.plant.id };
+			if (hierarchy.plant.id || plantSearch.id) {
+				filters['plant'] = { id: hierarchy.plant.id || plantSearch.id };
 			}
-			if (hierarchy.area.id) {
-				filters['area'] = { id: hierarchy.area.id };
+			if (hierarchy.area.id || areaSearch.id) {
+				filters['area'] = { id: hierarchy.area.id || areaSearch.id };
 			}
-			if (hierarchy.system.id) {
-				filters['system'] = { id: hierarchy.system.id };
+			if (hierarchy.system.id || systemSearch.id) {
+				filters['system'] = { id: hierarchy.system.id || systemSearch.id };
 			}
 
 			const response: PaginateResponse<User> = await userService.getAll({
@@ -199,6 +210,125 @@
 
 	<!-- Search and Actions -->
 	<div class="flex flex-col gap-4">
+		<!-- Hierarchy Filters -->
+		<div class="mb-4 rounded-lg border bg-muted/30 p-4">
+			<h3 class="mb-3 text-sm font-medium text-foreground">Hierarchy Filters</h3>
+			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+				<div>
+					<label class="text-xs font-medium text-muted-foreground">Account</label>
+					<div class="mt-1">
+						<SearchInput
+							bind:value={accountSearch}
+							placeholder="Filter by account..."
+							width="w-full"
+							modalTitle="Select Account"
+							modalDescription="Choose an account to filter users"
+							modalContent={AccountModalTable}
+							hierarchyLevel="account"
+							onclear={() => {
+								accountSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}}
+							modalContentProps={{
+								onselect: (account) => {
+									accountSearch = {
+										id: account.id,
+										description: account.description || account.name || `Account ${account.id}`,
+										readonly: false
+									};
+									handleSearch();
+								}
+							}}
+						/>
+					</div>
+				</div>
+				<div>
+					<label class="text-xs font-medium text-muted-foreground">Plant</label>
+					<div class="mt-1">
+						<SearchInput
+							bind:value={plantSearch}
+							placeholder="Filter by plant..."
+							width="w-full"
+							modalTitle="Select Plant"
+							modalDescription="Choose a plant to filter users"
+							modalContent={PlantModalTable}
+							hierarchyLevel="plant"
+							onclear={() => {
+								plantSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}}
+							modalContentProps={{
+								onselect: (plant) => {
+									plantSearch = {
+										id: plant.id,
+										description: plant.description || plant.name || `Plant ${plant.id}`,
+										readonly: false
+									};
+									handleSearch();
+								}
+							}}
+						/>
+					</div>
+				</div>
+				<div>
+					<label class="text-xs font-medium text-muted-foreground">Area</label>
+					<div class="mt-1">
+						<SearchInput
+							bind:value={areaSearch}
+							placeholder="Filter by area..."
+							width="w-full"
+							modalTitle="Select Area"
+							modalDescription="Choose an area to filter users"
+							modalContent={AreaModalTable}
+							hierarchyLevel="area"
+							onclear={() => {
+								areaSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}}
+							modalContentProps={{
+								onselect: (area) => {
+									areaSearch = {
+										id: area.id,
+										description: area.description || area.name || `Area ${area.id}`,
+										readonly: false
+									};
+									handleSearch();
+								}
+							}}
+						/>
+					</div>
+				</div>
+				<div>
+					<label class="text-xs font-medium text-muted-foreground">System</label>
+					<div class="mt-1">
+						<SearchInput
+							bind:value={systemSearch}
+							placeholder="Filter by system..."
+							width="w-full"
+							modalTitle="Select System"
+							modalDescription="Choose a system to filter users"
+							modalContent={SystemModalTable}
+							hierarchyLevel="system"
+							onclear={() => {
+								systemSearch = { id: null, description: '', readonly: false };
+								handleSearch();
+							}}
+							modalContentProps={{
+								onselect: (system) => {
+									systemSearch = {
+										id: system.id,
+										description: system.description || system.name || `System ${system.id}`,
+										readonly: false
+									};
+									handleSearch();
+								}
+							}}
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Filters -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			<div class="space-y-2">

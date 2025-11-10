@@ -269,7 +269,7 @@
 							>
 								<h3 class="mb-4 text-sm font-medium text-foreground">Show/Hide Columns</h3>
 								<div class="max-h-72 space-y-3 overflow-y-auto pr-2">
-									{#each columnConfig as column}
+									{#each columnConfig as column (column.key)}
 										<label
 											class="flex cursor-pointer items-center space-x-2 rounded p-1 hover:bg-accent"
 											title={column.tooltip}

@@ -361,7 +361,7 @@
 										'Select a country'}
 								</Select.Trigger>
 								<Select.Content>
-									{#each countries as country}
+									{#each countries as country (country.key)}
 										<Select.Item value={`${country.key}`} label={country.value}>
 											{country.value}
 										</Select.Item>
@@ -387,7 +387,7 @@
 											{$formData.countryPhoneCode ?? 'Code'}
 										</Select.Trigger>
 										<Select.Content>
-											{#each countries as country}
+											{#each countries as country (country.key)}
 												<Select.Item value={country.phoneCode} label={country.phoneCode}>
 													{country.phoneCode}
 												</Select.Item>
@@ -469,7 +469,7 @@
 										'Select a language'}
 								</Select.Trigger>
 								<Select.Content>
-									{#each LANG_VALUES as lang}
+									{#each LANG_VALUES as lang (lang.key)}
 										<Select.Item value={lang.key} label={lang.value}>
 											{lang.value}
 										</Select.Item>
