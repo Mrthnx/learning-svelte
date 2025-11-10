@@ -47,7 +47,7 @@
 
 			// Aplicar filtros de jerarquía
 			if (hierarchy.account.id) {
-				filters['account'] = { id: hierarchy.account.id };
+				// filters['account'] = { id: hierarchy.account.id };
 			}
 
 			const response: PaginateResponse<Account> = await accountService.getAll({

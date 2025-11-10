@@ -37,7 +37,7 @@
 
 			// Si hay account en hierarchy, excluirla de los resultados
 			if (hierarchy.account.id) {
-				filters['account'] = { id: hierarchy.account.id };
+				// filters['account'] = { id: hierarchy.account.id };
 			}
 
 			const response = await accountService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });

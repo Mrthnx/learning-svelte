@@ -48,9 +48,11 @@
 	onMount(() => {
 		if (hierarchyLevel && hierarchyLevel !== 'asset' && !value.id && !value.description) {
 			try {
-				const unsubscribe = hierarchyStore.subscribe((hierarchy) => {
+				let unsubscribe: (() => void) | null = null;
+				
+				unsubscribe = hierarchyStore.subscribe((hierarchy) => {
 					if (!hierarchy) {
-						unsubscribe();
+						if (unsubscribe) unsubscribe();
 						return;
 					}
 					
@@ -62,13 +64,13 @@
 							readonly: hierarchyValue.readonly || false
 						};
 						// Unsubscribe after initialization to avoid continuous updates
-						unsubscribe();
+						if (unsubscribe) unsubscribe();
 					}
 				});
 
 				// Return cleanup function in case component is destroyed before subscription completes
 				return () => {
-					unsubscribe?.();
+					if (unsubscribe) unsubscribe();
 				};
 			} catch (error) {
 				console.warn('Error initializing search input from hierarchy store:', error);

@@ -68,7 +68,7 @@
 				filters['area'] = { id: hierarchy.area.id || areaSearch.id };
 			}
 			if (hierarchy.system.id) {
-				filters['system'] = { id: hierarchy.system.id };
+				// filters['system'] = { id: hierarchy.system.id };
 			}
 
 			const response: PaginateResponse<System> = await systemService.getAll({
@@ -176,7 +176,10 @@
 	}
 
 	function handleGoTo(system: System) {
-		HierarchyNavigation.goToAssets(system.id, system.description || system.name || system.code || `System ${system.id}`);
+		HierarchyNavigation.goToAssets(
+			system.id,
+			system.description || system.name || system.code || `System ${system.id}`
+		);
 	}
 </script>
 

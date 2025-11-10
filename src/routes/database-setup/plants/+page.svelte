@@ -58,7 +58,7 @@
 				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
 			}
 			if (hierarchy.plant.id) {
-				filters['plant'] = { id: hierarchy.plant.id };
+				// filters['plant'] = { id: hierarchy.plant.id };
 			}
 
 			const response: PaginateResponse<Plant> = await plantService.getAll({
