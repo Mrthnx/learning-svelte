@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Menu, X } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 
 	interface Props {
 		isdraweropen?: boolean;
@@ -12,18 +12,18 @@
 	}
 </script>
 
-<!-- FAB - Solo visible en móvil -->
+<!-- FAB - Botón rectangular vertical pegado al borde derecho inferior -->
 <button
 	onclick={toggledrawer}
-	class="fixed right-4 bottom-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-offset-background transition-all duration-300 hover:scale-105 hover:shadow-xl hover:ring-2 hover:ring-ring hover:ring-offset-2 active:scale-95 md:hidden"
+	class="fixed right-0 bottom-4 z-[60] flex h-20 w-8 items-center justify-center rounded-l-lg bg-primary text-primary-foreground shadow-lg ring-offset-background transition-all duration-300 hover:w-10 hover:shadow-xl hover:ring-2 hover:ring-ring hover:ring-offset-2 active:scale-95 md:hidden"
 	aria-label={isdraweropen ? 'Cerrar menú lateral' : 'Abrir menú lateral'}
 	type="button"
 >
 	{#if !isdraweropen}
-		<!-- Menu icon cuando está cerrado -->
-		<Menu class="h-6 w-6 transition-transform duration-200" />
+		<!-- ChevronLeft icon cuando está cerrado (para abrir) -->
+		<ChevronLeft class="h-5 w-5 transition-transform duration-200" />
 	{:else}
-		<!-- X icon cuando está abierto -->
-		<X class="h-6 w-6 rotate-90 transition-transform duration-200" />
+		<!-- ChevronRight icon cuando está abierto (para cerrar) -->
+		<ChevronRight class="h-5 w-5 transition-transform duration-200" />
 	{/if}
 </button>

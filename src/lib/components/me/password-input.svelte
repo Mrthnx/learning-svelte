@@ -46,8 +46,7 @@
 		variant="ghost"
 		size="sm"
 		class="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
-		on:click={handleToggle}
-		tabindex="-1"
+		onclick={handleToggle}
 	>
 		{#if showPassword}
 			<EyeOff class="h-4 w-4 text-muted-foreground" />

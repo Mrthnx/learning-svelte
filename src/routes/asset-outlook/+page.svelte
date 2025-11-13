@@ -5,7 +5,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Search, Settings, Filter } from 'lucide-svelte';
+	import { Search, Settings, Filter, ChevronUp, ChevronDown } from 'lucide-svelte';
 	import { assetOutlookStore } from '$lib/store/asset-outlook.store';
 	import type { AssetFilter } from '$lib/services/get-assets';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
@@ -24,6 +24,12 @@
 	let showColumnDropdown = $state(false);
 	let showFiltersPanel = $state(true);
 	let columnDropdownRef: HTMLDivElement;
+
+	// Sorting state
+	type SortField = 'asset' | 'type' | 'component' | 'vib' | 'trib' | 'mce' | 'irrot' | 'irelec' | 'irstruc' | 'uerot' | 'ueelec' | 'ueleak' | 'bal' | 'algn';
+	type SortOrder = 'asc' | 'desc' | 'none';
+	let sortField = $state<SortField | null>(null);
+	let sortOrder = $state<SortOrder>('none');
 
 	// Filtros del sistema
 	let filters: AssetFilter = $state({
@@ -130,9 +136,10 @@
 		};
 	});
 
-	// Filtrado local sobre los items cargados
-	const filteredAssets = $derived(
-		($assetOutlookStore.items || []).filter((asset) => {
+	// Filtrado y ordenamiento local sobre los items cargados
+	const filteredAssets = $derived(() => {
+		// Primero filtrar
+		let filtered = ($assetOutlookStore.items || []).filter((asset) => {
 			if (!searchTerm) return true;
 			const q = searchTerm.toLowerCase();
 			return (
@@ -143,8 +150,126 @@
 						comp.code.toLowerCase().includes(q) || comp.description.toLowerCase().includes(q)
 				)
 			);
-		})
-	);
+		});
+
+		// Luego ordenar si hay un campo de ordenamiento activo
+		if (sortField && sortOrder !== 'none') {
+			filtered = filtered.map(asset => ({
+				...asset,
+				components: [...asset.components].sort((a, b) => {
+					let aValue: any;
+					let bValue: any;
+					let aAlarmPriority = 0;
+					let bAlarmPriority = 0;
+
+					switch (sortField) {
+						case 'asset':
+							aValue = asset.code;
+							bValue = asset.code;
+							break;
+						case 'type':
+							aValue = a.componentType?.code || '';
+							bValue = b.componentType?.code || '';
+							break;
+						case 'component':
+							aValue = a.code;
+							bValue = b.code;
+							break;
+						case 'vib':
+							aValue = new Date(a.vibdate || 0);
+							bValue = new Date(b.vibdate || 0);
+							aAlarmPriority = getAlarmPriority(a.vibalarm);
+							bAlarmPriority = getAlarmPriority(b.vibalarm);
+							break;
+						case 'trib':
+							aValue = new Date(a.tribdate || 0);
+							bValue = new Date(b.tribdate || 0);
+							aAlarmPriority = getAlarmPriority(a.tribalarm);
+							bAlarmPriority = getAlarmPriority(b.tribalarm);
+							break;
+						case 'mce':
+							aValue = new Date(a.mcedate || 0);
+							bValue = new Date(b.mcedate || 0);
+							aAlarmPriority = getAlarmPriority(a.mcealarm);
+							bAlarmPriority = getAlarmPriority(b.mcealarm);
+							break;
+						case 'irrot':
+							aValue = new Date(a.irrotdate || 0);
+							bValue = new Date(b.irrotdate || 0);
+							aAlarmPriority = getAlarmPriority(a.irrotalarm);
+							bAlarmPriority = getAlarmPriority(b.irrotalarm);
+							break;
+						case 'irelec':
+							aValue = new Date(a.irelecdate || 0);
+							bValue = new Date(b.irelecdate || 0);
+							aAlarmPriority = getAlarmPriority(a.irelecalarm);
+							bAlarmPriority = getAlarmPriority(b.irelecalarm);
+							break;
+						case 'irstruc':
+							aValue = new Date(a.irstrucdate || 0);
+							bValue = new Date(b.irstrucdate || 0);
+							aAlarmPriority = getAlarmPriority(a.irstrucalarm);
+							bAlarmPriority = getAlarmPriority(b.irstrucalarm);
+							break;
+						case 'uerot':
+							aValue = new Date(a.uerotdate || 0);
+							bValue = new Date(b.uerotdate || 0);
+							aAlarmPriority = getAlarmPriority(a.uerotalarm);
+							bAlarmPriority = getAlarmPriority(b.uerotalarm);
+							break;
+						case 'ueelec':
+							aValue = new Date(a.ueelecdate || 0);
+							bValue = new Date(b.ueelecdate || 0);
+							aAlarmPriority = getAlarmPriority(a.ueelecalarm);
+							bAlarmPriority = getAlarmPriority(b.ueelecalarm);
+							break;
+						case 'ueleak':
+							aValue = new Date(a.ueleakdate || 0);
+							bValue = new Date(b.ueleakdate || 0);
+							aAlarmPriority = getAlarmPriority(a.ueleakalarm);
+							bAlarmPriority = getAlarmPriority(b.ueleakalarm);
+							break;
+						case 'bal':
+							aValue = new Date(a.baldate || 0);
+							bValue = new Date(b.baldate || 0);
+							aAlarmPriority = getAlarmPriority(a.balalarm);
+							bAlarmPriority = getAlarmPriority(b.balalarm);
+							break;
+						case 'algn':
+							aValue = new Date(a.algndate || 0);
+							bValue = new Date(b.algndate || 0);
+							aAlarmPriority = getAlarmPriority(a.algnalarm);
+							bAlarmPriority = getAlarmPriority(b.algnalarm);
+							break;
+						default:
+							return 0;
+					}
+
+					// Para columnas de tecnología, ordenar por: 1) fecha, 2) prioridad de alarma
+					if (['vib', 'trib', 'mce', 'irrot', 'irelec', 'irstruc', 'uerot', 'ueelec', 'ueleak', 'bal', 'algn'].includes(sortField)) {
+						// Primero por fecha
+						const dateComparison = sortOrder === 'desc' ? 
+							bValue.getTime() - aValue.getTime() : 
+							aValue.getTime() - bValue.getTime();
+						
+						// Si las fechas son iguales, ordenar por prioridad de alarma
+						if (dateComparison === 0) {
+							return sortOrder === 'desc' ? 
+								bAlarmPriority - aAlarmPriority : 
+								aAlarmPriority - bAlarmPriority;
+						}
+						return dateComparison;
+					} else {
+						// Para columnas de texto, ordenamiento alfabético
+						const comparison = String(aValue).localeCompare(String(bValue));
+						return sortOrder === 'desc' ? -comparison : comparison;
+					}
+				})
+			}));
+		}
+
+		return filtered;
+	});
 
 	function formatDateStr(
 		value?: string | null,
@@ -171,6 +296,44 @@
 			default:
 				return 'text-muted-foreground';
 		}
+	}
+
+	// Get alarm priority for sorting (red=3, yellow=2, green=1, none=0)
+	function getAlarmPriority(alarm: any): number {
+		const code = alarm?.color;
+		if (!code) return 0;
+		switch (String(code).toLowerCase()) {
+			case 'red': return 3;
+			case 'yellow': return 2;
+			case 'green': return 1;
+			default: return 0;
+		}
+	}
+
+	// Handle column header click for sorting
+	function handleSort(field: SortField) {
+		if (sortField === field) {
+			// Cycle through: none -> desc -> asc -> none
+			if (sortOrder === 'none') {
+				sortOrder = 'desc';
+			} else if (sortOrder === 'desc') {
+				sortOrder = 'asc';
+			} else {
+				sortOrder = 'none';
+				sortField = null;
+			}
+		} else {
+			sortField = field;
+			sortOrder = 'desc'; // Start with desc for dates (most recent first)
+		}
+	}
+
+	// Get sort icon component for header
+	function getSortIcon(field: SortField) {
+		if (sortField !== field || sortOrder === 'none') {
+			return null;
+		}
+		return sortOrder === 'desc' ? ChevronDown : ChevronUp;
 	}
 
 	// Función para guardar preferencias de columnas
@@ -538,64 +701,192 @@
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head>Asset</Table.Head>
-							<Table.Head>Type</Table.Head>
-							<Table.Head>Component</Table.Head>
+							<Table.Head 
+								class="cursor-pointer hover:text-foreground select-none"
+								onclick={() => handleSort('asset')}
+							>
+								<div class="flex items-center gap-1">
+									Asset
+									{#if getSortIcon('asset')}
+										<svelte:component this={getSortIcon('asset')} class="h-4 w-4" />
+									{/if}
+								</div>
+							</Table.Head>
+							<Table.Head 
+								class="cursor-pointer hover:text-foreground select-none"
+								onclick={() => handleSort('type')}
+							>
+								<div class="flex items-center gap-1">
+									Type
+									{#if getSortIcon('type')}
+										<svelte:component this={getSortIcon('type')} class="h-4 w-4" />
+									{/if}
+								</div>
+							</Table.Head>
+							<Table.Head 
+								class="cursor-pointer hover:text-foreground select-none"
+								onclick={() => handleSort('component')}
+							>
+								<div class="flex items-center gap-1">
+									Component
+									{#if getSortIcon('component')}
+										<svelte:component this={getSortIcon('component')} class="h-4 w-4" />
+									{/if}
+								</div>
+							</Table.Head>
 							{#if columnVisibility.vib}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="Vibration Analysis"
-									>Vib</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="Vibration Analysis - Click to sort by date/alarm"
+									onclick={() => handleSort('vib')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										Vib
+										{#if getSortIcon('vib')}
+											<svelte:component this={getSortIcon('vib')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.trib}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="Tribology Analysis"
-									>Trib</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="Tribology Analysis - Click to sort by date/alarm"
+									onclick={() => handleSort('trib')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										Trib
+										{#if getSortIcon('trib')}
+											<svelte:component this={getSortIcon('trib')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.mce}
 								<Table.Head
-									class="cursor-pointer hover:text-foreground"
-									title="Motor Current Analysis">MCE</Table.Head
+									class="cursor-pointer hover:text-foreground select-none"
+									title="Motor Current Analysis - Click to sort by date/alarm"
+									onclick={() => handleSort('mce')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										MCE
+										{#if getSortIcon('mce')}
+											<svelte:component this={getSortIcon('mce')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.irrot}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="IR Rotational"
-									>IRr</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="IR Rotational - Click to sort by date/alarm"
+									onclick={() => handleSort('irrot')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										IRr
+										{#if getSortIcon('irrot')}
+											<svelte:component this={getSortIcon('irrot')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.irelec}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="IR Electrical"
-									>IRe</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="IR Electrical - Click to sort by date/alarm"
+									onclick={() => handleSort('irelec')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										IRe
+										{#if getSortIcon('irelec')}
+											<svelte:component this={getSortIcon('irelec')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.irstruc}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="IR Structural"
-									>IRs</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="IR Structural - Click to sort by date/alarm"
+									onclick={() => handleSort('irstruc')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										IRs
+										{#if getSortIcon('irstruc')}
+											<svelte:component this={getSortIcon('irstruc')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.uerot}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="UE Rotational"
-									>UEr</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="UE Rotational - Click to sort by date/alarm"
+									onclick={() => handleSort('uerot')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										UEr
+										{#if getSortIcon('uerot')}
+											<svelte:component this={getSortIcon('uerot')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.ueelec}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="UE Electrical"
-									>UEe</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="UE Electrical - Click to sort by date/alarm"
+									onclick={() => handleSort('ueelec')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										UEe
+										{#if getSortIcon('ueelec')}
+											<svelte:component this={getSortIcon('ueelec')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.ueleak}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="UE Leak Detection"
-									>UEL</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="UE Leak Detection - Click to sort by date/alarm"
+									onclick={() => handleSort('ueleak')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										UEL
+										{#if getSortIcon('ueleak')}
+											<svelte:component this={getSortIcon('ueleak')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.bal}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="Balance Analysis"
-									>Bal</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="Balance Analysis - Click to sort by date/alarm"
+									onclick={() => handleSort('bal')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										Bal
+										{#if getSortIcon('bal')}
+											<svelte:component this={getSortIcon('bal')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 							{#if columnVisibility.algn}
-								<Table.Head class="cursor-pointer hover:text-foreground" title="Alignment Analysis"
-									>Algn</Table.Head
+								<Table.Head 
+									class="cursor-pointer hover:text-foreground select-none" 
+									title="Alignment Analysis - Click to sort by date/alarm"
+									onclick={() => handleSort('algn')}
 								>
+									<div class="flex items-center gap-1 justify-center">
+										Algn
+										{#if getSortIcon('algn')}
+											<svelte:component this={getSortIcon('algn')} class="h-4 w-4" />
+										{/if}
+									</div>
+								</Table.Head>
 							{/if}
 						</Table.Row>
 					</Table.Header>
