@@ -415,7 +415,7 @@
 					<Input
 						id="filter-description"
 						type="text"
-						placeholder="Enter user name..."
+						placeholder="Enter user name or email..."
 						bind:value={filterDescription}
 						onkeypress={handleKeyPress}
 						disabled={isLoading}
