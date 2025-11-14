@@ -22,7 +22,7 @@
 
 	let searchTerm = $state('');
 	let showColumnDropdown = $state(false);
-	let showFiltersPanel = $state(true);
+	let showFiltersPanel = $state(false);
 	let columnDropdownRef: HTMLDivElement;
 
 	// Sorting state
