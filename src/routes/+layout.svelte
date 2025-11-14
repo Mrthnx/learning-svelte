@@ -7,15 +7,17 @@
 	import { page } from '$app/stores';
 	import { get } from '$lib/services/api';
 	import { authStore } from '$lib/store';
-	import { get as getStoreValue } from 'svelte/store';
 	import { logger } from '$lib/utils/logger';
+	import { browser } from '$app/environment';
 
 	let { children } = $props();
 
 	onMount(() => {
+		if (!browser) return;
+
 		const unsubscribe = page.subscribe(async ($page) => {
-			const token = getStoreValue(authStore).token;
-			if (!$page.route.id?.startsWith('/auth') && token) {
+			const auth = $authStore;
+			if (!$page.route.id?.startsWith('/auth') && auth.token) {
 				try {
 					await get('ping');
 					logger.debug('Ping successful');

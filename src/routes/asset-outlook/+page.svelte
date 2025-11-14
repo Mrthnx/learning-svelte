@@ -5,12 +5,11 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Search, Settings, Filter, ChevronUp, ChevronDown } from 'lucide-svelte';
+	import { Settings, Filter, ChevronUp, ChevronDown } from 'lucide-svelte';
 	import { assetOutlookStore } from '$lib/store/asset-outlook.store';
 	import type { AssetFilter } from '$lib/services/get-assets';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import { AccountModalTable } from '$lib/components/modules/accounts';
-
 	import { PlantModalTable } from '$lib/components/modules/plants';
 	import { AreaModalTable } from '$lib/components/modules/areas';
 	import { SystemModalTable } from '$lib/components/modules/systems';
@@ -19,15 +18,26 @@
 		getUserTechnologyPreferences
 	} from '$lib/services/user-technology';
 	import { authStore, hierarchyStore } from '$lib/store';
+	import { TECHNOLOGY_LIST, type TechnologyKey } from '$lib/constants/technologies';
+	import {
+		getColorByAlarmCode,
+		formatDateStr,
+		compareComponents,
+		type SortField,
+		type SortOrder
+	} from '$lib/utils/asset-outlook';
+	import {
+		clearHierarchyLevel,
+		updateHierarchyLevel,
+		getClearedChildValues,
+		type HierarchySearchValue
+	} from '$lib/composables/use-hierarchy-filter';
 
 	let searchTerm = $state('');
 	let showColumnDropdown = $state(false);
 	let showFiltersPanel = $state(false);
 	let columnDropdownRef: HTMLDivElement;
 
-	// Sorting state
-	type SortField = 'asset' | 'type' | 'component' | 'vib' | 'trib' | 'mce' | 'irrot' | 'irelec' | 'irstruc' | 'uerot' | 'ueelec' | 'ueleak' | 'bal' | 'algn';
-	type SortOrder = 'asc' | 'desc' | 'none';
 	let sortField = $state<SortField | null>(null);
 	let sortOrder = $state<SortOrder>('none');
 
@@ -43,41 +53,24 @@
 		system: { id: undefined }
 	});
 
-	// Variables para SearchInput - inicializadas con valores del hierarchy store
-	let accountSearch = $state({ id: null, description: '', readonly: false });
-	let plantSearch = $state({ id: null, description: '', readonly: false });
-	let areaSearch = $state({ id: null, description: '', readonly: false });
-	let systemSearch = $state({ id: null, description: '', readonly: false });
+	let accountSearch = $state<HierarchySearchValue>({ id: null, description: '', readonly: false });
+	let plantSearch = $state<HierarchySearchValue>({ id: null, description: '', readonly: false });
+	let areaSearch = $state<HierarchySearchValue>({ id: null, description: '', readonly: false });
+	let systemSearch = $state<HierarchySearchValue>({ id: null, description: '', readonly: false });
 
-	// Control de visibilidad de columnas (excepto Asset, Type, Component)
-	let columnVisibility = $state({
-		vib: true, // Vibration
-		trib: true, // Tribology
-		mce: true, // Motor Current
-		irrot: true, // IR Rotation
-		irelec: true, // IR Electric
-		irstruc: true, // IR Structural
-		uerot: true, // UE Rotation
-		ueelec: true, // UE Electric
-		ueleak: true, // UE Leak
-		bal: true, // Balance
-		algn: true // Alignment
+	let columnVisibility = $state<Record<TechnologyKey, boolean>>({
+		vib: true,
+		trib: true,
+		mce: true,
+		irrot: true,
+		irelec: true,
+		irstruc: true,
+		uerot: true,
+		ueelec: true,
+		ueleak: true,
+		bal: true,
+		algn: true
 	});
-
-	// Configuración de columnas para mostrar en checkboxes
-	const columnConfig = [
-		{ key: 'vib', label: 'Vib', tooltip: 'Vibration Analysis' },
-		{ key: 'trib', label: 'Trib', tooltip: 'Tribology Analysis' },
-		{ key: 'mce', label: 'MCE', tooltip: 'Motor Current Analysis' },
-		{ key: 'irrot', label: 'IRr', tooltip: 'IR Rotational' },
-		{ key: 'irelec', label: 'IRe', tooltip: 'IR Electrical' },
-		{ key: 'irstruc', label: 'IRs', tooltip: 'IR Structural' },
-		{ key: 'uerot', label: 'UEr', tooltip: 'UE Rotational' },
-		{ key: 'ueelec', label: 'UEe', tooltip: 'UE Electrical' },
-		{ key: 'ueleak', label: 'UEL', tooltip: 'UE Leak Detection' },
-		{ key: 'bal', label: 'Bal', tooltip: 'Balance Analysis' },
-		{ key: 'algn', label: 'Algn', tooltip: 'Alignment Analysis' }
-	];
 
 	// Función para cargar preferencias de columnas
 	async function loadColumnPreferences() {
@@ -136,9 +129,7 @@
 		};
 	});
 
-	// Filtrado y ordenamiento local sobre los items cargados
-	const filteredAssets = $derived(() => {
-		// Primero filtrar
+	const filteredAssets = $derived.by(() => {
 		let filtered = ($assetOutlookStore.items || []).filter((asset) => {
 			if (!searchTerm) return true;
 			const q = searchTerm.toLowerCase();
@@ -152,163 +143,17 @@
 			);
 		});
 
-		// Luego ordenar si hay un campo de ordenamiento activo
 		if (sortField && sortOrder !== 'none') {
-			filtered = filtered.map(asset => ({
+			filtered = filtered.map((asset) => ({
 				...asset,
-				components: [...asset.components].sort((a, b) => {
-					let aValue: any;
-					let bValue: any;
-					let aAlarmPriority = 0;
-					let bAlarmPriority = 0;
-
-					switch (sortField) {
-						case 'asset':
-							aValue = asset.code;
-							bValue = asset.code;
-							break;
-						case 'type':
-							aValue = a.componentType?.code || '';
-							bValue = b.componentType?.code || '';
-							break;
-						case 'component':
-							aValue = a.code;
-							bValue = b.code;
-							break;
-						case 'vib':
-							aValue = new Date(a.vibdate || 0);
-							bValue = new Date(b.vibdate || 0);
-							aAlarmPriority = getAlarmPriority(a.vibalarm);
-							bAlarmPriority = getAlarmPriority(b.vibalarm);
-							break;
-						case 'trib':
-							aValue = new Date(a.tribdate || 0);
-							bValue = new Date(b.tribdate || 0);
-							aAlarmPriority = getAlarmPriority(a.tribalarm);
-							bAlarmPriority = getAlarmPriority(b.tribalarm);
-							break;
-						case 'mce':
-							aValue = new Date(a.mcedate || 0);
-							bValue = new Date(b.mcedate || 0);
-							aAlarmPriority = getAlarmPriority(a.mcealarm);
-							bAlarmPriority = getAlarmPriority(b.mcealarm);
-							break;
-						case 'irrot':
-							aValue = new Date(a.irrotdate || 0);
-							bValue = new Date(b.irrotdate || 0);
-							aAlarmPriority = getAlarmPriority(a.irrotalarm);
-							bAlarmPriority = getAlarmPriority(b.irrotalarm);
-							break;
-						case 'irelec':
-							aValue = new Date(a.irelecdate || 0);
-							bValue = new Date(b.irelecdate || 0);
-							aAlarmPriority = getAlarmPriority(a.irelecalarm);
-							bAlarmPriority = getAlarmPriority(b.irelecalarm);
-							break;
-						case 'irstruc':
-							aValue = new Date(a.irstrucdate || 0);
-							bValue = new Date(b.irstrucdate || 0);
-							aAlarmPriority = getAlarmPriority(a.irstrucalarm);
-							bAlarmPriority = getAlarmPriority(b.irstrucalarm);
-							break;
-						case 'uerot':
-							aValue = new Date(a.uerotdate || 0);
-							bValue = new Date(b.uerotdate || 0);
-							aAlarmPriority = getAlarmPriority(a.uerotalarm);
-							bAlarmPriority = getAlarmPriority(b.uerotalarm);
-							break;
-						case 'ueelec':
-							aValue = new Date(a.ueelecdate || 0);
-							bValue = new Date(b.ueelecdate || 0);
-							aAlarmPriority = getAlarmPriority(a.ueelecalarm);
-							bAlarmPriority = getAlarmPriority(b.ueelecalarm);
-							break;
-						case 'ueleak':
-							aValue = new Date(a.ueleakdate || 0);
-							bValue = new Date(b.ueleakdate || 0);
-							aAlarmPriority = getAlarmPriority(a.ueleakalarm);
-							bAlarmPriority = getAlarmPriority(b.ueleakalarm);
-							break;
-						case 'bal':
-							aValue = new Date(a.baldate || 0);
-							bValue = new Date(b.baldate || 0);
-							aAlarmPriority = getAlarmPriority(a.balalarm);
-							bAlarmPriority = getAlarmPriority(b.balalarm);
-							break;
-						case 'algn':
-							aValue = new Date(a.algndate || 0);
-							bValue = new Date(b.algndate || 0);
-							aAlarmPriority = getAlarmPriority(a.algnalarm);
-							bAlarmPriority = getAlarmPriority(b.algnalarm);
-							break;
-						default:
-							return 0;
-					}
-
-					// Para columnas de tecnología, ordenar por: 1) fecha, 2) prioridad de alarma
-					if (['vib', 'trib', 'mce', 'irrot', 'irelec', 'irstruc', 'uerot', 'ueelec', 'ueleak', 'bal', 'algn'].includes(sortField)) {
-						// Primero por fecha
-						const dateComparison = sortOrder === 'desc' ? 
-							bValue.getTime() - aValue.getTime() : 
-							aValue.getTime() - bValue.getTime();
-						
-						// Si las fechas son iguales, ordenar por prioridad de alarma
-						if (dateComparison === 0) {
-							return sortOrder === 'desc' ? 
-								bAlarmPriority - aAlarmPriority : 
-								aAlarmPriority - bAlarmPriority;
-						}
-						return dateComparison;
-					} else {
-						// Para columnas de texto, ordenamiento alfabético
-						const comparison = String(aValue).localeCompare(String(bValue));
-						return sortOrder === 'desc' ? -comparison : comparison;
-					}
-				})
+				components: [...asset.components].sort((a, b) =>
+					compareComponents(a, b, asset, sortField, sortOrder)
+				)
 			}));
 		}
 
 		return filtered;
 	});
-
-	function formatDateStr(
-		value?: string | null,
-		hasSummary?: number | null,
-		existSummary?: boolean
-	) {
-		if (!value) return '-';
-		const d = new Date(value);
-		const dateStr = isNaN(d.getTime()) ? '-' : d.toLocaleDateString();
-		// Agregar asterisco solo si tiene summary general Y summary específico para la tecnología
-		return existSummary && hasSummary === 1 ? `${dateStr}*` : dateStr;
-	}
-
-	function getColorByAlarmCode(alarm: any) {
-		const code = alarm?.color;
-		if (!code) return 'text-muted-foreground';
-		switch (String(code).toLowerCase()) {
-			case 'green':
-				return 'text-green-600 font-semibold';
-			case 'yellow':
-				return 'text-yellow-600 font-semibold';
-			case 'red':
-				return 'text-red-600 font-semibold';
-			default:
-				return 'text-muted-foreground';
-		}
-	}
-
-	// Get alarm priority for sorting (red=3, yellow=2, green=1, none=0)
-	function getAlarmPriority(alarm: any): number {
-		const code = alarm?.color;
-		if (!code) return 0;
-		switch (String(code).toLowerCase()) {
-			case 'red': return 3;
-			case 'yellow': return 2;
-			case 'green': return 1;
-			default: return 0;
-		}
-	}
 
 	// Handle column header click for sorting
 	function handleSort(field: SortField) {
@@ -432,19 +277,19 @@
 							>
 								<h3 class="mb-4 text-sm font-medium text-foreground">Show/Hide Columns</h3>
 								<div class="max-h-72 space-y-3 overflow-y-auto pr-2">
-									{#each columnConfig as column (column.key)}
+									{#each TECHNOLOGY_LIST as tech (tech.key)}
 										<label
 											class="flex cursor-pointer items-center space-x-2 rounded p-1 hover:bg-accent"
-											title={column.tooltip}
+											title={tech.tooltip}
 										>
 											<input
 												type="checkbox"
-												bind:checked={columnVisibility[column.key]}
+												bind:checked={columnVisibility[tech.key]}
 												class="rounded"
 												onchange={saveColumnPreferences}
 											/>
-											<span class="text-sm">{column.label}</span>
-											<span class="ml-auto text-xs text-muted-foreground">{column.tooltip}</span>
+											<span class="text-sm">{tech.label}</span>
+											<span class="ml-auto text-xs text-muted-foreground">{tech.tooltip}</span>
 										</label>
 									{/each}
 								</div>
@@ -501,35 +346,20 @@
 									modalContent={AccountModalTable}
 									hierarchyLevel="account"
 									onclear={() => {
-										hierarchyStore.clearAccount();
-										// Limpiar todos los hijos en cascada
-										hierarchyStore.clearPlant();
-										hierarchyStore.clearArea();
-										hierarchyStore.clearSystem();
-										accountSearch = { id: null, description: '', readonly: false };
-										plantSearch = { id: null, description: '', readonly: false };
-										areaSearch = { id: null, description: '', readonly: false };
-										systemSearch = { id: null, description: '', readonly: false };
+										accountSearch = clearHierarchyLevel('account');
+										const cleared = getClearedChildValues('account');
+										plantSearch = cleared.plant!;
+										areaSearch = cleared.area!;
+										systemSearch = cleared.system!;
 										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (account: any) => {
-											hierarchyStore.updateAccount({
-												id: account.id,
-												description: account.description || account.name || `Account ${account.id}`
-											});
-											// Limpiar todos los hijos cuando se selecciona un account diferente
-											hierarchyStore.clearPlant();
-											hierarchyStore.clearArea();
-											hierarchyStore.clearSystem();
-											accountSearch = {
-												id: account.id,
-												description: account.description || account.name || `Account ${account.id}`,
-												readonly: false
-											};
-											plantSearch = { id: null, description: '', readonly: false };
-											areaSearch = { id: null, description: '', readonly: false };
-											systemSearch = { id: null, description: '', readonly: false };
+											accountSearch = updateHierarchyLevel('account', account);
+											const cleared = getClearedChildValues('account');
+											plantSearch = cleared.plant!;
+											areaSearch = cleared.area!;
+											systemSearch = cleared.system!;
 											handleApplyFilters();
 										}
 									}}
@@ -550,31 +380,18 @@
 									modalContent={PlantModalTable}
 									hierarchyLevel="plant"
 									onclear={() => {
-										hierarchyStore.clearPlant();
-										// Limpiar hijos de plant (area y system)
-										hierarchyStore.clearArea();
-										hierarchyStore.clearSystem();
-										plantSearch = { id: null, description: '', readonly: false };
-										areaSearch = { id: null, description: '', readonly: false };
-										systemSearch = { id: null, description: '', readonly: false };
+										plantSearch = clearHierarchyLevel('plant');
+										const cleared = getClearedChildValues('plant');
+										areaSearch = cleared.area!;
+										systemSearch = cleared.system!;
 										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (plant) => {
-											hierarchyStore.updatePlant({
-												id: plant.id,
-												description: plant.description || plant.name || `Plant ${plant.id}`
-											});
-											// Limpiar hijos cuando se selecciona un plant diferente
-											hierarchyStore.clearArea();
-											hierarchyStore.clearSystem();
-											plantSearch = {
-												id: plant.id,
-												description: plant.description || plant.name || `Plant ${plant.id}`,
-												readonly: false
-											};
-											areaSearch = { id: null, description: '', readonly: false };
-											systemSearch = { id: null, description: '', readonly: false };
+											plantSearch = updateHierarchyLevel('plant', plant);
+											const cleared = getClearedChildValues('plant');
+											areaSearch = cleared.area!;
+											systemSearch = cleared.system!;
 											handleApplyFilters();
 										}
 									}}
@@ -595,27 +412,16 @@
 									modalContent={AreaModalTable}
 									hierarchyLevel="area"
 									onclear={() => {
-										hierarchyStore.clearArea();
-										// Limpiar hijo de area (system)
-										hierarchyStore.clearSystem();
-										areaSearch = { id: null, description: '', readonly: false };
-										systemSearch = { id: null, description: '', readonly: false };
+										areaSearch = clearHierarchyLevel('area');
+										const cleared = getClearedChildValues('area');
+										systemSearch = cleared.system!;
 										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (area) => {
-											hierarchyStore.updateArea({
-												id: area.id,
-												description: area.description || area.name || `Area ${area.id}`
-											});
-											// Limpiar hijo cuando se selecciona un area diferente
-											hierarchyStore.clearSystem();
-											areaSearch = {
-												id: area.id,
-												description: area.description || area.name || `Area ${area.id}`,
-												readonly: false
-											};
-											systemSearch = { id: null, description: '', readonly: false };
+											areaSearch = updateHierarchyLevel('area', area);
+											const cleared = getClearedChildValues('area');
+											systemSearch = cleared.system!;
 											handleApplyFilters();
 										}
 									}}
@@ -636,21 +442,12 @@
 									modalContent={SystemModalTable}
 									hierarchyLevel="system"
 									onclear={() => {
-										hierarchyStore.clearSystem();
-										systemSearch = { id: null, description: '', readonly: false };
+										systemSearch = clearHierarchyLevel('system');
 										handleApplyFilters();
 									}}
 									modalContentProps={{
 										onselect: (system) => {
-											hierarchyStore.updateSystem({
-												id: system.id,
-												description: system.description || system.name || `System ${system.id}`
-											});
-											systemSearch = {
-												id: system.id,
-												description: system.description || system.name || `System ${system.id}`,
-												readonly: false
-											};
+											systemSearch = updateHierarchyLevel('system', system);
 											handleApplyFilters();
 										}
 									}}
@@ -701,8 +498,8 @@
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
-							<Table.Head 
-								class="cursor-pointer hover:text-foreground select-none"
+							<Table.Head
+								class="cursor-pointer select-none hover:text-foreground"
 								onclick={() => handleSort('asset')}
 							>
 								<div class="flex items-center gap-1">
@@ -712,8 +509,8 @@
 									{/if}
 								</div>
 							</Table.Head>
-							<Table.Head 
-								class="cursor-pointer hover:text-foreground select-none"
+							<Table.Head
+								class="cursor-pointer select-none hover:text-foreground"
 								onclick={() => handleSort('type')}
 							>
 								<div class="flex items-center gap-1">
@@ -723,8 +520,8 @@
 									{/if}
 								</div>
 							</Table.Head>
-							<Table.Head 
-								class="cursor-pointer hover:text-foreground select-none"
+							<Table.Head
+								class="cursor-pointer select-none hover:text-foreground"
 								onclick={() => handleSort('component')}
 							>
 								<div class="flex items-center gap-1">
@@ -735,12 +532,12 @@
 								</div>
 							</Table.Head>
 							{#if columnVisibility.vib}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="Vibration Analysis - Click to sort by date/alarm"
 									onclick={() => handleSort('vib')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										Vib
 										{#if getSortIcon('vib')}
 											<svelte:component this={getSortIcon('vib')} class="h-4 w-4" />
@@ -749,12 +546,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.trib}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="Tribology Analysis - Click to sort by date/alarm"
 									onclick={() => handleSort('trib')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										Trib
 										{#if getSortIcon('trib')}
 											<svelte:component this={getSortIcon('trib')} class="h-4 w-4" />
@@ -764,11 +561,11 @@
 							{/if}
 							{#if columnVisibility.mce}
 								<Table.Head
-									class="cursor-pointer hover:text-foreground select-none"
+									class="cursor-pointer select-none hover:text-foreground"
 									title="Motor Current Analysis - Click to sort by date/alarm"
 									onclick={() => handleSort('mce')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										MCE
 										{#if getSortIcon('mce')}
 											<svelte:component this={getSortIcon('mce')} class="h-4 w-4" />
@@ -777,12 +574,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.irrot}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="IR Rotational - Click to sort by date/alarm"
 									onclick={() => handleSort('irrot')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										IRr
 										{#if getSortIcon('irrot')}
 											<svelte:component this={getSortIcon('irrot')} class="h-4 w-4" />
@@ -791,12 +588,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.irelec}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="IR Electrical - Click to sort by date/alarm"
 									onclick={() => handleSort('irelec')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										IRe
 										{#if getSortIcon('irelec')}
 											<svelte:component this={getSortIcon('irelec')} class="h-4 w-4" />
@@ -805,12 +602,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.irstruc}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="IR Structural - Click to sort by date/alarm"
 									onclick={() => handleSort('irstruc')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										IRs
 										{#if getSortIcon('irstruc')}
 											<svelte:component this={getSortIcon('irstruc')} class="h-4 w-4" />
@@ -819,12 +616,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.uerot}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="UE Rotational - Click to sort by date/alarm"
 									onclick={() => handleSort('uerot')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										UEr
 										{#if getSortIcon('uerot')}
 											<svelte:component this={getSortIcon('uerot')} class="h-4 w-4" />
@@ -833,12 +630,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.ueelec}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="UE Electrical - Click to sort by date/alarm"
 									onclick={() => handleSort('ueelec')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										UEe
 										{#if getSortIcon('ueelec')}
 											<svelte:component this={getSortIcon('ueelec')} class="h-4 w-4" />
@@ -847,12 +644,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.ueleak}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="UE Leak Detection - Click to sort by date/alarm"
 									onclick={() => handleSort('ueleak')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										UEL
 										{#if getSortIcon('ueleak')}
 											<svelte:component this={getSortIcon('ueleak')} class="h-4 w-4" />
@@ -861,12 +658,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.bal}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="Balance Analysis - Click to sort by date/alarm"
 									onclick={() => handleSort('bal')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										Bal
 										{#if getSortIcon('bal')}
 											<svelte:component this={getSortIcon('bal')} class="h-4 w-4" />
@@ -875,12 +672,12 @@
 								</Table.Head>
 							{/if}
 							{#if columnVisibility.algn}
-								<Table.Head 
-									class="cursor-pointer hover:text-foreground select-none" 
+								<Table.Head
+									class="cursor-pointer select-none hover:text-foreground"
 									title="Alignment Analysis - Click to sort by date/alarm"
 									onclick={() => handleSort('algn')}
 								>
-									<div class="flex items-center gap-1 justify-center">
+									<div class="flex items-center justify-center gap-1">
 										Algn
 										{#if getSortIcon('algn')}
 											<svelte:component this={getSortIcon('algn')} class="h-4 w-4" />

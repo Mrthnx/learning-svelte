@@ -3,9 +3,13 @@
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/store';
 	import { Navbar, Sidebar } from '$lib/components/me';
+	import { browser } from '$app/environment';
+
+	let isAuthenticated = $state(true);
 
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((auth) => {
+			isAuthenticated = auth.isAuthenticated;
 			if (!auth.isAuthenticated) {
 				goto('/auth');
 			}
