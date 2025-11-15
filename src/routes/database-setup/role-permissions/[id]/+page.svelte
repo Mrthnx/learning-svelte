@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+import { onMount } from 'svelte';
+import { get } from 'svelte/store';
+import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -40,7 +41,7 @@
 	let rolePermissions: RolePermissionDetail[] = $state([]);
 	let loading = $state(true);
 	let saving = $state(false);
-	let companyId: number = 2; // Get from authStore
+let companyId: number = 2; // Default company
 
 	// Track changes
 	let pendingChanges: Map<
@@ -48,12 +49,27 @@
 		{ optionId: number; permissionId: number; action: 'add' | 'remove' }
 	> = $state(new Map());
 
+	function commitPendingChangesUpdate() {
+		pendingChanges = new Map(pendingChanges);
+	}
+
 	$effect(() => {
 		roleId = parseInt($page.params.id);
 	});
 
-	onMount(async () => {
-		// Get company ID from auth store
+onMount(async () => {
+	const pageData = get(page);
+	const companyParam = pageData.url.searchParams.get('company');
+	let initialCompanyId: number | null = null;
+
+	if (companyParam) {
+		const parsed = parseInt(companyParam);
+		if (!Number.isNaN(parsed)) {
+			initialCompanyId = parsed;
+		}
+	}
+
+	if (initialCompanyId === null) {
 		let currentAuth: any;
 		const unsubscribe = authStore.subscribe((state) => {
 			currentAuth = state;
@@ -61,10 +77,13 @@
 		unsubscribe();
 
 		if (currentAuth?.user?.company) {
-			companyId = currentAuth.user.company;
+			initialCompanyId = currentAuth.user.company;
 		}
-		await loadData();
-	});
+	}
+
+	companyId = initialCompanyId ?? companyId;
+	await loadData();
+});
 
 	async function loadData() {
 		try {
@@ -136,7 +155,7 @@
 			);
 		}
 
-		pendingChanges = pendingChanges; // Trigger reactivity
+		commitPendingChangesUpdate();
 	}
 
 	async function saveChanges() {
@@ -187,7 +206,7 @@
 
 			// Clear pending changes
 			pendingChanges.clear();
-			pendingChanges = pendingChanges;
+			commitPendingChangesUpdate();
 
 			toast.success('Permissions updated successfully');
 
@@ -203,7 +222,7 @@
 
 	async function resetChanges() {
 		pendingChanges.clear();
-		pendingChanges = pendingChanges;
+		commitPendingChangesUpdate();
 		await loadData();
 		toast.info('Changes discarded');
 	}
@@ -234,15 +253,18 @@
 		<Button variant="ghost" size="icon" onclick={goBack}>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
-		{#if role}
-			<div class="flex items-center gap-3">
-				<h1 class="text-3xl font-bold tracking-tight">{role.description}</h1>
-				<Badge variant="outline" class={getRoleLevelBadgeClass(role.level)}>
-					Level {role.level}
-				</Badge>
-			</div>
-		{/if}
-	</div>
+	{#if role}
+		<div class="flex items-center gap-3">
+			<h1 class="text-3xl font-bold tracking-tight">{role.description}</h1>
+			<Badge variant="outline" class={getRoleLevelBadgeClass(role.level)}>
+				{#if role.name}
+					<span class="mr-2 font-medium">{role.name}</span>
+				{/if}
+				Level {role.level}
+			</Badge>
+		</div>
+	{/if}
+</div>
 
 	{#if loading}
 		<div class="flex items-center justify-center py-16">

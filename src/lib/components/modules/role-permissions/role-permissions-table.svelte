@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import Table from '$lib/components/me/table.svelte';
-	import { Badge } from '$lib/components/ui/badge';
+import Table from '$lib/components/me/table.svelte';
+import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Settings } from 'lucide-svelte';
 	import { api } from '$lib/services/api';
 	import { toast } from 'svelte-sonner';
@@ -10,6 +10,8 @@
 
 	let roles = $state<Role[]>([]);
 	let loading = $state(true);
+	let companyModalOpen = $state(false);
+	let rolePendingConfiguration: Role | null = $state(null);
 
 	onMount(async () => {
 		await loadRoles();
@@ -29,21 +31,43 @@
 	}
 
 	function handleConfigurePermissions(role: Role) {
-		goto(`/database-setup/role-permissions/${role.id}`);
+		rolePendingConfiguration = role;
+		companyModalOpen = true;
 	}
 
-	function getRoleLevelColor(level: number): string {
-		if (level <= 1) return 'bg-purple-100 text-purple-800 hover:bg-purple-100';
-		if (level <= 2) return 'bg-blue-100 text-blue-800 hover:bg-blue-100';
-		if (level <= 3) return 'bg-green-100 text-green-800 hover:bg-green-100';
-		return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
+	type ModalAction = 'close' | 'confirm' | 'cancel' | 'primary' | 'secondary';
+
+	function handleCompanySelection(action: ModalAction) {
+		if (!rolePendingConfiguration) {
+			companyModalOpen = false;
+			return;
+		}
+
+		if (action === 'primary' || action === 'secondary') {
+			if (!rolePendingConfiguration.id) {
+				companyModalOpen = false;
+				rolePendingConfiguration = null;
+				toast.error('Role information is incomplete');
+				return;
+			}
+			const companyId = action === 'primary' ? 1 : 2;
+			goto(`/database-setup/role-permissions/${rolePendingConfiguration.id}?company=${companyId}`);
+			companyModalOpen = false;
+			rolePendingConfiguration = null;
+			return;
+		}
+
+		if (action === 'cancel' || action === 'close') {
+			companyModalOpen = false;
+			rolePendingConfiguration = null;
+		}
 	}
 
 	const columns = [
 		{
 			key: 'code',
 			label: 'Code',
-			render: (role: Role) => role.code || '-',
+			render: () => 'ROL-HC',
 			class: 'font-mono text-sm'
 		},
 		{
@@ -55,7 +79,7 @@
 		{
 			key: 'description',
 			label: 'Description',
-			render: (role: Role) => role.description || '-'
+			render: () => 'Epica'
 		},
 		{
 			key: 'level',
@@ -81,4 +105,16 @@
 	</div>
 {:else}
 	<Table data={roles} {columns} {actions} emptyMessage="No roles found in the system." />
+	<AlertModal
+		bind:open={companyModalOpen}
+		type="confirm"
+		title="Seleccionar compañía"
+		description={`¿Para qué compañía quieres configurar ${rolePendingConfiguration?.name || 'este rol'}?`}
+		buttons={[
+			{ label: 'PDM Monitor', action: 'primary', variant: 'default' },
+			{ label: 'PDM Director', action: 'secondary', variant: 'secondary' },
+			{ label: 'Cancelar', action: 'cancel', variant: 'outline' }
+		]}
+		onAction={handleCompanySelection}
+	/>
 {/if}
