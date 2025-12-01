@@ -22,7 +22,6 @@
 	let { onselect }: Props = $props();
 
 	let assets = $state<Asset[]>([]);
-	let filteredAssets = $state<Asset[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
 
@@ -40,11 +39,15 @@
 		isLoading = true;
 		// Clear previous data to avoid showing stale results
 		assets = [];
-		filteredAssets = [];
 		try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar assets
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
+
+			// Aplicar filtro de búsqueda por texto
+			if (searchTerm.trim()) {
+				filters.search = searchTerm.trim();
+			}
 
 			// Incluir toda la jerarquía hacia arriba: account, plant, area y system
 			if (hierarchy.account.id || accountSearch.id) {
@@ -62,13 +65,11 @@
 
 			const response = await assetService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			assets = response.rows;
-			filteredAssets = assets;
 		} catch (error) {
 			console.error('Error loading assets:', error);
 			toast.error('Failed to load assets');
 			// Ensure data is cleared on error
 			assets = [];
-			filteredAssets = [];
 		} finally {
 			isLoading = false;
 		}
@@ -80,16 +81,8 @@
 	}
 
 	function handleSearch() {
-		const term = searchTerm.toLowerCase().trim();
-		if (!term) {
-			filteredAssets = assets;
-			return;
-		}
-
-		filteredAssets = assets.filter(
-			(asset) =>
-				asset.code?.toLowerCase().includes(term) || asset.description?.toLowerCase().includes(term)
-		);
+		// Recargar datos del backend con el nuevo filtro
+		loadAssets();
 	}
 
 	function handleRowClick(asset: Asset) {
@@ -312,7 +305,7 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<AssetTable
-				assets={filteredAssets}
+				assets={assets}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}

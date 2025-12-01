@@ -11,6 +11,7 @@
 	import { PAGINATION } from '$lib/shared';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import AccountModalTable from '../accounts/account-modal-table.svelte';
+	import { Pagination } from '$lib/components/me';
 
 	interface Props {
 		onselect?: (plant: Plant) => void;
@@ -19,9 +20,15 @@
 	let { onselect }: Props = $props();
 
 	let plants = $state<Plant[]>([]);
-	let filteredPlants = $state<Plant[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
+
+	// Pagination states
+	let currentPage = $state(1);
+	let pageSize = $state(20);
+	let totalRecords = $state(0);
+
+	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// SearchInput states for hierarchy filters
 	let accountSearch = $state({ id: null, description: '', readonly: false });
@@ -34,11 +41,15 @@
 		isLoading = true;
 		// Clear previous data to avoid showing stale results
 		plants = [];
-		filteredPlants = [];
 		try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar plantas
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
+
+			// Aplicar filtro de búsqueda por texto
+			if (searchTerm.trim()) {
+				filters.search = searchTerm.trim();
+			}
 
 			// Incluir toda la jerarquía hacia arriba: account
 			// (Para plants solo necesitamos account ya que es el nivel inmediato superior)
@@ -46,15 +57,18 @@
 				filters['account'] = { id: hierarchy.account.id || accountSearch.id };
 			}
 
-			const response = await plantService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			const response = await plantService.getAll({
+				page: currentPage,
+				pageSize,
+				filters
+			});
 			plants = response.rows;
-			filteredPlants = plants;
+			totalRecords = response.total;
 		} catch (error) {
 			console.error('Error loading plants:', error);
 			toast.error('Failed to load plants');
 			// Ensure data is cleared on error
 			plants = [];
-			filteredPlants = [];
 		} finally {
 			isLoading = false;
 		}
@@ -66,18 +80,15 @@
 	}
 
 	function handleSearch() {
-		const term = searchTerm.toLowerCase().trim();
-		if (!term) {
-			filteredPlants = plants;
-			return;
-		}
+		// Resetear a la primera página y recargar datos
+		currentPage = 1;
+		loadPlants();
+	}
 
-		filteredPlants = plants.filter(
-			(plant) =>
-				plant.code?.toLowerCase().includes(term) ||
-				plant.description?.toLowerCase().includes(term) ||
-				plant.account?.code?.toLowerCase().includes(term)
-		);
+	function handlePageChange(newPage: number) {
+		if (newPage < 1 || newPage > totalPages) return;
+		currentPage = newPage;
+		loadPlants();
 	}
 
 	function handleRowClick(plant: Plant) {
@@ -176,12 +187,24 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<PlantTable
-				plants={filteredPlants}
+				plants={plants}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}
 				onRowClick={handleRowClick}
 			/>
 		</div>
+
+		<!-- Pagination -->
+		{#if totalPages > 1}
+			<Pagination
+				{currentPage}
+				{totalPages}
+				{totalRecords}
+				{pageSize}
+				onPageChange={handlePageChange}
+				{isLoading}
+			/>
+		{/if}
 	{/if}
 </div>

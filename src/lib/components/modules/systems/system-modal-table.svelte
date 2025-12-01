@@ -21,7 +21,6 @@
 	let { onselect }: Props = $props();
 
 	let systems = $state<System[]>([]);
-	let filteredSystems = $state<System[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
 
@@ -38,11 +37,15 @@
 		isLoading = true;
 		// Clear previous data to avoid showing stale results
 		systems = [];
-		filteredSystems = [];
 		try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar systems
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
+
+			// Aplicar filtro de búsqueda por texto
+			if (searchTerm.trim()) {
+				filters.search = searchTerm.trim();
+			}
 
 			// Incluir toda la jerarquía hacia arriba: account, plant y area
 			if (hierarchy.account.id || accountSearch.id) {
@@ -57,13 +60,11 @@
 
 			const response = await systemService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
 			systems = response.rows;
-			filteredSystems = systems;
 		} catch (error) {
 			console.error('Error loading systems:', error);
 			toast.error('Failed to load systems');
 			// Ensure data is cleared on error
 			systems = [];
-			filteredSystems = [];
 		} finally {
 			isLoading = false;
 		}
@@ -75,17 +76,8 @@
 	}
 
 	function handleSearch() {
-		const term = searchTerm.toLowerCase().trim();
-		if (!term) {
-			filteredSystems = systems;
-			return;
-		}
-
-		filteredSystems = systems.filter(
-			(system) =>
-				system.code?.toLowerCase().includes(term) ||
-				system.description?.toLowerCase().includes(term)
-		);
+		// Recargar datos del backend con el nuevo filtro
+		loadSystems();
 	}
 
 	function handleRowClick(system: System) {
@@ -270,7 +262,7 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<SystemTable
-				systems={filteredSystems}
+				systems={systems}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}

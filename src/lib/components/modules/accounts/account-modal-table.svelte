@@ -9,6 +9,7 @@
 	import { toast } from 'svelte-sonner';
 	import { PAGINATION } from '$lib/shared';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
+	import { Pagination } from '$lib/components/me';
 
 	interface Props {
 		onselect?: (account: Account) => void;
@@ -17,9 +18,15 @@
 	let { onselect }: Props = $props();
 
 	let accounts = $state<Account[]>([]);
-	let filteredAccounts = $state<Account[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
+
+	// Pagination states
+	let currentPage = $state(1);
+	let pageSize = $state(20);
+	let totalRecords = $state(0);
+
+	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	onMount(() => {
 		loadAccounts();
@@ -29,45 +36,48 @@
 		isLoading = true;
 		// Clear previous data to avoid showing stale results
 		accounts = [];
-		filteredAccounts = [];
 		try {
 			// Obtener account del hierarchy store para excluirla de la lista
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
+
+			// Aplicar filtro de búsqueda por texto
+			if (searchTerm.trim()) {
+				filters.search = searchTerm.trim();
+			}
 
 			// Si hay account en hierarchy, excluirla de los resultados
 			if (hierarchy.account.id) {
 				// filters['account'] = { id: hierarchy.account.id };
 			}
 
-			const response = await accountService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			const response = await accountService.getAll({
+				page: currentPage,
+				pageSize,
+				filters
+			});
 			accounts = response.rows;
-			filteredAccounts = accounts;
+			totalRecords = response.total;
 		} catch (error) {
 			console.error('Error loading accounts:', error);
 			toast.error('Failed to load accounts');
 			// Ensure data is cleared on error
 			accounts = [];
-			filteredAccounts = [];
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	function handleSearch() {
-		const term = searchTerm.toLowerCase().trim();
-		if (!term) {
-			filteredAccounts = accounts;
-			return;
-		}
+		// Resetear a la primera página y recargar datos
+		currentPage = 1;
+		loadAccounts();
+	}
 
-		filteredAccounts = accounts.filter(
-			(account) =>
-				account.code?.toLowerCase().includes(term) ||
-				account.description?.toLowerCase().includes(term) ||
-				account.nameContactor?.toLowerCase().includes(term) ||
-				account.mailContactor?.toLowerCase().includes(term)
-		);
+	function handlePageChange(newPage: number) {
+		if (newPage < 1 || newPage > totalPages) return;
+		currentPage = newPage;
+		loadAccounts();
 	}
 
 	function handleRowClick(account: Account) {
@@ -101,12 +111,24 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<AccountTable
-				accounts={filteredAccounts}
+				accounts={accounts}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}
 				onRowClick={handleRowClick}
 			/>
 		</div>
+
+		<!-- Pagination -->
+		{#if totalPages > 1}
+			<Pagination
+				{currentPage}
+				{totalPages}
+				{totalRecords}
+				{pageSize}
+				onPageChange={handlePageChange}
+				{isLoading}
+			/>
+		{/if}
 	{/if}
 </div>

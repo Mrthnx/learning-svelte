@@ -420,7 +420,7 @@ export const ROLE_LEVELS = {
 export const PAGINATION = {
 	DEFAULT_PAGE: 1,
 	DEFAULT_PAGE_SIZE: 10,
-	MAX_PAGE_SIZE: 10
+	MAX_PAGE_SIZE: 1000
 } as const;
 
 /**

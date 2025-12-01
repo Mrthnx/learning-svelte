@@ -12,6 +12,7 @@
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import AccountModalTable from '../accounts/account-modal-table.svelte';
 	import PlantModalTable from '../plants/plant-modal-table.svelte';
+	import { Pagination } from '$lib/components/me';
 
 	interface Props {
 		onselect?: (area: Area) => void;
@@ -20,9 +21,15 @@
 	let { onselect }: Props = $props();
 
 	let areas = $state<Area[]>([]);
-	let filteredAreas = $state<Area[]>([]);
 	let searchTerm = $state('');
 	let isLoading = $state(false);
+
+	// Pagination states
+	let currentPage = $state(1);
+	let pageSize = $state(20);
+	let totalRecords = $state(0);
+
+	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// SearchInput states for hierarchy filters
 	let accountSearch = $state({ id: null, description: '', readonly: false });
@@ -36,11 +43,15 @@
 		isLoading = true;
 		// Clear previous data to avoid showing stale results
 		areas = [];
-		filteredAreas = [];
 		try {
 			// Obtener toda la jerarquía del hierarchy store para filtrar areas
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
+
+			// Aplicar filtro de búsqueda por texto
+			if (searchTerm.trim()) {
+				filters.search = searchTerm.trim();
+			}
 
 			// Incluir toda la jerarquía hacia arriba: account y plant
 			if (hierarchy.account.id || accountSearch.id) {
@@ -50,15 +61,18 @@
 				filters['plant'] = { id: hierarchy.plant.id || plantSearch.id };
 			}
 
-			const response = await areaService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			const response = await areaService.getAll({
+				page: currentPage,
+				pageSize,
+				filters
+			});
 			areas = response.rows;
-			filteredAreas = areas;
+			totalRecords = response.total;
 		} catch (error) {
 			console.error('Error loading areas:', error);
 			toast.error('Failed to load areas');
 			// Ensure data is cleared on error
 			areas = [];
-			filteredAreas = [];
 		} finally {
 			isLoading = false;
 		}
@@ -70,16 +84,15 @@
 	}
 
 	function handleSearch() {
-		const term = searchTerm.toLowerCase().trim();
-		if (!term) {
-			filteredAreas = areas;
-			return;
-		}
+		// Resetear a la primera página y recargar datos
+		currentPage = 1;
+		loadAreas();
+	}
 
-		filteredAreas = areas.filter(
-			(area) =>
-				area.code?.toLowerCase().includes(term) || area.description?.toLowerCase().includes(term)
-		);
+	function handlePageChange(newPage: number) {
+		if (newPage < 1 || newPage > totalPages) return;
+		currentPage = newPage;
+		loadAreas();
 	}
 
 	function handleRowClick(area: Area) {
@@ -221,12 +234,24 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<AreaTable
-				areas={filteredAreas}
+				areas={areas}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}
 				onRowClick={handleRowClick}
 			/>
 		</div>
+
+		<!-- Pagination -->
+		{#if totalPages > 1}
+			<Pagination
+				{currentPage}
+				{totalPages}
+				{totalRecords}
+				{pageSize}
+				onPageChange={handlePageChange}
+				{isLoading}
+			/>
+		{/if}
 	{/if}
 </div>
