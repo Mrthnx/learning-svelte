@@ -14,7 +14,16 @@
 		onRowClick?: (component: Component) => void;
 	}
 
-	let { components, onEdit, onDelete, onGoTo, onSelectionChange, selectable = false, hideActions = false, onRowClick }: Props = $props();
+	let {
+		components,
+		onEdit,
+		onDelete,
+		onGoTo,
+		onSelectionChange,
+		selectable = false,
+		hideActions = false,
+		onRowClick
+	}: Props = $props();
 
 	const columns = [
 		{
@@ -68,7 +77,7 @@
 			onClick: onDelete,
 			variant: 'destructive' as const
 		}
-	].filter(action => action.show !== false);
+	].filter((action) => action.show !== false);
 </script>
 
 <Table

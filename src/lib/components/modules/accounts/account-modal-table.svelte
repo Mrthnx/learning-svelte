@@ -7,7 +7,6 @@
 	import AccountTable from './account-table.svelte';
 	import { Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { PAGINATION } from '$lib/shared';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
 	import { Pagination } from '$lib/components/me';
 
@@ -18,12 +17,13 @@
 	let { onselect }: Props = $props();
 
 	let accounts = $state<Account[]>([]);
-	let searchTerm = $state('');
+	let filterCode = $state('');
+	let filterDescription = $state('');
 	let isLoading = $state(false);
 
 	// Pagination states
 	let currentPage = $state(1);
-	let pageSize = $state(20);
+	let pageSize = $state(10);
 	let totalRecords = $state(0);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
@@ -41,9 +41,12 @@
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 
-			// Aplicar filtro de búsqueda por texto
-			if (searchTerm.trim()) {
-				filters.search = searchTerm.trim();
+			// Aplicar filtro de code y description
+			if (filterCode.trim()) {
+				filters.code = filterCode.trim();
+			}
+			if (filterDescription.trim()) {
+				filters.description = filterDescription.trim();
 			}
 
 			// Si hay account en hierarchy, excluirla de los resultados
@@ -74,6 +77,12 @@
 		loadAccounts();
 	}
 
+	function handleKeyPress(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			handleSearch();
+		}
+	}
+
 	function handlePageChange(newPage: number) {
 		if (newPage < 1 || newPage > totalPages) return;
 		currentPage = newPage;
@@ -90,16 +99,29 @@
 </script>
 
 <div class="space-y-4">
-	<div class="flex gap-2">
-		<Input
-			bind:value={searchTerm}
-			placeholder="Search by code, description, contact..."
-			class="flex-1"
-			oninput={handleSearch}
-		/>
-		<Button variant="outline" size="icon" onclick={handleSearch}>
-			<Search class="h-4 w-4" />
-		</Button>
+	<div class="grid gap-2 sm:grid-cols-2">
+		<div class="space-y-1.5">
+			<label for="filter-code" class="text-xs font-medium">Filter by Code</label>
+			<Input
+				id="filter-code"
+				bind:value={filterCode}
+				placeholder="Enter code..."
+				class="flex-1"
+				oninput={handleSearch}
+				onkeypress={handleKeyPress}
+			/>
+		</div>
+		<div class="space-y-1.5">
+			<label for="filter-description" class="text-xs font-medium">Filter by Description</label>
+			<Input
+				id="filter-description"
+				bind:value={filterDescription}
+				placeholder="Enter description..."
+				class="flex-1"
+				oninput={handleSearch}
+				onkeypress={handleKeyPress}
+			/>
+		</div>
 	</div>
 
 	{#if isLoading}
@@ -111,7 +133,7 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<AccountTable
-				accounts={accounts}
+				{accounts}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}

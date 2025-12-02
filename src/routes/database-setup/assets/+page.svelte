@@ -171,7 +171,10 @@
 	}
 
 	function handleGoTo(asset: Asset) {
-		HierarchyNavigation.goToComponents(asset.id, asset.description || asset.name || asset.code || `Asset ${asset.id}`);
+		HierarchyNavigation.goToComponents(
+			asset.id,
+			asset.description || asset.name || asset.code || `Asset ${asset.id}`
+		);
 	}
 </script>
 

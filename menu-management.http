@@ -1,0 +1,353 @@
+### Menu Management API - Ejemplos de Requests
+### Base URL: http://localhost:3000/api/menu-management
+
+# Variables (ajustar según tu entorno)
+@baseUrl = http://localhost:3000/api/menu-management
+@token = YOUR_JWT_TOKEN_HERE
+@company = 1
+
+###############################################
+# ROLES
+###############################################
+
+### 1. Listar todos los roles
+GET {{baseUrl}}/roles
+Authorization: Bearer {{token}}
+
+### 2. Obtener rol por ID
+GET {{baseUrl}}/roles/1
+Authorization: Bearer {{token}}
+
+### 3. Crear un nuevo rol
+POST {{baseUrl}}/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "Analista",
+  "level": 4
+}
+
+### 4. Actualizar un rol
+PUT {{baseUrl}}/roles/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Super Administrador",
+  "level": 1
+}
+
+### 5. Eliminar un rol (soft delete)
+DELETE {{baseUrl}}/roles/5
+Authorization: Bearer {{token}}
+
+###############################################
+# PERMISOS
+###############################################
+
+### 6. Listar todos los permisos
+GET {{baseUrl}}/permissions
+Authorization: Bearer {{token}}
+
+### 7. Obtener permiso por ID
+GET {{baseUrl}}/permissions/1
+Authorization: Bearer {{token}}
+
+### 8. Crear un nuevo permiso
+POST {{baseUrl}}/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "export"
+}
+
+### 9. Actualizar un permiso
+PUT {{baseUrl}}/permissions/5
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 5,
+  "name": "export-all"
+}
+
+### 10. Eliminar un permiso (soft delete)
+DELETE {{baseUrl}}/permissions/5
+Authorization: Bearer {{token}}
+
+###############################################
+# OPCIONES (MENÚS)
+###############################################
+
+### 11. Listar todas las opciones
+GET {{baseUrl}}/options
+Authorization: Bearer {{token}}
+
+### 12. Obtener árbol jerárquico de opciones
+GET {{baseUrl}}/options/tree
+Authorization: Bearer {{token}}
+
+### 13. Obtener opción por ID
+GET {{baseUrl}}/options/1
+Authorization: Bearer {{token}}
+
+### 14. Crear una nueva opción (raíz)
+POST {{baseUrl}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "Analytics",
+  "icon": "chart-line",
+  "uri": "/analytics",
+  "order": 8,
+  "parentOption": null
+}
+
+### 15. Crear una opción hija
+POST {{baseUrl}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "Dashboards",
+  "icon": "dashboard",
+  "uri": "/analytics/dashboards",
+  "order": 1,
+  "parentOption": 15
+}
+
+### 16. Actualizar una opción
+PUT {{baseUrl}}/options/15
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 15,
+  "name": "Analytics Avanzados",
+  "icon": "chart-bar",
+  "uri": "/analytics",
+  "order": 8,
+  "parentOption": null
+}
+
+### 17. Eliminar una opción (soft delete)
+DELETE {{baseUrl}}/options/15
+Authorization: Bearer {{token}}
+
+###############################################
+# PERMISOS DE ROL
+###############################################
+
+### 18. Obtener permisos asignados a un rol
+GET {{baseUrl}}/roles/1/permissions?company={{company}}
+Authorization: Bearer {{token}}
+
+### 19. Asignar un permiso a un rol
+POST {{baseUrl}}/roles/1/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": {{company}},
+  "optionId": 2,
+  "permissionId": 2
+}
+
+### 20. Asignación masiva de permisos
+POST {{baseUrl}}/roles/1/permissions/bulk
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": {{company}},
+  "assignments": [
+    {
+      "optionId": 1,
+      "permissionIds": [1, 2]
+    },
+    {
+      "optionId": 2,
+      "permissionIds": [1, 2, 3, 4]
+    },
+    {
+      "optionId": 5,
+      "permissionIds": [1]
+    }
+  ]
+}
+
+### 21. Actualizar permisos de una opción específica
+PUT {{baseUrl}}/roles/1/permissions/2
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": {{company}},
+  "permissionIds": [1, 2, 4]
+}
+
+### 22. Eliminar un permiso específico de una opción
+DELETE {{baseUrl}}/roles/1/permissions/2/3?company={{company}}
+Authorization: Bearer {{token}}
+
+### 23. Eliminar todos los permisos de una opción
+DELETE {{baseUrl}}/roles/1/permissions/2?company={{company}}
+Authorization: Bearer {{token}}
+
+###############################################
+# CASOS DE USO COMPLETOS
+###############################################
+
+### Caso 1: Configurar un nuevo rol desde cero
+
+# Paso 1: Crear el rol
+POST {{baseUrl}}/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "Técnico",
+  "level": 5
+}
+
+# Paso 2: Obtener el ID del rol creado y asignar permisos masivamente
+# (Usar el ID retornado en el paso anterior, ej: 6)
+POST {{baseUrl}}/roles/6/permissions/bulk
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": 1,
+  "assignments": [
+    {
+      "optionId": 1,
+      "permissionIds": [1]
+    },
+    {
+      "optionId": 2,
+      "permissionIds": [1]
+    },
+    {
+      "optionId": 5,
+      "permissionIds": [1, 2]
+    }
+  ]
+}
+
+### Caso 2: Ver configuración completa de menú y permisos
+
+# Paso 1: Ver estructura de menú
+GET {{baseUrl}}/options/tree
+Authorization: Bearer {{token}}
+
+# Paso 2: Ver permisos disponibles
+GET {{baseUrl}}/permissions
+Authorization: Bearer {{token}}
+
+# Paso 3: Ver roles existentes
+GET {{baseUrl}}/roles
+Authorization: Bearer {{token}}
+
+# Paso 4: Ver configuración de permisos de un rol específico
+GET {{baseUrl}}/roles/1/permissions?company={{company}}
+Authorization: Bearer {{token}}
+
+### Caso 3: Agregar nueva funcionalidad al sistema
+
+# Paso 1: Crear la opción de menú
+POST {{baseUrl}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "name": "Reportes Avanzados",
+  "icon": "file-chart",
+  "uri": "/reports/advanced",
+  "order": 10,
+  "parentOption": null
+}
+
+# Paso 2: Asignar permisos al rol administrador (usando ID de la opción creada)
+POST {{baseUrl}}/roles/1/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": 1,
+  "optionId": 20,
+  "permissionId": 1
+}
+
+# Paso 3: Asignar más permisos si es necesario
+POST {{baseUrl}}/roles/1/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": 1,
+  "optionId": 20,
+  "permissionId": 2
+}
+
+### Caso 4: Modificar permisos de un rol existente
+
+# Paso 1: Ver permisos actuales
+GET {{baseUrl}}/roles/2/permissions?company={{company}}
+Authorization: Bearer {{token}}
+
+# Paso 2: Actualizar permisos de una opción específica
+# (Esto reemplaza todos los permisos de esa opción)
+PUT {{baseUrl}}/roles/2/permissions/5
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": 1,
+  "permissionIds": [1, 2]
+}
+
+# Paso 3: Verificar cambios
+GET {{baseUrl}}/roles/2/permissions?company={{company}}
+Authorization: Bearer {{token}}
+
+###############################################
+# TESTING - VALIDACIONES
+###############################################
+
+### Test: Intentar crear rol sin nombre (debe fallar)
+POST {{baseUrl}}/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 0,
+  "level": 5
+}
+
+### Test: Intentar acceder sin token (debe retornar 401)
+GET {{baseUrl}}/roles
+
+### Test: Asignar permiso con company diferente
+POST {{baseUrl}}/roles/1/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "company": 2,
+  "optionId": 2,
+  "permissionId": 1
+}
+
+### Test: Obtener rol inexistente (debe retornar null o 404)
+GET {{baseUrl}}/roles/9999
+Authorization: Bearer {{token}}

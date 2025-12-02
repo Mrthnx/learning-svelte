@@ -65,7 +65,10 @@
 				filters['asset'] = { id: assetSearch.id };
 			}
 
-			const response = await componentService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			const response = await componentService.getAll({
+				pageSize: PAGINATION.MAX_PAGE_SIZE,
+				filters
+			});
 			components = response.rows;
 			filteredComponents = components;
 		} catch (error) {

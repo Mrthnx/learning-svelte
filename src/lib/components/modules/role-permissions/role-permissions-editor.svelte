@@ -203,8 +203,7 @@
 			<div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:w-auto">
 				<Input
 					value={searchTerm}
-					oninput={(event) =>
-						(searchTerm = (event.currentTarget as HTMLInputElement).value)}
+					oninput={(event) => (searchTerm = (event.currentTarget as HTMLInputElement).value)}
 					placeholder="Search options..."
 					class="w-full sm:w-64"
 				/>
@@ -240,7 +239,10 @@
 				<tbody>
 					{#if visibleOptions.length === 0}
 						<tr>
-							<td colspan={permissions.length + 2} class="p-6 text-center text-sm text-muted-foreground">
+							<td
+								colspan={permissions.length + 2}
+								class="p-6 text-center text-sm text-muted-foreground"
+							>
 								No menu options match your search.
 							</td>
 						</tr>

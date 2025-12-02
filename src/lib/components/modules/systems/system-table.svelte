@@ -108,7 +108,7 @@
 			onClick: onDelete,
 			variant: 'destructive' as const
 		}
-	].filter(action => action.show !== false);
+	].filter((action) => action.show !== false);
 </script>
 
 <Table

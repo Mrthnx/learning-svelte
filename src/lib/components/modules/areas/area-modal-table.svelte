@@ -21,12 +21,13 @@
 	let { onselect }: Props = $props();
 
 	let areas = $state<Area[]>([]);
-	let searchTerm = $state('');
+	let filterCode = $state('');
+	let filterDescription = $state('');
 	let isLoading = $state(false);
 
 	// Pagination states
 	let currentPage = $state(1);
-	let pageSize = $state(20);
+	let pageSize = $state(10);
 	let totalRecords = $state(0);
 
 	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
@@ -48,9 +49,12 @@
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 
-			// Aplicar filtro de búsqueda por texto
-			if (searchTerm.trim()) {
-				filters.search = searchTerm.trim();
+			// Aplicar filtro de code y description
+			if (filterCode.trim()) {
+				filters.code = filterCode.trim();
+			}
+			if (filterDescription.trim()) {
+				filters.description = filterDescription.trim();
 			}
 
 			// Incluir toda la jerarquía hacia arriba: account y plant
@@ -125,7 +129,7 @@
 					placeholder="Select account..."
 					width="w-full"
 					modalTitle="Select Account"
-					modalDescription="Choose an account to filter areas"
+					modalDescription=""
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
@@ -170,7 +174,7 @@
 					placeholder="Select plant..."
 					width="w-full"
 					modalTitle="Select Plant"
-					modalDescription="Choose a plant to filter areas"
+					modalDescription=""
 					modalContent={PlantModalTable}
 					hierarchyLevel="plant"
 					onclear={() => {
@@ -205,22 +209,29 @@
 				/>
 			</div>
 
-			<!-- Search Text -->
+			<!-- Code Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Code</label
+				>
+				<Input
+					bind:value={filterCode}
+					placeholder="Enter code..."
+					class="flex-1 text-sm"
+					oninput={handleSearch}
+				/>
+			</div>
+
+			<!-- Description Filter -->
 			<div class="space-y-1.5">
 				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
-					>Search Text</label
+					>Description</label
 				>
-				<div class="flex gap-2">
-					<Input
-						bind:value={searchTerm}
-						placeholder="Search by code, description..."
-						class="flex-1 text-sm"
-						oninput={handleSearch}
-					/>
-					<Button variant="outline" size="sm" onclick={handleSearch}>
-						<Search class="h-3 w-3" />
-					</Button>
-				</div>
+				<Input
+					bind:value={filterDescription}
+					placeholder="Enter description..."
+					class="flex-1 text-sm"
+					oninput={handleSearch}
+				/>
 			</div>
 		</div>
 	</div>
@@ -234,7 +245,7 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<AreaTable
-				areas={areas}
+				{areas}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}

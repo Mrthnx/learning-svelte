@@ -49,13 +49,13 @@
 		if (hierarchyLevel && hierarchyLevel !== 'asset' && !value.id && !value.description) {
 			try {
 				let unsubscribe: (() => void) | null = null;
-				
+
 				unsubscribe = hierarchyStore.subscribe((hierarchy) => {
 					if (!hierarchy) {
 						if (unsubscribe) unsubscribe();
 						return;
 					}
-					
+
 					const hierarchyValue = hierarchy[hierarchyLevel as keyof typeof hierarchy];
 					if (hierarchyValue && hierarchyValue.id && hierarchyValue.description) {
 						value = {

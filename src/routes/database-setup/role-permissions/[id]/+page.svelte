@@ -1,15 +1,18 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-import { get } from 'svelte/store';
-import { page } from '$app/stores';
+	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
+	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { ArrowLeft } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { api } from '$lib/services/api';
-	import { RolePermissionsEditor } from '$lib/components/modules/role-permissions';
-	import type { Role } from '$lib/services/role.service';
+	import {
+		RolePermissionsEditor,
+		RolePermissionsOptionCreator
+	} from '$lib/components/modules/role-permissions';
+	import type { Role } from '$lib/types';
 	import { authStore } from '$lib/store';
 
 	interface Option {
@@ -41,7 +44,8 @@ import { page } from '$app/stores';
 	let rolePermissions: RolePermissionDetail[] = $state([]);
 	let loading = $state(true);
 	let saving = $state(false);
-let companyId: number = 2; // Default company
+	let companyId: number = 2; // Default company
+	let showOptionCreator = $state(false);
 
 	// Track changes
 	let pendingChanges: Map<
@@ -57,33 +61,33 @@ let companyId: number = 2; // Default company
 		roleId = parseInt($page.params.id);
 	});
 
-onMount(async () => {
-	const pageData = get(page);
-	const companyParam = pageData.url.searchParams.get('company');
-	let initialCompanyId: number | null = null;
+	onMount(async () => {
+		const pageData = get(page);
+		const companyParam = pageData.url.searchParams.get('company');
+		let initialCompanyId: number | null = null;
 
-	if (companyParam) {
-		const parsed = parseInt(companyParam);
-		if (!Number.isNaN(parsed)) {
-			initialCompanyId = parsed;
+		if (companyParam) {
+			const parsed = parseInt(companyParam);
+			if (!Number.isNaN(parsed)) {
+				initialCompanyId = parsed;
+			}
 		}
-	}
 
-	if (initialCompanyId === null) {
-		let currentAuth: any;
-		const unsubscribe = authStore.subscribe((state) => {
-			currentAuth = state;
-		});
-		unsubscribe();
+		if (initialCompanyId === null) {
+			let currentAuth: any;
+			const unsubscribe = authStore.subscribe((state) => {
+				currentAuth = state;
+			});
+			unsubscribe();
 
-		if (currentAuth?.user?.company) {
-			initialCompanyId = currentAuth.user.company;
+			if (currentAuth?.user?.company) {
+				initialCompanyId = currentAuth.user.company;
+			}
 		}
-	}
 
-	companyId = initialCompanyId ?? companyId;
-	await loadData();
-});
+		companyId = initialCompanyId ?? companyId;
+		await loadData();
+	});
 
 	async function loadData() {
 		try {
@@ -120,6 +124,16 @@ onMount(async () => {
 				...option,
 				children: option.children ? sortOptionsTree(option.children) : undefined
 			}));
+	}
+
+	async function refreshOptionsTreeOnly() {
+		try {
+			const optionsData = await api.get('menu-management/options/tree');
+			optionsTree = sortOptionsTree(optionsData.data || []);
+		} catch (error) {
+			console.error('Error refreshing menu options:', error);
+			toast.error('Failed to refresh menu options');
+		}
 	}
 
 	function handlePermissionChange(optionId: number, permissionId: number, checked: boolean) {
@@ -231,6 +245,10 @@ onMount(async () => {
 		goto('/database-setup/role-permissions');
 	}
 
+	function toggleOptionCreator() {
+		showOptionCreator = !showOptionCreator;
+	}
+
 	function getRoleLevelBadgeClass(level: number): string {
 		if (level <= 1) return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
 		if (level <= 2) return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
@@ -253,38 +271,65 @@ onMount(async () => {
 		<Button variant="ghost" size="icon" onclick={goBack}>
 			<ArrowLeft class="h-5 w-5" />
 		</Button>
-	{#if role}
-		<div class="flex items-center gap-3">
-			<h1 class="text-3xl font-bold tracking-tight">{role.description}</h1>
-			<Badge variant="outline" class={getRoleLevelBadgeClass(role.level)}>
-				{#if role.name}
-					<span class="mr-2 font-medium">{role.name}</span>
-				{/if}
-				Level {role.level}
-			</Badge>
-		</div>
-	{/if}
-</div>
+		{#if role}
+			<div class="flex items-center gap-3">
+				<h1 class="text-3xl font-bold tracking-tight">{role.description}</h1>
+				<Badge variant="outline" class={getRoleLevelBadgeClass(role.level)}>
+					{#if role.name}
+						<span class="mr-2 font-medium">{role.name}</span>
+					{/if}
+					Level {role.level}
+				</Badge>
+			</div>
+		{/if}
+	</div>
 
 	{#if loading}
 		<div class="flex items-center justify-center py-16">
 			<div class="animate-pulse text-muted-foreground">Loading permissions configuration...</div>
 		</div>
-	{:else if optionsTree.length === 0}
-		<div class="flex flex-col items-center justify-center py-16 text-center">
-			<p class="text-muted-foreground">No menu options found in the system</p>
-			<p class="mt-2 text-sm text-muted-foreground">Contact your system administrator</p>
-		</div>
 	{:else}
-		<RolePermissionsEditor
-			{optionsTree}
-			{permissions}
-			{rolePermissions}
-			onPermissionChange={handlePermissionChange}
-			onSave={saveChanges}
-			onCancel={handleCancel}
-			pendingChanges={pendingChanges.size}
-			isSaving={saving}
-		/>
+		<div class="space-y-6">
+			<div class="rounded-lg border p-4 sm:flex sm:items-center sm:justify-between">
+				<div class="space-y-1">
+					<p class="text-sm font-medium">Menu option creator</p>
+					<p class="text-sm text-muted-foreground">
+						Define new menu entries without leaving this screen. Toggle visibility as needed.
+					</p>
+				</div>
+				<Button variant="outline" class="mt-3 sm:mt-0" onclick={toggleOptionCreator}>
+					{#if showOptionCreator}
+						Hide creator
+					{:else}
+						Show creator
+					{/if}
+				</Button>
+			</div>
+
+			{#if showOptionCreator}
+				<RolePermissionsOptionCreator {optionsTree} onCreated={refreshOptionsTreeOnly} />
+			{/if}
+
+			{#if optionsTree.length === 0}
+				<div
+					class="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center"
+				>
+					<p class="text-muted-foreground">
+						No menu options found in the system. Use the creator above to add the first entries.
+					</p>
+				</div>
+			{:else}
+				<RolePermissionsEditor
+					{optionsTree}
+					{permissions}
+					{rolePermissions}
+					onPermissionChange={handlePermissionChange}
+					onSave={saveChanges}
+					onCancel={handleCancel}
+					pendingChanges={pendingChanges.size}
+					isSaving={saving}
+				/>
+			{/if}
+		</div>
 	{/if}
 </div>

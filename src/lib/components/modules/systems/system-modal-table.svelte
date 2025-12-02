@@ -3,16 +3,15 @@
 	import { systemService } from '$lib/services/system.service';
 	import type { System } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
-	import { Button } from '$lib/components/ui/button';
 	import SystemTable from './system-table.svelte';
 	import { Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
-	import { PAGINATION } from '$lib/shared';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import AccountModalTable from '../accounts/account-modal-table.svelte';
 	import PlantModalTable from '../plants/plant-modal-table.svelte';
 	import AreaModalTable from '../areas/area-modal-table.svelte';
+	import { Pagination } from '$lib/components/me';
 
 	interface Props {
 		onselect?: (system: System) => void;
@@ -21,8 +20,16 @@
 	let { onselect }: Props = $props();
 
 	let systems = $state<System[]>([]);
-	let searchTerm = $state('');
+	let filterCode = $state('');
+	let filterDescription = $state('');
 	let isLoading = $state(false);
+
+	// Pagination states
+	let currentPage = $state(1);
+	let pageSize = $state(10);
+	let totalRecords = $state(0);
+
+	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// SearchInput states for hierarchy filters
 	let accountSearch = $state({ id: null, description: '', readonly: false });
@@ -42,9 +49,12 @@
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 
-			// Aplicar filtro de búsqueda por texto
-			if (searchTerm.trim()) {
-				filters.search = searchTerm.trim();
+			// Aplicar filtro de code y description
+			if (filterCode.trim()) {
+				filters.code = filterCode.trim();
+			}
+			if (filterDescription.trim()) {
+				filters.description = filterDescription.trim();
 			}
 
 			// Incluir toda la jerarquía hacia arriba: account, plant y area
@@ -58,8 +68,13 @@
 				filters['area'] = { id: hierarchy.area.id || areaSearch.id };
 			}
 
-			const response = await systemService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			const response = await systemService.getAll({
+				page: currentPage,
+				pageSize,
+				filters
+			});
 			systems = response.rows;
+			totalRecords = response.total;
 		} catch (error) {
 			console.error('Error loading systems:', error);
 			toast.error('Failed to load systems');
@@ -76,7 +91,14 @@
 	}
 
 	function handleSearch() {
-		// Recargar datos del backend con el nuevo filtro
+		// Resetear a la primera página y recargar datos
+		currentPage = 1;
+		loadSystems();
+	}
+
+	function handlePageChange(newPage: number) {
+		if (newPage < 1 || newPage > totalPages) return;
+		currentPage = newPage;
 		loadSystems();
 	}
 
@@ -99,7 +121,7 @@
 			<h3 class="text-xs font-medium text-foreground">Filter Systems</h3>
 		</div>
 
-		<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
 			<!-- Account Filter -->
 			<div class="space-y-1.5">
 				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
@@ -110,7 +132,7 @@
 					placeholder="Select account..."
 					width="w-full"
 					modalTitle="Select Account"
-					modalDescription="Choose an account to filter systems"
+					modalDescription=""
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
@@ -123,7 +145,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (account) => {
+						onselect: (account: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updateAccount({
 								id: account.id,
@@ -157,7 +179,7 @@
 					placeholder="Select plant..."
 					width="w-full"
 					modalTitle="Select Plant"
-					modalDescription="Choose a plant to filter systems"
+					modalDescription=""
 					modalContent={PlantModalTable}
 					hierarchyLevel="plant"
 					onclear={() => {
@@ -169,7 +191,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (plant) => {
+						onselect: (plant: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updatePlant({
 								id: plant.id,
@@ -200,7 +222,7 @@
 					placeholder="Select area..."
 					width="w-full"
 					modalTitle="Select Area"
-					modalDescription="Choose an area to filter systems"
+					modalDescription=""
 					modalContent={AreaModalTable}
 					hierarchyLevel="area"
 					onclear={() => {
@@ -213,7 +235,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (area) => {
+						onselect: (area: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updateArea({
 								id: area.id,
@@ -233,22 +255,29 @@
 				/>
 			</div>
 
-			<!-- Search Text -->
+			<!-- Code Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Code</label
+				>
+				<Input
+					bind:value={filterCode}
+					placeholder="Enter code..."
+					class="flex-1 text-sm"
+					oninput={handleSearch}
+				/>
+			</div>
+
+			<!-- Description Filter -->
 			<div class="space-y-1.5">
 				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
-					>Search Text</label
+					>Description</label
 				>
-				<div class="flex gap-2">
-					<Input
-						bind:value={searchTerm}
-						placeholder="Search by code, description..."
-						class="flex-1 text-sm"
-						oninput={handleSearch}
-					/>
-					<Button variant="outline" size="sm" onclick={handleSearch}>
-						<Search class="h-3 w-3" />
-					</Button>
-				</div>
+				<Input
+					bind:value={filterDescription}
+					placeholder="Enter description..."
+					class="flex-1 text-sm"
+					oninput={handleSearch}
+				/>
 			</div>
 		</div>
 	</div>
@@ -262,12 +291,24 @@
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
 			<SystemTable
-				systems={systems}
+				{systems}
 				onEdit={handleEdit}
 				onDelete={handleDelete}
 				hideActions={true}
 				onRowClick={handleRowClick}
 			/>
 		</div>
+
+		<!-- Pagination -->
+		{#if totalPages > 1}
+			<Pagination
+				{currentPage}
+				{totalPages}
+				{totalRecords}
+				{pageSize}
+				onPageChange={handlePageChange}
+				{isLoading}
+			/>
+		{/if}
 	{/if}
 </div>

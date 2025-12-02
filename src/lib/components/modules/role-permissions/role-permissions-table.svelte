@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-import Table from '$lib/components/me/table.svelte';
-import AlertModal from '$lib/components/me/alert-modal.svelte';
+	import Table from '$lib/components/me/table.svelte';
+	import AlertModal from '$lib/components/me/alert-modal.svelte';
 	import { Settings } from 'lucide-svelte';
 	import { api } from '$lib/services/api';
 	import { toast } from 'svelte-sonner';

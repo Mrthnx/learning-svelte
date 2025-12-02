@@ -3,17 +3,16 @@
 	import { assetService } from '$lib/services/asset.service';
 	import type { Asset } from '$lib/types';
 	import { Input } from '$lib/components/ui/input';
-	import { Button } from '$lib/components/ui/button';
 	import AssetTable from './asset-table.svelte';
 	import { Search } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { hierarchyStore } from '$lib/store/hierarchy.store';
-	import { PAGINATION } from '$lib/shared';
 	import SearchInput from '$lib/components/ui/search-input.svelte';
 	import AccountModalTable from '../accounts/account-modal-table.svelte';
 	import PlantModalTable from '../plants/plant-modal-table.svelte';
 	import AreaModalTable from '../areas/area-modal-table.svelte';
 	import SystemModalTable from '../systems/system-modal-table.svelte';
+	import { Pagination } from '$lib/components/me';
 
 	interface Props {
 		onselect?: (asset: Asset) => void;
@@ -22,8 +21,16 @@
 	let { onselect }: Props = $props();
 
 	let assets = $state<Asset[]>([]);
-	let searchTerm = $state('');
+	let filterCode = $state('');
+	let filterDescription = $state('');
 	let isLoading = $state(false);
+
+	// Pagination states
+	let currentPage = $state(1);
+	let pageSize = $state(10);
+	let totalRecords = $state(0);
+
+	const totalPages = $derived(Math.ceil(totalRecords / pageSize));
 
 	// SearchInput states for hierarchy filters
 	let accountSearch = $state({ id: null, description: '', readonly: false });
@@ -44,9 +51,12 @@
 			const hierarchy = $hierarchyStore;
 			const filters: any = {};
 
-			// Aplicar filtro de búsqueda por texto
-			if (searchTerm.trim()) {
-				filters.search = searchTerm.trim();
+			// Aplicar filtro de code y description
+			if (filterCode.trim()) {
+				filters.code = filterCode.trim();
+			}
+			if (filterDescription.trim()) {
+				filters.description = filterDescription.trim();
 			}
 
 			// Incluir toda la jerarquía hacia arriba: account, plant, area y system
@@ -63,8 +73,13 @@
 				filters['system'] = { id: hierarchy.system.id || systemSearch.id };
 			}
 
-			const response = await assetService.getAll({ pageSize: PAGINATION.MAX_PAGE_SIZE, filters });
+			const response = await assetService.getAll({
+				page: currentPage,
+				pageSize,
+				filters
+			});
 			assets = response.rows;
+			totalRecords = response.total;
 		} catch (error) {
 			console.error('Error loading assets:', error);
 			toast.error('Failed to load assets');
@@ -81,17 +96,25 @@
 	}
 
 	function handleSearch() {
-		// Recargar datos del backend con el nuevo filtro
+		// Resetear a la primera página y recargar datos
+		currentPage = 1;
 		loadAssets();
 	}
 
-	function handleRowClick(asset: Asset) {
+	function handlePageChange(newPage: number) {
+		if (newPage < 1 || newPage > totalPages) return;
+		currentPage = newPage;
+		loadAssets();
+	}
+
+	// Functions for table props
+	function handleEdit(asset: Asset) {
 		onselect?.(asset);
 	}
 
-	// Dummy functions for table props (not used in modal)
-	function handleEdit() {}
-	function handleDelete() {}
+	function handleDelete() {
+		// Not used in modal
+	}
 </script>
 
 <div class="space-y-4">
@@ -104,7 +127,7 @@
 			<h3 class="text-xs font-medium text-foreground">Filter Assets</h3>
 		</div>
 
-		<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-6">
 			<!-- Account Filter -->
 			<div class="space-y-1.5">
 				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
@@ -115,7 +138,7 @@
 					placeholder="Select account..."
 					width="w-full"
 					modalTitle="Select Account"
-					modalDescription="Choose an account to filter assets"
+					modalDescription=""
 					modalContent={AccountModalTable}
 					hierarchyLevel="account"
 					onclear={() => {
@@ -129,7 +152,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (account) => {
+						onselect: (account: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updateAccount({
 								id: account.id,
@@ -164,7 +187,7 @@
 					placeholder="Select plant..."
 					width="w-full"
 					modalTitle="Select Plant"
-					modalDescription="Choose a plant to filter assets"
+					modalDescription=""
 					modalContent={PlantModalTable}
 					hierarchyLevel="plant"
 					onclear={() => {
@@ -177,7 +200,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (plant) => {
+						onselect: (plant: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updatePlant({
 								id: plant.id,
@@ -209,7 +232,7 @@
 					placeholder="Select area..."
 					width="w-full"
 					modalTitle="Select Area"
-					modalDescription="Choose an area to filter assets"
+					modalDescription=""
 					modalContent={AreaModalTable}
 					hierarchyLevel="area"
 					onclear={() => {
@@ -221,7 +244,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (area) => {
+						onselect: (area: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updateArea({
 								id: area.id,
@@ -252,7 +275,7 @@
 					placeholder="Select system..."
 					width="w-full"
 					modalTitle="Select System"
-					modalDescription="Choose a system to filter assets"
+					modalDescription=""
 					modalContent={SystemModalTable}
 					hierarchyLevel="system"
 					onclear={() => {
@@ -263,7 +286,7 @@
 						handleHierarchyChange();
 					}}
 					modalContentProps={{
-						onselect: (system) => {
+						onselect: (system: any) => {
 							// Update hierarchy store (editable and persisted)
 							hierarchyStore.updateSystem({
 								id: system.id,
@@ -280,19 +303,31 @@
 					}}
 				/>
 			</div>
-		</div>
 
-		<!-- Text Search -->
-		<div class="mt-3 flex gap-2">
-			<Input
-				bind:value={searchTerm}
-				placeholder="Search by code, description..."
-				class="flex-1"
-				oninput={handleSearch}
-			/>
-			<Button variant="outline" size="icon" onclick={handleSearch}>
-				<Search class="h-4 w-4" />
-			</Button>
+			<!-- Code Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase">Code</label
+				>
+				<Input
+					bind:value={filterCode}
+					placeholder="Enter code..."
+					class="flex-1 text-sm"
+					oninput={handleSearch}
+				/>
+			</div>
+
+			<!-- Description Filter -->
+			<div class="space-y-1.5">
+				<label class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+					>Description</label
+				>
+				<Input
+					bind:value={filterDescription}
+					placeholder="Enter description..."
+					class="flex-1 text-sm"
+					oninput={handleSearch}
+				/>
+			</div>
 		</div>
 	</div>
 
@@ -304,13 +339,19 @@
 		</div>
 	{:else}
 		<div class="max-h-[60vh] overflow-auto rounded-md border">
-			<AssetTable
-				assets={assets}
-				onEdit={handleEdit}
-				onDelete={handleDelete}
-				hideActions={true}
-				onRowClick={handleRowClick}
-			/>
+			<AssetTable {assets} onEdit={handleEdit} onDelete={handleDelete} />
 		</div>
+
+		<!-- Pagination -->
+		{#if totalPages > 1}
+			<Pagination
+				{currentPage}
+				{totalPages}
+				{totalRecords}
+				{pageSize}
+				onPageChange={handlePageChange}
+				{isLoading}
+			/>
+		{/if}
 	{/if}
 </div>
